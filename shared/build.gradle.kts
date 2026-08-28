@@ -11,10 +11,11 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // Compose Multiplatform
+            // Compose Multiplatform & UI
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
@@ -30,10 +31,11 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            // Serialization & Datetime
+            // Serialization, Datetime & Logging
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.io.core)
+            implementation(libs.kermit)
 
             // DataStore Preferences
             implementation(libs.datastore.preferences)
@@ -53,6 +55,9 @@ kotlin {
         jvmMain.dependencies {
             // HiveMQ MQTT Client (JVM Engine)
             implementation(libs.hivemq.mqtt.client)
+
+            // Reactive Streams to Kotlin Flow bridge
+            implementation(libs.kotlinx.coroutinesReactive)
 
             // SQLDelight SQLite Driver for JVM/Desktop
             implementation(libs.sqldelight.driver.sqlite)
