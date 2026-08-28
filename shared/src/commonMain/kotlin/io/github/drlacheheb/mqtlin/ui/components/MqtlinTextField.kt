@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -44,6 +45,7 @@ fun MqtlinTextField(
     isError: Boolean = false,
     isMonospace: Boolean = true,
     height: Dp = 36.dp,
+    backgroundColor: Color = InputBackground,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     leadingIcon: (@Composable () -> Unit)? = null,
@@ -80,7 +82,7 @@ fun MqtlinTextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(height)
-                    .background(InputBackground, RoundedCornerShape(4.dp))
+                    .background(backgroundColor, RoundedCornerShape(4.dp))
                     .border(1.dp, borderColor, RoundedCornerShape(4.dp))
                     .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -115,4 +117,3 @@ fun MqtlinTextField(
         }
     )
 }
-

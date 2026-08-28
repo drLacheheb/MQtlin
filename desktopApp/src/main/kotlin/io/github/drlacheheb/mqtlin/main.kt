@@ -8,19 +8,16 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.github.drlacheheb.mqtlin.data.repository.HiveMqRepository
-import io.github.drlacheheb.mqtlin.domain.usecase.ValidateConnectionConfigUseCase
-import io.github.drlacheheb.mqtlin.ui.connection.DefaultConnectionComponent
+import io.github.drlacheheb.mqtlin.ui.root.DefaultRootComponent
 
 fun main() {
     val lifecycle = LifecycleRegistry()
     val repository = HiveMqRepository()
-    val validateUseCase = ValidateConnectionConfigUseCase()
 
     val rootContext = DefaultComponentContext(lifecycle = lifecycle)
-    val connectionComponent = DefaultConnectionComponent(
+    val rootComponent = DefaultRootComponent(
         componentContext = rootContext,
-        mqttRepository = repository,
-        validateConfigUseCase = validateUseCase
+        mqttRepository = repository
     )
 
     val windowState = WindowState(size = DpSize(1280.dp, 800.dp))
@@ -30,6 +27,6 @@ fun main() {
         state = windowState
     ) {
         LifecycleController(lifecycle, windowState)
-        App(connectionComponent = connectionComponent)
+        App(rootComponent = rootComponent)
     }
 }
