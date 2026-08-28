@@ -3,9 +3,11 @@ package io.github.drlacheheb.mqtlin.ui.workspace.inspector
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -47,6 +49,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.model.TopicNode
+import io.github.drlacheheb.mqtlin.domain.util.HexUtils
+import io.github.drlacheheb.mqtlin.domain.util.JsonUtils
 import io.github.drlacheheb.mqtlin.ui.theme.DarkBackground
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
@@ -63,6 +67,11 @@ import io.github.drlacheheb.mqtlin.ui.theme.MonoTopic
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinSecondary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinTertiary
+import io.github.drlacheheb.mqtlin.ui.theme.MqtlinTertiaryContainer
+import io.github.drlacheheb.mqtlin.ui.theme.SyntaxKey
+import io.github.drlacheheb.mqtlin.ui.theme.SyntaxNumber
+import io.github.drlacheheb.mqtlin.ui.theme.SyntaxPunctuation
+import io.github.drlacheheb.mqtlin.ui.theme.SyntaxString
 import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 import io.github.drlacheheb.mqtlin.ui.theme.UiLabelReg
 
@@ -78,7 +87,7 @@ fun PayloadInspectorPanel(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .background(DarkSurfaceContainerLowest)
+            .background(DarkSurfaceContainerLowest) // HTML line 302: bg-surface-container-lowest (#0E0E11)
     ) {
         if (selectedNode == null) {
             Box(
@@ -87,13 +96,13 @@ fun PayloadInspectorPanel(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.DataObject,
                         contentDescription = null,
                         tint = DarkOutlineVariant,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(36.dp)
                     )
                     Text(
                         text = "Select a topic to inspect payload",
@@ -104,9 +113,18 @@ fun PayloadInspectorPanel(
             }
         } else {
             val message = selectedNode.lastMessage
-            val payloadText = message?.payloadString ?: ""
+            val rawPayloadText = message?.payloadString ?: ""
+            val formattedJsonText = remember(rawPayloadText) { JsonUtils.format(rawPayloadText) }
 
-            // Breadcrumb Header: p-panel_padding border-b border-outline-variant bg-surface-container-low
+            // Display text based on active tab
+            val displayText = when (activeTab) {
+                InspectorTab.JSON -> formattedJsonText
+                InspectorTab.RAW -> rawPayloadText
+                InspectorTab.HEX -> HexUtils.formatHexDump(message?.payload ?: ByteArray(0))
+                InspectorTab.CHART -> "Real-time topic chart visualization"
+            }
+
+            // Breadcrumb Header: p-panel_padding border-b border-outline-variant bg-surface-container-low (#1B1B1E)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,7 +132,7 @@ fun PayloadInspectorPanel(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Topic Path Pill: bg-surface-dim border border-outline-variant px-3 py-1.5 rounded-lg
+                // Topic Path Pill: bg-surface-dim (#131316) border border-outline-variant px-3 py-1.5 rounded-lg
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
@@ -159,7 +177,7 @@ fun PayloadInspectorPanel(
                     if (message?.isRetained == true) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = MqtlinTertiary.copy(alpha = 0.12f),
+                            color = MqtlinTertiaryContainer.copy(alpha = 0.15f),
                             border = BorderStroke(1.dp, MqtlinTertiary.copy(alpha = 0.30f))
                         ) {
                             Row(
@@ -204,6 +222,7 @@ fun PayloadInspectorPanel(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(40.dp)
                     .background(DarkSurfaceContainer)
             ) {
                 TabItem(
@@ -236,23 +255,26 @@ fun PayloadInspectorPanel(
                     .background(DarkOutlineVariant)
             )
 
-            // Editor / Viewer Area: bg-surface-container-lowest
+            // Editor / Viewer Area with Synchronized Scrolling
+            val verticalScrollState = rememberScrollState()
+            val horizontalScrollState = rememberScrollState()
+            val lines = displayText.lines()
+            val lineCount = if (lines.isEmpty()) 1 else lines.size
+
             Row(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .background(DarkSurfaceContainerLowest)
             ) {
-                val lines = payloadText.lines()
-                val lineCount = if (lines.isEmpty()) 1 else lines.size
-
-                // Left Gutter Line Numbers: w-10 bg-surface-dim border-r border-outline-variant
+                // Line Numbers Gutter: bg-surface-dim (#131316) text-outline (#908FA0)
                 Column(
                     modifier = Modifier
-                        .width(40.dp)
+                        .width(44.dp)
                         .fillMaxHeight()
                         .background(DarkSurfaceDim)
-                        .padding(vertical = 12.dp, horizontal = 6.dp),
+                        .verticalScroll(verticalScrollState)
+                        .padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
                     horizontalAlignment = Alignment.End
                 ) {
                     for (i in 1..lineCount) {
@@ -260,11 +282,13 @@ fun PayloadInspectorPanel(
                             text = i.toString(),
                             fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace,
-                            color = DarkOutline
+                            color = DarkOutline,
+                            lineHeight = 20.sp
                         )
                     }
                 }
 
+                // Gutter Right Divider
                 Box(
                     modifier = Modifier
                         .width(1.dp)
@@ -272,18 +296,26 @@ fun PayloadInspectorPanel(
                         .background(DarkOutlineVariant)
                 )
 
-                // Code Area
-                Column(
+                // Code Area: scrolls vertically & horizontally
+                Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
+                        .verticalScroll(verticalScrollState)
+                        .horizontalScroll(horizontalScrollState)
                         .padding(16.dp)
-                        .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
-                        text = buildHighlightedJson(payloadText),
-                        style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp)
-                    )
+                    if (activeTab == InspectorTab.JSON) {
+                        Text(
+                            text = buildHighlightedJson(displayText),
+                            style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp)
+                        )
+                    } else {
+                        Text(
+                            text = displayText,
+                            style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOnSurface)
+                        )
+                    }
                 }
             }
 
@@ -397,15 +429,22 @@ private fun TabItem(
 ) {
     Column(
         modifier = Modifier
+            .fillMaxHeight()
+            .width(IntrinsicSize.Max)
             .clickable(onClick = onClick)
-            .background(if (isSelected) DarkSurfaceContainerLow else Color.Transparent)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(if (isSelected) DarkSurfaceContainerLow else Color.Transparent),
+        verticalArrangement = Arrangement.Bottom
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = label,
-                style = if (isSelected) UiLabelBold.copy(fontSize = 14.sp, color = MqtlinPrimary) else UiLabelReg.copy(fontSize = 14.sp, color = DarkOnSurfaceVariant)
+                style = if (isSelected) UiLabelBold.copy(fontSize = 14.sp, color = MqtlinPrimary) else UiLabelReg.copy(fontSize = 14.sp, color = DarkOnSurfaceVariant),
+                maxLines = 1
             )
             if (icon != null) {
                 Spacer(modifier = Modifier.width(4.dp))
@@ -420,8 +459,7 @@ private fun TabItem(
         if (isSelected) {
             Box(
                 modifier = Modifier
-                    .padding(top = 6.dp)
-                    .width(32.dp)
+                    .fillMaxWidth()
                     .height(2.dp)
                     .background(MqtlinPrimary)
             )
@@ -440,46 +478,53 @@ private fun formatTimestamp(epochMs: Long): String {
 
 private fun buildHighlightedJson(text: String): androidx.compose.ui.text.AnnotatedString {
     return buildAnnotatedString {
-        var inQuotes = false
-        var isKey = false
-        val currentToken = StringBuilder()
+        var cursor = 0
+        val len = text.length
 
-        val keyColor = Color(0xFFC7C4D7) // .sh-key
-        val strColor = Color(0xFF4EDEA3) // .sh-str
-        val numColor = Color(0xFFFFB95F) // .sh-num
-        val puncColor = Color(0xFF908FA0) // .sh-punc
+        while (cursor < len) {
+            val ch = text[cursor]
 
-        for (i in text.indices) {
-            val c = text[i]
-            when {
-                c == '"' -> {
-                    if (inQuotes) {
-                        currentToken.append(c)
-                        val style = if (isKey) keyColor else strColor
-                        withStyle(SpanStyle(color = style)) {
-                            append(currentToken.toString())
-                        }
-                        currentToken.clear()
-                        inQuotes = false
-                        isKey = false
-                    } else {
-                        inQuotes = true
-                        isKey = text.substring(i).contains(':') && !text.substring(0, i).endsWith(":")
-                        currentToken.append(c)
-                    }
+            if (ch == '"') {
+                val start = cursor
+                cursor++
+                while (cursor < len && text[cursor] != '"') {
+                    if (text[cursor] == '\\' && cursor + 1 < len) cursor++
+                    cursor++
                 }
-                inQuotes -> currentToken.append(c)
-                c in "{}[],:" -> {
-                    withStyle(SpanStyle(color = puncColor)) {
-                        append(c)
-                    }
+                if (cursor < len) cursor++ // consume closing quote
+                val strVal = text.substring(start, cursor)
+
+                // Check if key (followed by colon)
+                var lookAhead = cursor
+                while (lookAhead < len && text[lookAhead].isWhitespace()) lookAhead++
+                val isKey = lookAhead < len && text[lookAhead] == ':'
+
+                withStyle(SpanStyle(color = if (isKey) SyntaxKey else SyntaxString)) {
+                    append(strVal)
                 }
-                c.isDigit() || c == '.' || c == '-' -> {
-                    withStyle(SpanStyle(color = numColor)) {
-                        append(c)
-                    }
+            } else if (ch in "{}[],:") {
+                withStyle(SpanStyle(color = SyntaxPunctuation)) {
+                    append(ch)
                 }
-                else -> append(c)
+                cursor++
+            } else if (ch.isDigit() || ch == '-' || text.startsWith("true", cursor) || text.startsWith("false", cursor) || text.startsWith("null", cursor)) {
+                val start = cursor
+                if (text.startsWith("true", cursor)) {
+                    cursor += 4
+                } else if (text.startsWith("false", cursor)) {
+                    cursor += 5
+                } else if (text.startsWith("null", cursor)) {
+                    cursor += 4
+                } else {
+                    while (cursor < len && (text[cursor].isDigit() || text[cursor] in ".eE+-")) cursor++
+                }
+                val numVal = text.substring(start, cursor)
+                withStyle(SpanStyle(color = SyntaxNumber)) {
+                    append(numVal)
+                }
+            } else {
+                append(ch)
+                cursor++
             }
         }
     }
