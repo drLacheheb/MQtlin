@@ -24,48 +24,48 @@
 Traditional MQTT clients treat high-frequency message traffic like an unreadable flat chat stream. **Mqtlin** transforms raw broker streams into a structured, live-updating namespace hierarchy:
 
 1. **Hierarchical Topic Tree**: Organizes MQTT topics into an expandable/collapsible directory tree based on `/` delimiters.
-2. **In-Place Live Updates**: Topics update values in-place with visual activity indicators without chaotic auto-scrolling log hell.
+2. **In-Place Live Updates**: Topics update values in-place with visual activity indicators without chaotic auto-scrolling logs.
 3. **Multi-Format Payload Inspection**: Auto-detects and formats JSON (collapsible tree), plain text, hexadecimal byte arrays, and binary data.
 4. **Full Protocol Fidelity**: Native support for both **MQTT 3.1.1** and **MQTT 5.0** (User Properties, Reason Codes, Message Expiry).
 5. **Universal Message Publishing**: Publish commands and telemetry with fine-grained QoS (0, 1, 2), retain flags, and JSON validation.
-6. **Native Cross-Platform Desktop**: Ultra-responsive UI powered by Skia hardware acceleration for Windows, macOS, and Linux from a single Kotlin codebase.
+6. **Native Cross-Platform Desktop**: Responsive UI powered by Skia hardware acceleration for Windows, macOS, and Linux from a single Kotlin codebase.
 
 ---
 
-## Alpha Version Roadmap (Sprint 1 & Sprint 2)
+## Alpha Version Roadmap
 
 Here is the progress tracker for the core features scheduled for the upcoming **Alpha release**:
 
-### 🔌 Connection Management
-- [ ] Connect to broker via hostname and port (`US-01.01`)
-- [ ] Username & password authentication (`US-01.05`)
-- [ ] Custom Client ID configuration & random ID generator (`US-01.06`)
-- [ ] MQTT protocol version selector: 3.1, 3.1.1, 5.0 (`US-01.10`)
-- [ ] Transport selector: TCP (`mqtt://`), TLS (`mqtts://`), WS (`ws://`), WSS (`wss://`) (`US-01.11`)
-- [ ] Real-time connection status indicator with color-coded badge (`US-01.12`)
+### Connection Management
+- [ ] Connect to broker via hostname and port
+- [ ] Username and password authentication
+- [ ] Custom Client ID configuration and random ID generator
+- [ ] MQTT protocol version selector (3.1, 3.1.1, 5.0)
+- [ ] Transport selector: TCP (`mqtt://`), TLS (`mqtts://`), WS (`ws://`), WSS (`wss://`)
+- [ ] Real-time connection status indicator with color-coded badge
 
-### 🌳 Topic Tree Exploration
-- [ ] Hierarchical topic tree view with live in-place updates (`US-02.01`, `US-02.02`)
-- [ ] Visual indicators and badges for retained messages (`US-02.09`)
-- [ ] Real-time keyword search and topic tree filtering (`US-02.04`)
-- [ ] Topic selection to view payload and message metadata (`US-02.07`)
+### Topic Tree Exploration
+- [ ] Hierarchical topic tree view with live in-place updates
+- [ ] Visual indicators and badges for retained messages
+- [ ] Real-time keyword search and topic tree filtering
+- [ ] Topic selection to view payload and message metadata
 
-### 🔍 Payload Viewer & Inspection
-- [ ] Formatted, syntax-highlighted collapsible JSON tree viewer (`US-03.01`)
-- [ ] Raw plain-text viewer with word-wrap toggle (`US-03.02`)
-- [ ] Hexadecimal / binary viewer with address offsets (`US-03.03`)
-- [ ] Auto-detection of payload format (JSON vs. Text vs. Hex) (`US-03.06`)
-- [ ] Message metadata display: QoS level, retain flag, timestamp, payload size (`US-03.07`)
-- [ ] Quick copy utilities for topic path, raw payload, and JSON key paths (`US-03.08`)
+### Payload Viewer and Inspection
+- [ ] Formatted, syntax-highlighted collapsible JSON tree viewer
+- [ ] Raw plain-text viewer with word-wrap toggle
+- [ ] Hexadecimal and binary viewer with address offsets
+- [ ] Auto-detection of payload format (JSON, Text, Hex)
+- [ ] Message metadata display: QoS level, retain flag, timestamp, payload size
+- [ ] Quick copy utilities for topic path, raw payload, and JSON key paths
 
-### 📤 Message Publishing
-- [ ] Publish message panel with topic autocomplete and multi-line editor (`US-04.01`)
-- [ ] QoS level selection: QoS 0, QoS 1, QoS 2 (`US-04.02`)
-- [ ] Retain flag toggle with visual indicator (`US-04.03`)
+### Message Publishing
+- [ ] Publish message panel with topic autocomplete and multi-line editor
+- [ ] QoS level selection: QoS 0, QoS 1, QoS 2
+- [ ] Retain flag toggle with visual indicator
 
-### 🎨 UI & Design System
-- [ ] Dark mode and light mode theme support with system auto-detection (`US-19.01`)
-- [x] Project architecture and dependency configuration (Sprint 0)
+### UI and Design System
+- [ ] Dark mode and light mode theme support with system auto-detection
+- [x] Project architecture and dependency configuration
 
 ---
 
@@ -74,11 +74,11 @@ Here is the progress tracker for the core features scheduled for the upcoming **
 | Layer | Technology | Description |
 | :--- | :--- | :--- |
 | **UI Framework** | **Compose Multiplatform** | Modern declarative UI powered by Skia 2D rendering |
-| **MQTT Engine** | **HiveMQ MQTT Client** | High-throughput Netty-based JVM MQTT 3.1.1 & 5.0 client |
+| **MQTT Engine** | **HiveMQ MQTT Client** | High-throughput Netty-based JVM MQTT 3.1.1 and 5.0 client |
 | **Navigation** | **Decompose** | Component-tree navigation with isolated lifecycles and split panes |
 | **State Management** | **MVI / Kotlin StateFlow** | Unidirectional data flow and reactive coroutines |
 | **Dependency Injection** | **Koin 4.x** | Pure Kotlin lightweight multiplatform dependency injection |
-| **Persistence** | **SQLDelight & DataStore** | Compile-time safe SQLite database & typed settings storage |
+| **Persistence** | **SQLDelight and DataStore** | Compile-time safe SQLite database and typed settings storage |
 | **Networking** | **Ktor Client 3.x** | Multiplatform HTTP and WebSocket networking |
 | **Serialization** | **kotlinx.serialization** | Fast, zero-reflection JSON and binary codecs |
 
