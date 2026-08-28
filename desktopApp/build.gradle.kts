@@ -12,6 +12,9 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
 
+    implementation(libs.decompose.core)
+    implementation(libs.decompose.compose)
+
     implementation(libs.compose.uiToolingPreview)
 }
 

@@ -22,9 +22,9 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // Decompose Navigation
-            implementation(libs.decompose.core)
-            implementation(libs.decompose.compose)
+            // Decompose Navigation (api so DesktopApp and tests access ComponentContext)
+            api(libs.decompose.core)
+            api(libs.decompose.compose)
 
             // Dependency Injection (Koin)
             implementation(libs.koin.core)
