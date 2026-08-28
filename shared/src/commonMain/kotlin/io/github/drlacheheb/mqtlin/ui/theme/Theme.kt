@@ -15,9 +15,9 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = MqtlinTertiary,
     onTertiary = MqtlinOnTertiary,
     tertiaryContainer = MqtlinTertiaryContainer,
-    background = DarkBackground,
+    background = CanvasBackground,
     onBackground = DarkOnSurface,
-    surface = DarkSurfaceContainerLow,
+    surface = ModalSurface,
     onSurface = DarkOnSurface,
     surfaceVariant = DarkSurfaceContainerHigh,
     onSurfaceVariant = DarkOnSurfaceVariant,
@@ -35,6 +35,7 @@ fun MqtlinTheme(
 ) {
     MaterialTheme(
         colorScheme = DarkColorScheme,
+        typography = MqtlinTypography,
         content = content
     )
 }

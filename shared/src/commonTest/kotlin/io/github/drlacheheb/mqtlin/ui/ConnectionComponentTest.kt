@@ -14,6 +14,7 @@ import io.github.drlacheheb.mqtlin.ui.connection.DefaultConnectionComponent
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -50,12 +51,27 @@ class ConnectionComponentTest {
         val (component, lifecycle) = createComponent(this)
 
         val state = component.state.value
+        state.name shouldBe "Local Mosquitto"
         state.host shouldBe "127.0.0.1"
         state.portText shouldBe "1883"
+        state.clientId shouldBe "mqtlin_client_8f9a2b"
         state.protocolVersion shouldBe MqttProtocolVersion.MQTT_5_0
         state.transport shouldBe TransportProtocol.TCP
+        state.username shouldBe ""
+        state.password shouldBe ""
         state.connectionState shouldBe ConnectionState.Disconnected
         state.validationErrors.shouldBeEmpty()
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `changing profile name updates state`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onNameChanged("Production Cluster")
+
+        component.state.value.name shouldBe "Production Cluster"
 
         lifecycle.destroy()
     }
@@ -72,6 +88,50 @@ class ConnectionComponentTest {
     }
 
     @Test
+    fun `changing port updates state and clears port validation error`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onPortChanged("8883")
+
+        component.state.value.portText shouldBe "8883"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `changing client ID updates state and clears client ID error`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onClientIdChanged("custom_client_42")
+
+        component.state.value.clientId shouldBe "custom_client_42"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `generating random client ID updates clientId with mqtlin_client prefix`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onGenerateRandomClientId()
+
+        component.state.value.clientId shouldStartWith "mqtlin_client_"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `changing protocol version updates state`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onProtocolVersionChanged(MqttProtocolVersion.MQTT_3_1_1)
+
+        component.state.value.protocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
+
+        lifecycle.destroy()
+    }
+
+    @Test
     fun `changing transport updates transport and default port`() = runTest {
         val (component, lifecycle) = createComponent(this)
 
@@ -79,6 +139,43 @@ class ConnectionComponentTest {
 
         component.state.value.transport shouldBe TransportProtocol.TLS
         component.state.value.portText shouldBe "8883"
+
+        component.onTransportChanged(TransportProtocol.WSS)
+
+        component.state.value.transport shouldBe TransportProtocol.WSS
+        component.state.value.portText shouldBe "8084"
+
+        component.onTransportChanged(TransportProtocol.WS)
+
+        component.state.value.transport shouldBe TransportProtocol.WS
+        component.state.value.portText shouldBe "8083"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `changing username and password updates state`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onUsernameChanged("admin")
+        component.onPasswordChanged("secret123")
+
+        component.state.value.username shouldBe "admin"
+        component.state.value.password shouldBe "secret123"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `clicking connect with invalid port sets PORT validation error without connecting`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+        component.onPortChanged("invalid_port")
+
+        component.onConnectClicked()
+        advanceUntilIdle()
+
+        component.state.value.validationErrors shouldContainKey ValidationResult.Field.PORT
+        component.state.value.connectionState shouldBe ConnectionState.Disconnected
 
         lifecycle.destroy()
     }
@@ -130,6 +227,24 @@ class ConnectionComponentTest {
         component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
         val errorState = component.state.value.connectionState as ConnectionState.Error
         errorState.message shouldBe "Host unreachable"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `dismissing error state resets connectionState to Disconnected`() = runTest {
+        fakeRepository.shouldFailConnection = true
+        fakeRepository.failureErrorMessage = "TLS Handshake Failed"
+
+        val (component, lifecycle) = createComponent(this)
+        component.onConnectClicked()
+        advanceUntilIdle()
+
+        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
+
+        component.onDismissError()
+
+        component.state.value.connectionState shouldBe ConnectionState.Disconnected
 
         lifecycle.destroy()
     }
