@@ -19,9 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -38,16 +35,15 @@ import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.model.FilterMode
 import io.github.drlacheheb.mqtlin.domain.model.TopicTree
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinTextField
-import io.github.drlacheheb.mqtlin.ui.theme.DarkBackground
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceBright
+import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainer
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainerHigh
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainerLowest
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceDim
-import io.github.drlacheheb.mqtlin.ui.theme.InputBackground
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinTertiary
 
@@ -66,7 +62,7 @@ fun TopicTreePanel(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .background(DarkSurfaceContainerLowest) // #0E0E11 Deep Dark
+            .background(DarkSurfaceDim) // HTML line 229: bg-surface-dim (#131316)
     ) {
         // Search & Filters Header: p-panel_padding (12px), border-b border-outline-variant
         Column(
@@ -75,14 +71,14 @@ fun TopicTreePanel(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Search input: w-full bg-[#09090B] border border-outline-variant rounded-lg
+            // Search input: w-full bg-surface-container-lowest (#0E0E11) border border-outline-variant rounded-lg
             MqtlinTextField(
                 value = filterQuery,
                 onValueChange = onFilterQueryChanged,
                 placeholder = "Filter topics...",
                 height = 34.dp,
                 isMonospace = true,
-                backgroundColor = InputBackground,
+                backgroundColor = DarkSurfaceContainerLowest,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,

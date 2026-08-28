@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
-import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinError
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinOnError
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinOnPrimary
@@ -84,7 +84,7 @@ fun MqtlinOutlinedButton(
         enabled = enabled,
         modifier = modifier.height(height),
         shape = RoundedCornerShape(4.dp),
-        border = BorderStroke(1.dp, DarkOutline),
+        border = BorderStroke(1.dp, DarkBorder),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent,
@@ -157,4 +157,3 @@ fun MqtlinDangerButton(
         }
     }
 }
-

@@ -46,7 +46,6 @@ import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainer
-import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceVariant
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinOnPrimaryContainer
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimaryContainer
@@ -75,7 +74,7 @@ fun TopicTreeNodeItem(
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Node Row: px-2 py-1.5 rounded-lg cursor-pointer hover:bg-surface-variant
+        // Node Row: px-2 py-1.5 rounded-lg cursor-pointer hover:bg-surface-variant transition-colors
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -95,7 +94,7 @@ fun TopicTreeNodeItem(
                     .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Chevron for directories: text-[16px] text-outline-variant transition-transform
+                // Chevron slot: exactly 16dp
                 if (isDirectory) {
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
@@ -107,12 +106,12 @@ fun TopicTreeNodeItem(
                             .clickable { onToggleExpand(node.fullPath) }
                     )
                 } else {
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Box(modifier = Modifier.size(16.dp))
                 }
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                // Icon (Folder: text-primary-fixed-dim, Tag: text-outline-variant / text-on-primary-container)
+                // Icon (Folder: text-primary-fixed-dim #C0C1FF, Tag: text-outline-variant #464554 / text-on-primary-container #0D0096)
                 if (isDirectory) {
                     Icon(
                         imageVector = Icons.Default.Folder,
@@ -131,45 +130,32 @@ fun TopicTreeNodeItem(
 
                 Spacer(modifier = Modifier.width(6.dp))
 
-                // Node segment name: font-mono-topic text-mono-topic text-on-surface
+                // Node segment name: font-mono-topic text-mono-topic
+                val textColor = if (isSelected) {
+                    MqtlinOnPrimaryContainer
+                } else if (isDirectory) {
+                    DarkOnSurface
+                } else {
+                    DarkOnSurfaceVariant
+                }
+
                 Text(
                     text = if (isDirectory) "${node.segment}/" else node.segment,
                     fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    color = if (isSelected) MqtlinOnPrimaryContainer else DarkOnSurface,
+                    color = textColor,
                     modifier = Modifier.weight(1f)
                 )
 
-                // Message count badges & pulse dot
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (node.messageCount > 0) {
-                        Surface(
-                            shape = RoundedCornerShape(2.dp),
-                            color = if (isSelected) MqtlinOnPrimaryContainer.copy(alpha = 0.2f) else DarkSurfaceContainer
-                        ) {
-                            Text(
-                                text = "${formatMessageCount(node.messageCount)} msgs",
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = if (isSelected) MqtlinOnPrimaryContainer else DarkOutline,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                            )
-                        }
-                    }
-
-                    // Green pulse activity dot
-                    if (System.currentTimeMillis() - node.lastUpdated < 4000) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .scale(pulseScale)
-                                .background(MqtlinSecondary, CircleShape)
-                        )
-                    }
+                // Trailing: Green pulse dot on activity (HTML lines 269 & 280)
+                if (System.currentTimeMillis() - node.lastUpdated < 5000) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .scale(pulseScale)
+                            .background(MqtlinSecondary, CircleShape)
+                    )
                 }
             }
         }
@@ -180,21 +166,21 @@ fun TopicTreeNodeItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .padding(start = 12.dp, top = 2.dp)
+                    .padding(start = 14.dp, top = 2.dp)
             ) {
                 // Vertical guide line
                 Box(
                     modifier = Modifier
                         .width(1.dp)
                         .fillMaxHeight()
-                        .background(DarkOutlineVariant.copy(alpha = 0.40f))
+                        .background(DarkOutlineVariant.copy(alpha = 0.35f))
                 )
 
                 // Children Column indented
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp)
+                        .padding(start = 10.dp)
                 ) {
                     node.children.forEach { child ->
                         TopicTreeNodeItem(
@@ -208,13 +194,5 @@ fun TopicTreeNodeItem(
                 }
             }
         }
-    }
-}
-
-private fun formatMessageCount(count: Long): String {
-    return when {
-        count >= 1_000_000 -> "${count / 1_000_000}M"
-        count >= 1_000 -> "${count / 1_000}k"
-        else -> count.toString()
     }
 }

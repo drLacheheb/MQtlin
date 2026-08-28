@@ -84,6 +84,11 @@ fun WorkspaceScreen(
             // Right Column: Publisher (380dp)
             PublishPanel(
                 selectedTopic = state.selectedTopicPath,
+                isPublishing = state.isPublishing,
+                publishError = state.publishError,
+                onPublishMessage = { topic, payload, qos, isRetained ->
+                    component.onPublishMessage(topic, payload, qos, isRetained)
+                },
                 modifier = Modifier.width(380.dp)
             )
         }
@@ -96,4 +101,3 @@ fun WorkspaceScreen(
         )
     }
 }
-

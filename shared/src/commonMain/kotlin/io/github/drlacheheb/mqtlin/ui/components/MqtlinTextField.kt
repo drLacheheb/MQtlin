@@ -29,9 +29,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
-import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.InputBackground
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinError
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
@@ -57,7 +57,7 @@ fun MqtlinTextField(
     val borderColor = when {
         isError -> MqtlinError
         isFocused -> MqtlinPrimary
-        else -> DarkOutline
+        else -> DarkBorder
     }
 
     BasicTextField(
