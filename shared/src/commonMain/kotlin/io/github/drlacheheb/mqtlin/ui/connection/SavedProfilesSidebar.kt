@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinOutlinedButton
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinTextField
+import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
-import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.SidebarBackground
 
 @Composable
@@ -62,7 +62,7 @@ fun SavedProfilesSidebar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(DarkOutline)
+                .background(DarkBorder)
         )
 
         // Profile List (flex-1 p-tight_gap overflow-y-auto)
@@ -106,7 +106,7 @@ fun SavedProfilesSidebar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(DarkOutline)
+                .background(DarkBorder)
         )
 
         // New Profile Button (p-panel_padding border-t border-[#27272a])
@@ -126,4 +126,3 @@ fun SavedProfilesSidebar(
         }
     }
 }
-

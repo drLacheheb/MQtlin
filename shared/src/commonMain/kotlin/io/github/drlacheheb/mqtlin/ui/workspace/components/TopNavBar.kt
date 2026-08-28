@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig
+import io.github.drlacheheb.mqtlin.ui.components.WindowControls
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
@@ -85,14 +86,15 @@ fun TopNavBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(horizontal = 16.dp),
+                .fillMaxHeight(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Left: Brand + Connection Tabs
             Row(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(start = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -168,123 +170,131 @@ fun TopNavBar(
                 }
             }
 
-            // Right: Latency Pill + Navigation Links + Trailing Actions
+            // Right: Latency Pill + Navigation Links + Trailing Actions + Window Controls
             Row(
                 modifier = Modifier.fillMaxHeight(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Latency Pill (bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant)
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = DarkSurfaceContainerHigh,
-                    border = BorderStroke(1.dp, DarkOutlineVariant)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Speed,
-                            contentDescription = "Latency",
-                            tint = MqtlinSecondary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "${latencyMs}ms",
-                            style = MonoCode.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MqtlinSecondary)
-                        )
-                    }
-                }
-
-                // Nav Links (Connections, Brokers, Settings, Logs)
                 Row(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier.padding(end = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Connections (Active) with tight intrinsic width
-                    Column(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(IntrinsicSize.Max)
-                            .clickable(onClick = onOpenConnectionManager),
-                        verticalArrangement = Arrangement.Bottom
+                    // Latency Pill (bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant)
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = DarkSurfaceContainerHigh,
+                        border = BorderStroke(1.dp, DarkOutlineVariant)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 12.dp),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            Icon(
+                                imageVector = Icons.Default.Speed,
+                                contentDescription = "Latency",
+                                tint = MqtlinSecondary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Connections",
-                                style = UiLabelBold.copy(fontSize = 14.sp, color = MqtlinPrimary),
-                                maxLines = 1
+                                text = "${latencyMs}ms",
+                                style = MonoCode.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MqtlinSecondary)
                             )
                         }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(2.dp)
-                                .background(MqtlinPrimary)
-                        )
                     }
 
-                    // Brokers, Settings, Logs (Inactive)
-                    listOf("Brokers", "Settings", "Logs").forEach { item ->
-                        Box(
+                    // Nav Links (Connections, Brokers, Settings, Logs)
+                    Row(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        // Connections (Active) with tight intrinsic width
+                        Column(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .clickable { }
-                                .padding(horizontal = 12.dp),
-                            contentAlignment = Alignment.Center
+                                .width(IntrinsicSize.Max)
+                                .clickable(onClick = onOpenConnectionManager),
+                            verticalArrangement = Arrangement.Bottom
                         ) {
-                            Text(
-                                text = item,
-                                style = UiLabelBold.copy(fontSize = 14.sp, color = DarkOnSurfaceVariant),
-                                maxLines = 1
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Connections",
+                                    style = UiLabelBold.copy(fontSize = 14.sp, color = MqtlinPrimary),
+                                    maxLines = 1
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(2.dp)
+                                    .background(MqtlinPrimary)
+                            )
+                        }
+
+                        // Brokers, Settings, Logs (Inactive)
+                        listOf("Brokers", "Settings", "Logs").forEach { item ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .clickable { }
+                                    .padding(horizontal = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = item,
+                                    style = UiLabelBold.copy(fontSize = 14.sp, color = DarkOnSurfaceVariant),
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+
+                    // Divider (border-l border-outline-variant pl-4)
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(24.dp)
+                            .background(DarkOutlineVariant)
+                    )
+
+                    // Trailing Action Icons (account_tree, notifications, settings)
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.AccountTree,
+                                contentDescription = "Topic Tree",
+                                tint = DarkOnSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = DarkOnSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings",
+                                tint = DarkOnSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                 }
 
-                // Divider (border-l border-outline-variant pl-4)
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(24.dp)
-                        .background(DarkOutlineVariant)
-                )
-
-                // Trailing Action Icons (account_tree, notifications, settings)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.AccountTree,
-                            contentDescription = "Topic Tree",
-                            tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
+                // Window Controls (- [] x)
+                WindowControls(height = 56)
             }
         }
 

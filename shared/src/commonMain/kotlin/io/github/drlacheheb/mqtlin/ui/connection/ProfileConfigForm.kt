@@ -30,11 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.model.ConnectionState
@@ -46,9 +44,10 @@ import io.github.drlacheheb.mqtlin.ui.components.MqtlinOutlinedButton
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinPrimaryButton
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinTextButton
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinTextField
+import io.github.drlacheheb.mqtlin.ui.components.WindowControls
+import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
-import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineMuted
 import io.github.drlacheheb.mqtlin.ui.theme.FooterBackground
 import io.github.drlacheheb.mqtlin.ui.theme.HeadlineSm
@@ -70,17 +69,18 @@ fun ProfileConfigForm(
     Column(
         modifier = modifier.background(ModalSurface)
     ) {
-        // Header: px-gutter py-panel_padding border-b border-[#27272a]
+        // Header: px-gutter py-panel_padding border-b border-[#27272a] with custom window controls
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .height(48.dp)
+                .padding(start = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Connection Settings",
-                style = HeadlineSm.copy(fontSize = 20.sp)
+                style = HeadlineSm.copy(fontSize = 18.sp)
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -88,16 +88,14 @@ fun ProfileConfigForm(
                     value = state.name,
                     onValueChange = component::onNameChanged,
                     textStyle = TextStyle(
-                        fontFamily = FontFamily.Default,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.End,
                         color = DarkOnSurface
                     ),
                     singleLine = true,
                     cursorBrush = SolidColor(MqtlinPrimary),
                     modifier = Modifier
-                        .width(180.dp)
+                        .width(160.dp)
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -107,6 +105,9 @@ fun ProfileConfigForm(
                     tint = DarkOnSurfaceVariant,
                     modifier = Modifier.size(16.dp)
                 )
+
+                Spacer(modifier = Modifier.width(8.dp))
+                WindowControls(height = 48)
             }
         }
 
@@ -114,7 +115,7 @@ fun ProfileConfigForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(DarkOutline)
+                .background(DarkBorder)
         )
 
         // Form Content (p-gutter flex-1 overflow-y-auto)
@@ -153,7 +154,7 @@ fun ProfileConfigForm(
                 }
             }
 
-            // Host & Port Row (col-8 & col-4 in 12-col grid: ratio 2f to 1f)
+            // Host & Port Row (8 / 4 column grid)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -264,7 +265,7 @@ fun ProfileConfigForm(
                             .fillMaxWidth()
                             .height(36.dp)
                             .background(InputBackground, RoundedCornerShape(4.dp))
-                            .border(1.dp, DarkOutline, RoundedCornerShape(4.dp))
+                            .border(1.dp, DarkBorder, RoundedCornerShape(4.dp))
                             .padding(2.dp)
                     ) {
                         ProtocolPill(
@@ -294,7 +295,7 @@ fun ProfileConfigForm(
                             .fillMaxWidth()
                             .height(36.dp)
                             .background(InputBackground, RoundedCornerShape(4.dp))
-                            .border(1.dp, DarkOutline, RoundedCornerShape(4.dp))
+                            .border(1.dp, DarkBorder, RoundedCornerShape(4.dp))
                             .padding(2.dp)
                     ) {
                         ProtocolPill(
@@ -368,7 +369,7 @@ fun ProfileConfigForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(DarkOutline)
+                .background(DarkBorder)
         )
 
         Row(
@@ -420,4 +421,3 @@ fun ProfileConfigForm(
         }
     }
 }
-
