@@ -1,0 +1,61 @@
+# Gradle & Kotlin
+.gradle/
+.kotlin/
+**/build/
+!src/**/build/
+build/
+out/
+gradle-app.setting
+*.hprof
+
+# IDEs & Editors
+*.iml
+*.ipr
+*.iws
+.idea/
+.idea_modules/
+.vscode/
+*.swp
+*~
+
+# JVM & Crash Dumps
+hs_err_pid*
+replay_pid*
+
+# OS Metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Local Runtime Data & Databases
+local.properties
+*.local
+*.log
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Security & Private Credentials (prevent accidental commit of test certs/keys)
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+.env
+.env.local
+
+# Packaging / Distribution Artefacts
+*.msi
+*.exe
+*.dmg
+*.pkg
+*.deb
+*.rpm
