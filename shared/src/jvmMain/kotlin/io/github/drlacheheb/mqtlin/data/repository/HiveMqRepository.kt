@@ -261,6 +261,64 @@ class HiveMqRepository : MqttRepository {
         }
     }
 
+    override suspend fun publish(
+        topic: String,
+        payload: ByteArray,
+        qos: Int,
+        isRetained: Boolean,
+        userProperties: Map<String, String>
+    ) {
+        if (mqtt5Client == null && mqtt3Client == null) {
+            throw IllegalStateException("Cannot publish: Not connected to an MQTT broker. Please connect to a broker first.")
+        }
+
+        val mqttQos = when (qos) {
+            1 -> MqttQos.AT_LEAST_ONCE
+            2 -> MqttQos.EXACTLY_ONCE
+            else -> MqttQos.AT_MOST_ONCE
+        }
+
+        mqtt5Client?.let { client ->
+            val publishBuilder = client.publishWith()
+                .topic(topic)
+                .payload(payload)
+                .qos(mqttQos)
+                .retain(isRetained)
+
+            if (userProperties.isNotEmpty()) {
+                val propsBuilder = com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties.builder()
+                userProperties.forEach { (key, value) ->
+                    propsBuilder.add(key, value)
+                }
+                publishBuilder.userProperties(propsBuilder.build())
+            }
+
+            publishBuilder.send().await()
+        }
+
+        mqtt3Client?.let { client ->
+            client.publishWith()
+                .topic(topic)
+                .payload(payload)
+                .qos(mqttQos)
+                .retain(isRetained)
+                .send()
+                .await()
+        }
+
+        // Optimistically update local message stream
+        _incomingMessages.tryEmit(
+            MqttMessage(
+                topic = topic,
+                payload = payload,
+                qos = qos,
+                isRetained = isRetained,
+                timestamp = System.currentTimeMillis(),
+                userProperties = userProperties
+            )
+        )
+    }
+
     override suspend fun disconnect() {
         try {
             mqtt5Client?.disconnect()?.await()

@@ -116,6 +116,33 @@ class DefaultWorkspaceComponent(
         }
     }
 
+    override fun onPublishMessage(
+        topic: String,
+        payload: String,
+        qos: Int,
+        isRetained: Boolean,
+        userProperties: Map<String, String>
+    ) {
+        val cleanTopic = topic.trim().removePrefix("/")
+        if (cleanTopic.isBlank()) return
+
+        scope.launch {
+            _state.update { it.copy(isPublishing = true, publishError = null) }
+            try {
+                mqttRepository.publish(
+                    topic = cleanTopic,
+                    payload = payload.encodeToByteArray(),
+                    qos = qos,
+                    isRetained = isRetained,
+                    userProperties = userProperties
+                )
+                _state.update { it.copy(isPublishing = false, publishError = null) }
+            } catch (e: Exception) {
+                _state.update { it.copy(isPublishing = false, publishError = e.message ?: "Failed to publish message") }
+            }
+        }
+    }
+
     override fun onDisconnectClicked() {
         scope.launch {
             mqttRepository.disconnect()
@@ -126,4 +153,3 @@ class DefaultWorkspaceComponent(
         onOpenConnectionManager()
     }
 }
-

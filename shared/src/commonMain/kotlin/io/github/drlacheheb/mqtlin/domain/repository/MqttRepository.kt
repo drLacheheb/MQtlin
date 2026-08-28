@@ -14,4 +14,11 @@ interface MqttRepository {
     suspend fun disconnect()
     suspend fun subscribe(topicFilter: String = "#", qos: Int = 0)
     suspend fun unsubscribe(topicFilter: String)
+    suspend fun publish(
+        topic: String,
+        payload: ByteArray,
+        qos: Int = 0,
+        isRetained: Boolean = false,
+        userProperties: Map<String, String> = emptyMap()
+    )
 }

@@ -17,30 +17,24 @@ class FakeMqttRepository : MqttRepository {
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     override val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val _incomingMessages = MutableSharedFlow<MqttMessage>(replay = 1, extraBufferCapacity = 64)
+    private val _incomingMessages = MutableSharedFlow<MqttMessage>(extraBufferCapacity = 64)
     override val incomingMessages: SharedFlow<MqttMessage> = _incomingMessages.asSharedFlow()
 
-    var shouldFailConnection: Boolean = false
-    var failureErrorMessage: String = "Connection refused by broker"
-    var simulatedDelayMs: Long = 0L
+    val publishedMessages = mutableListOf<MqttMessage>()
+    val subscriptions = mutableListOf<String>()
 
-    val subscribedTopics = mutableListOf<String>()
-    var lastConnectedConfig: ConnectionConfig? = null
+    var simulatedDelayMs: Long = 0L
+    var shouldFailConnection: Boolean = false
+    var failureErrorMessage: String = "Failed to connect"
 
     override suspend fun connect(config: ConnectionConfig) {
         _connectionState.value = ConnectionState.Connecting(config.host, config.port)
-
         if (simulatedDelayMs > 0) {
             delay(simulatedDelayMs)
         }
-
         if (shouldFailConnection) {
-            _connectionState.value = ConnectionState.Error(
-                message = failureErrorMessage,
-                cause = null
-            )
+            _connectionState.value = ConnectionState.Error(failureErrorMessage)
         } else {
-            lastConnectedConfig = config
             _connectionState.value = ConnectionState.Connected(
                 host = config.host,
                 port = config.port,
@@ -52,28 +46,46 @@ class FakeMqttRepository : MqttRepository {
     }
 
     override suspend fun disconnect() {
-        if (simulatedDelayMs > 0) {
-            delay(simulatedDelayMs)
-        }
-        subscribedTopics.clear()
         _connectionState.value = ConnectionState.Disconnected
     }
 
     override suspend fun subscribe(topicFilter: String, qos: Int) {
-        if (!subscribedTopics.contains(topicFilter)) {
-            subscribedTopics.add(topicFilter)
-        }
+        subscriptions.add(topicFilter)
     }
 
     override suspend fun unsubscribe(topicFilter: String) {
-        subscribedTopics.remove(topicFilter)
+        subscriptions.remove(topicFilter)
     }
 
-    suspend fun emitMessage(message: MqttMessage) {
-        _incomingMessages.emit(message)
+    override suspend fun publish(
+        topic: String,
+        payload: ByteArray,
+        qos: Int,
+        isRetained: Boolean,
+        userProperties: Map<String, String>
+    ) {
+        val msg = MqttMessage(
+            topic = topic,
+            payload = payload,
+            qos = qos,
+            isRetained = isRetained,
+            timestamp = System.currentTimeMillis(),
+            userProperties = userProperties
+        )
+        publishedMessages.add(msg)
+        _incomingMessages.tryEmit(msg)
     }
 
-    fun tryEmitMessage(message: MqttMessage): Boolean {
-        return _incomingMessages.tryEmit(message)
+    fun emitMessage(message: MqttMessage) {
+        _incomingMessages.tryEmit(message)
+    }
+
+    fun setConnected(config: ConnectionConfig) {
+        _connectionState.value = ConnectionState.Connected(
+            host = config.host,
+            port = config.port,
+            clientId = config.clientId,
+            protocolVersion = config.protocolVersion
+        )
     }
 }

@@ -147,6 +147,90 @@ class WorkspaceComponentTest {
     }
 
     @Test
+    fun `publishing message invokes repository and updates topic tree`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onPublishMessage(
+            topic = "actuators/relay/1",
+            payload = "{\"state\": \"ON\"}",
+            qos = 1,
+            isRetained = true
+        )
+        advanceUntilIdle()
+
+        fakeRepository.publishedMessages shouldHaveSize 1
+        val published = fakeRepository.publishedMessages[0]
+        published.topic shouldBe "actuators/relay/1"
+        published.payloadString shouldBe "{\"state\": \"ON\"}"
+        published.qos shouldBe 1
+        published.isRetained shouldBe true
+
+        // Tree is updated automatically from the incoming message echo
+        val node = component.state.value.rawTopicTree.findNode("actuators/relay/1")
+        node.shouldNotBeNull()
+        node.lastMessage?.payloadString shouldBe "{\"state\": \"ON\"}"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `publishing message with blank topic is ignored`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onPublishMessage(
+            topic = "   ",
+            payload = "data",
+            qos = 0,
+            isRetained = false
+        )
+        advanceUntilIdle()
+
+        fakeRepository.publishedMessages.shouldBeEmpty()
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `publishing message with leading slash automatically trims prefix and publishes clean topic path`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onPublishMessage(
+            topic = "/home/living-room/temperature",
+            payload = "24.2",
+            qos = 0,
+            isRetained = false
+        )
+        advanceUntilIdle()
+
+        fakeRepository.publishedMessages shouldHaveSize 1
+        val published = fakeRepository.publishedMessages[0]
+        published.topic shouldBe "home/living-room/temperature"
+
+        val node = component.state.value.rawTopicTree.findNode("home/living-room/temperature")
+        node.shouldNotBeNull()
+        node.lastMessage?.payloadString shouldBe "24.2"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `accumulating multiple messages under the same topic updates message count and last message`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        fakeRepository.emitMessage(MqttMessage("sensors/temp", "20.0".encodeToByteArray()))
+        fakeRepository.emitMessage(MqttMessage("sensors/temp", "21.5".encodeToByteArray()))
+        fakeRepository.emitMessage(MqttMessage("sensors/temp", "22.8".encodeToByteArray()))
+        advanceUntilIdle()
+
+        val node = component.state.value.rawTopicTree.findNode("sensors/temp")
+        node.shouldNotBeNull()
+        node.messageCount shouldBe 3
+        node.lastMessage?.payloadString shouldBe "22.8"
+
+        lifecycle.destroy()
+    }
+
+    @Test
     fun `disconnecting from repository triggers onDisconnect callback`() = runTest {
         var onDisconnectCalled = false
         val (component, lifecycle) = createComponent(this, onDisconnect = { onDisconnectCalled = true })
@@ -159,4 +243,3 @@ class WorkspaceComponentTest {
         lifecycle.destroy()
     }
 }
-
