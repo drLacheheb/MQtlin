@@ -27,7 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
@@ -60,7 +63,9 @@ fun ProfileListItem(
     )
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerHoverIcon(PointerIcon.Hand),
         shape = RoundedCornerShape(2.dp),
         color = if (isActive) MqtlinPrimary.copy(alpha = 0.10f) else Color.Transparent,
         border = if (isActive) BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.20f)) else null
@@ -93,7 +98,10 @@ fun ProfileListItem(
                     Text(
                         text = title,
                         style = if (isActive) UiLabelBold.copy(fontSize = 14.sp) else UiLabelReg.copy(fontSize = 14.sp),
-                        color = DarkOnSurface
+                        color = DarkOnSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false).padding(end = 4.dp)
                     )
 
                     if (badge != null) {
@@ -118,10 +126,11 @@ fun ProfileListItem(
 
                 Text(
                     text = subtitle,
-                    style = MonoTopic.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant.copy(alpha = 0.80f))
+                    style = MonoTopic.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant.copy(alpha = 0.80f)),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
     }
 }
-

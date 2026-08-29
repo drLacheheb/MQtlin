@@ -13,6 +13,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
@@ -43,7 +45,9 @@ fun MqtlinPrimaryButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(height),
+        modifier = modifier
+            .height(height)
+            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
         colors = ButtonDefaults.buttonColors(
@@ -82,7 +86,9 @@ fun MqtlinOutlinedButton(
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(height),
+        modifier = modifier
+            .height(height)
+            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         border = BorderStroke(1.dp, DarkBorder),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
@@ -114,7 +120,9 @@ fun MqtlinTextButton(
     TextButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(height),
+        modifier = modifier
+            .height(height)
+            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
         colors = ButtonDefaults.textButtonColors(
@@ -144,7 +152,9 @@ fun MqtlinDangerButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(height),
+        modifier = modifier
+            .height(height)
+            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
         colors = ButtonDefaults.buttonColors(

@@ -23,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
@@ -102,6 +104,7 @@ private fun WindowControlButton(
         modifier = Modifier
             .fillMaxHeight()
             .width(42.dp)
+            .pointerHoverIcon(PointerIcon.Hand)
             .background(if (isHovered) hoverBackground else Color.Transparent)
             .clickable(
                 interactionSource = interactionSource,
@@ -113,4 +116,3 @@ private fun WindowControlButton(
         content(isHovered)
     }
 }
-

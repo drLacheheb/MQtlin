@@ -8,7 +8,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -36,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,9 +44,7 @@ import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.model.TopicNode
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
-import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
-import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainer
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinOnPrimaryContainer
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimaryContainer
@@ -78,7 +77,8 @@ fun TopicTreeNodeItem(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 1.dp),
+                .padding(vertical = 1.dp)
+                .pointerHoverIcon(PointerIcon.Hand),
             shape = RoundedCornerShape(4.dp),
             color = if (isSelected) MqtlinPrimaryContainer else Color.Transparent
         ) {
@@ -103,6 +103,7 @@ fun TopicTreeNodeItem(
                         modifier = Modifier
                             .size(16.dp)
                             .rotate(chevronRotation)
+                            .pointerHoverIcon(PointerIcon.Hand)
                             .clickable { onToggleExpand(node.fullPath) }
                     )
                 } else {
@@ -165,7 +166,7 @@ fun TopicTreeNodeItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
+                .height(IntrinsicSize.Min)
                     .padding(start = 14.dp, top = 2.dp)
             ) {
                 // Vertical guide line

@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +29,7 @@ fun ProtocolPill(
     Surface(
         modifier = modifier
             .fillMaxHeight()
+            .pointerHoverIcon(PointerIcon.Hand)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(2.dp),
         color = if (isSelected) MqtlinPrimary.copy(alpha = 0.15f) else Color.Transparent,
@@ -42,4 +45,3 @@ fun ProtocolPill(
         }
     }
 }
-
