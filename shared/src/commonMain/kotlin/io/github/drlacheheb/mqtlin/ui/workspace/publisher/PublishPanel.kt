@@ -25,9 +25,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -85,7 +83,6 @@ fun PublishPanel(
     var payload by remember { mutableStateOf("{\n  \"device_id\": \"LR_TEMP_01\",\n  \"command\": \"CALIBRATE\",\n  \"value\": 1.5\n}") }
     var qos by remember { mutableStateOf(1) }
     var isRetained by remember { mutableStateOf(false) }
-    var isMqtt5Expanded by remember { mutableStateOf(false) }
     var showSuccessIndicator by remember { mutableStateOf(false) }
 
     // Synchronize topic when selectedTopic from tree changes
@@ -111,33 +108,6 @@ fun PublishPanel(
             .fillMaxHeight()
             .background(DarkSurfaceContainer)
     ) {
-        // Header: p-panel_padding border-b border-outline-variant flex items-center gap-2
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Send,
-                contentDescription = null,
-                tint = MqtlinPrimary,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Publish Message",
-                style = HeadlineSm.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkOnSurface)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkOutlineVariant)
-        )
-
         // Form Content: p-panel_padding flex flex-col gap-4
         Column(
             modifier = Modifier
@@ -177,6 +147,7 @@ fun PublishPanel(
                         fontWeight = FontWeight.Bold,
                         color = MqtlinPrimary,
                         modifier = Modifier
+                            .pointerHoverIcon(PointerIcon.Hand)
                             .clickable {
                                 payload = JsonUtils.format(payload)
                             }
@@ -273,6 +244,7 @@ fun PublishPanel(
                                 modifier = Modifier
                                     .weight(1f)
                                     .fillMaxHeight()
+                                    .pointerHoverIcon(PointerIcon.Hand)
                                     .clickable { qos = q }
                                     .background(if (isSelected) MqtlinPrimaryContainer else Color.Transparent),
                                 contentAlignment = Alignment.Center
@@ -301,6 +273,7 @@ fun PublishPanel(
                     Row(
                         modifier = Modifier
                             .height(32.dp)
+                            .pointerHoverIcon(PointerIcon.Hand)
                             .clickable { isRetained = !isRetained },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -330,48 +303,6 @@ fun PublishPanel(
                             color = if (isRetained) DarkOnSurface else DarkOnSurfaceVariant
                         )
                     }
-                }
-            }
-
-            // MQTT 5.0 Properties Accordion: border border-outline-variant rounded-lg bg-surface-dim
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isMqtt5Expanded = !isMqtt5Expanded },
-                shape = RoundedCornerShape(4.dp),
-                color = DarkSurfaceDim,
-                border = BorderStroke(1.dp, DarkOutlineVariant)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Tune,
-                            contentDescription = null,
-                            tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "MQTT 5.0 Properties",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkOnSurfaceVariant
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.ExpandMore,
-                        contentDescription = null,
-                        tint = DarkOutlineVariant,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .rotate(if (isMqtt5Expanded) 180f else 0f)
-                    )
                 }
             }
         }
@@ -418,7 +349,8 @@ fun PublishPanel(
                 enabled = !isPublishing && topic.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(36.dp),
+                    .height(36.dp)
+                    .pointerHoverIcon(if (!isPublishing && topic.isNotBlank()) PointerIcon.Hand else PointerIcon.Default),
                 shape = RoundedCornerShape(4.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (showSuccessIndicator) MqtlinSecondary else MqtlinInversePrimary,

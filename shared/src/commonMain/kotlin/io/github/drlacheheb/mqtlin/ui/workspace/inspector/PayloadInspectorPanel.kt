@@ -555,6 +555,7 @@ private fun TabItem(
         modifier = Modifier
             .fillMaxHeight()
             .width(IntrinsicSize.Max)
+            .pointerHoverIcon(PointerIcon.Hand)
             .clickable(onClick = onClick)
             .background(if (isSelected) DarkSurfaceContainerLow else Color.Transparent),
         verticalArrangement = Arrangement.Bottom
