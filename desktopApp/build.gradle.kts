@@ -23,9 +23,26 @@ compose.desktop {
         mainClass = "io.github.drlacheheb.mqtlin.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.drlacheheb.mqtlin"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
+            packageName = "Mqtlin"
             packageVersion = "1.0.0"
+            description = "Mqtlin - Modern MQTT Explorer & Broker Client"
+            copyright = "© 2026 Mqtlin"
+            vendor = "io.github.drlacheheb"
+
+            windows {
+                iconFile.set(project.file("src/main/resources/icons/icon.ico"))
+                menuGroup = "Mqtlin"
+                shortcut = true
+            }
+            macOS {
+                iconFile.set(project.file("src/main/resources/icons/icon.png"))
+                bundleID = "io.github.drlacheheb.mqtlin"
+            }
+            linux {
+                iconFile.set(project.file("src/main/resources/icons/icon.png"))
+                shortcut = true
+            }
         }
     }
 }
