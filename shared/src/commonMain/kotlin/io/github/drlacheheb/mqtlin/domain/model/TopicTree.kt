@@ -7,6 +7,8 @@ enum class FilterMode {
     RETAINED
 }
 
+const val MAX_HISTORY_PER_TOPIC = 50
+
 data class TopicTree(
     val rootNodes: List<TopicNode> = emptyList(),
     val totalTopicCount: Int = 0,
@@ -49,13 +51,19 @@ data class TopicTree(
             } else {
                 existingNode.children
             }
+            val newHistory = if (isLeaf) {
+                (listOf(message) + existingNode.history).take(MAX_HISTORY_PER_TOPIC)
+            } else {
+                existingNode.history
+            }
 
             existingNode.copy(
                 isLeaf = existingNode.isLeaf || isLeaf,
                 children = updatedChildren,
                 messageCount = existingNode.messageCount + 1,
                 lastMessage = if (isLeaf) message else existingNode.lastMessage,
-                lastUpdated = message.timestamp
+                lastUpdated = message.timestamp,
+                history = newHistory
             )
         } else {
             val children = if (!isLeaf) {
@@ -63,6 +71,7 @@ data class TopicTree(
             } else {
                 emptyList()
             }
+            val newHistory = if (isLeaf) listOf(message) else emptyList()
 
             TopicNode(
                 segment = segment,
@@ -72,7 +81,8 @@ data class TopicTree(
                 children = children,
                 messageCount = 1,
                 lastMessage = if (isLeaf) message else null,
-                lastUpdated = message.timestamp
+                lastUpdated = message.timestamp,
+                history = newHistory
             )
         }
 

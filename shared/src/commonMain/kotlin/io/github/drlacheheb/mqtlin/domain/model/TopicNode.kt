@@ -9,7 +9,8 @@ data class TopicNode(
     val messageCount: Long = 0,
     val messagesPerSec: Double = 0.0,
     val lastMessage: MqttMessage? = null,
-    val lastUpdated: Long = 0L
+    val lastUpdated: Long = 0L,
+    val history: List<MqttMessage> = emptyList()
 ) {
     fun findChild(segment: String): TopicNode? =
         children.find { it.segment == segment }
