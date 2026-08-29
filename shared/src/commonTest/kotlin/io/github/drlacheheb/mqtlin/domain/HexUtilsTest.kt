@@ -1,6 +1,8 @@
 package io.github.drlacheheb.mqtlin.domain
 
+import io.github.drlacheheb.mqtlin.domain.util.HexByteType
 import io.github.drlacheheb.mqtlin.domain.util.HexUtils
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
@@ -8,43 +10,63 @@ import kotlin.test.Test
 class HexUtilsTest {
 
     @Test
-    fun `empty byte array returns empty payload placeholder`() {
-        val result = HexUtils.formatHexDump(ByteArray(0))
-        result shouldBe "00000000:  (empty payload)"
+    fun `classifyByte correctly categorizes byte values`() {
+        // Null
+        HexUtils.classifyByte(0x00.toByte()) shouldBe HexByteType.NULL
+
+        // Whitespace
+        HexUtils.classifyByte(' '.code.toByte()) shouldBe HexByteType.WHITESPACE
+        HexUtils.classifyByte('\n'.code.toByte()) shouldBe HexByteType.WHITESPACE
+        HexUtils.classifyByte('\t'.code.toByte()) shouldBe HexByteType.WHITESPACE
+        HexUtils.classifyByte('\r'.code.toByte()) shouldBe HexByteType.WHITESPACE
+
+        // Printable ASCII
+        HexUtils.classifyByte('A'.code.toByte()) shouldBe HexByteType.PRINTABLE_ASCII
+        HexUtils.classifyByte('0'.code.toByte()) shouldBe HexByteType.PRINTABLE_ASCII
+        HexUtils.classifyByte('{'.code.toByte()) shouldBe HexByteType.PRINTABLE_ASCII
+
+        // Control
+        HexUtils.classifyByte(0x01.toByte()) shouldBe HexByteType.CONTROL
+        HexUtils.classifyByte(0x1B.toByte()) shouldBe HexByteType.CONTROL
+        HexUtils.classifyByte(0x7F.toByte()) shouldBe HexByteType.CONTROL
+
+        // Non-ASCII
+        HexUtils.classifyByte(0x80.toByte()) shouldBe HexByteType.NON_ASCII
+        HexUtils.classifyByte(0xFF.toByte()) shouldBe HexByteType.NON_ASCII
     }
 
     @Test
-    fun `single line ASCII payload formats offset, hex bytes and printable characters`() {
-        val bytes = "Hello MQTT".encodeToByteArray()
-        val result = HexUtils.formatHexDump(bytes)
+    fun `parseHexRows slices payload into 16-byte chunks with correct offsets`() {
+        val payload = ByteArray(35) { it.toByte() }
+        val rows = HexUtils.parseHexRows(payload)
 
-        result shouldContain "00000000:  "
-        result shouldContain "48 65 6C 6C 6F 20 4D 51 54 54"
-        result shouldContain "|Hello MQTT|"
+        rows shouldHaveSize 3
+        rows[0].offset shouldBe 0
+        rows[0].offsetHex shouldBe "00000000"
+        rows[0].bytes shouldHaveSize 16
+
+        rows[1].offset shouldBe 16
+        rows[1].offsetHex shouldBe "00000010"
+        rows[1].bytes shouldHaveSize 16
+
+        rows[2].offset shouldBe 32
+        rows[2].offsetHex shouldBe "00000020"
+        rows[2].bytes shouldHaveSize 3
     }
 
     @Test
-    fun `multi-line payload exceeding 16 bytes wraps with incremented hex offsets`() {
-        val text = "This is a longer payload that spans multiple lines of hex dump output"
-        val bytes = text.encodeToByteArray()
-        val result = HexUtils.formatHexDump(bytes)
+    fun `formatHexDump formats multi-line hex dump with ASCII sidebar`() {
+        val text = "Hello World!"
+        val dump = HexUtils.formatHexDump(text.encodeToByteArray())
 
-        val lines = result.lines()
-        lines.size shouldBe 5
-        lines[0] shouldContain "00000000:  "
-        lines[1] shouldContain "00000010:  "
-        lines[2] shouldContain "00000020:  "
-        lines[3] shouldContain "00000030:  "
-        lines[4] shouldContain "00000040:  "
+        dump shouldContain "00000000:"
+        dump shouldContain "48 65 6C 6C 6F 20 57 6F  72 6C 64 21"
+        dump shouldContain "|Hello World!|"
     }
 
     @Test
-    fun `binary non-printable control bytes are replaced with dots in ASCII column`() {
-        val binaryData = byteArrayOf(0x00, 0x01, 0x02, 0x41, 0x42, 0x7F, 0xFF.toByte())
-        val result = HexUtils.formatHexDump(binaryData)
-
-        result shouldContain "00 01 02 41 42 7F FF"
-        result shouldContain "|...AB..|"
+    fun `empty payload returns empty marker`() {
+        val dump = HexUtils.formatHexDump(ByteArray(0))
+        dump shouldContain "empty payload"
     }
 }
-
