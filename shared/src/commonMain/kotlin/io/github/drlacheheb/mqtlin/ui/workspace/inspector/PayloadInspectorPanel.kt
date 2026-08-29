@@ -393,17 +393,12 @@ fun PayloadInspectorPanel(
                     }
                 }
                 InspectorTab.CHART -> {
-                    Box(
+                    TopicChartView(
+                        history = historyList,
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Real-time topic chart visualization",
-                            style = MonoCode.copy(fontSize = 13.sp, color = DarkOnSurfaceVariant)
-                        )
-                    }
+                            .fillMaxWidth()
+                    )
                 }
             }
 

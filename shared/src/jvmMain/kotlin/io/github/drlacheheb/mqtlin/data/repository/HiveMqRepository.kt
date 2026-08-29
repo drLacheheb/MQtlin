@@ -14,6 +14,7 @@ import io.github.drlacheheb.mqtlin.domain.model.MqttProtocolVersion
 import io.github.drlacheheb.mqtlin.domain.model.TransportProtocol
 import io.github.drlacheheb.mqtlin.domain.repository.MqttRepository
 import io.github.drlacheheb.mqtlin.domain.util.MqttErrorMapper
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -27,7 +28,10 @@ class HiveMqRepository : MqttRepository {
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     override val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val _incomingMessages = MutableSharedFlow<MqttMessage>(extraBufferCapacity = 512)
+    private val _incomingMessages = MutableSharedFlow<MqttMessage>(
+        extraBufferCapacity = 1024,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     override val incomingMessages: SharedFlow<MqttMessage> = _incomingMessages.asSharedFlow()
 
     private var mqtt5Client: Mqtt5AsyncClient? = null
