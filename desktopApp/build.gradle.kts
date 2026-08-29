@@ -24,15 +24,15 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
-            packageName = "Mqtlin"
+            packageName = "MQtlin"
             packageVersion = "1.0.0"
-            description = "Mqtlin - Modern MQTT Explorer & Broker Client"
-            copyright = "© 2026 Mqtlin"
+            description = "MQtlin - Modern MQTT Explorer & Broker Client"
+            copyright = "© 2026 MQtlin"
             vendor = "io.github.drlacheheb"
 
             windows {
                 iconFile.set(project.file("src/main/resources/icons/icon.ico"))
-                menuGroup = "Mqtlin"
+                menuGroup = "MQtlin"
                 shortcut = true
             }
             macOS {

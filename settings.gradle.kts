@@ -1,4 +1,4 @@
-rootProject.name = "Mqtlin"
+rootProject.name = "MQtlin"
 
 pluginManagement {
     repositories {

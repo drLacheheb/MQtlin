@@ -50,7 +50,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         state = windowState,
-        title = "Mqtlin",
+        title = "MQtlin",
         icon = painterResource("icons/icon.png"),
         undecorated = true,
         resizable = true
