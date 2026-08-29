@@ -11,6 +11,7 @@ import io.github.drlacheheb.mqtlin.domain.usecase.ValidateConnectionConfigUseCas
 import io.github.drlacheheb.mqtlin.domain.usecase.ValidationResult
 import io.github.drlacheheb.mqtlin.fakes.FakeMqttRepository
 import io.github.drlacheheb.mqtlin.ui.connection.DefaultConnectionComponent
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
@@ -72,6 +73,19 @@ class ConnectionComponentTest {
         component.onNameChanged("Production Cluster")
 
         component.state.value.name shouldBe "Production Cluster"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `changing profile name with string exceeding max length clamps to MAX_PROFILE_NAME_LENGTH`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        val longName = "A".repeat(100)
+        component.onNameChanged(longName)
+
+        component.state.value.name.length shouldBe 32
+        component.state.value.name shouldBe "A".repeat(32)
 
         lifecycle.destroy()
     }
@@ -261,6 +275,154 @@ class ConnectionComponentTest {
         advanceUntilIdle()
 
         component.state.value.connectionState shouldBe ConnectionState.Disconnected
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `testing connection successfully sets success message without calling onConnected callback`() = runTest {
+        var onConnectedCalled = false
+        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+
+        component.onTestConnectionClicked()
+        advanceUntilIdle()
+
+        onConnectedCalled shouldBe false
+        component.state.value.testSuccessMessage shouldBe "Successfully connected to 127.0.0.1:1883!"
+        component.state.value.isTesting shouldBe false
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `testing connection with broker failure sets error state without calling onConnected callback`() = runTest {
+        var onConnectedCalled = false
+        fakeRepository.shouldFailConnection = true
+        fakeRepository.failureErrorMessage = "Connection Refused"
+
+        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+
+        component.onTestConnectionClicked()
+        advanceUntilIdle()
+
+        onConnectedCalled shouldBe false
+        component.state.value.testSuccessMessage shouldBe null
+        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
+        val error = component.state.value.connectionState as ConnectionState.Error
+        error.message shouldBe "Connection Refused"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `clicking new profile resets state to defaults with new random client ID`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        component.onNameChanged("Custom Profile")
+        component.onHostChanged("192.168.1.50")
+        component.onPortChanged("8883")
+
+        component.onNewProfileClicked()
+
+        val state = component.state.value
+        state.name shouldBe "New Connection"
+        state.host shouldBe "127.0.0.1"
+        state.portText shouldBe "1883"
+        state.clientId shouldStartWith "mqtlin_client_"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `selecting a saved profile populates all form fields from profile`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+        val testProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Staging Cluster",
+            host = "staging.emqx.io",
+            port = 8883,
+            clientId = "staging_client_1",
+            protocolVersion = MqttProtocolVersion.MQTT_3_1_1,
+            transport = TransportProtocol.TLS,
+            username = "stage_user",
+            password = "stage_password"
+        )
+
+        component.onProfileSelected(testProfile)
+
+        val state = component.state.value
+        state.name shouldBe "Staging Cluster"
+        state.host shouldBe "staging.emqx.io"
+        state.portText shouldBe "8883"
+        state.clientId shouldBe "staging_client_1"
+        state.protocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
+        state.transport shouldBe TransportProtocol.TLS
+        state.username shouldBe "stage_user"
+        state.password shouldBe "stage_password"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `connecting saves the profile into savedProfiles list`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+        component.onNameChanged("Production Server")
+        component.onHostChanged("mqtt.example.com")
+        component.onPortChanged("1883")
+
+        component.onConnectClicked()
+        advanceUntilIdle()
+
+        component.state.value.savedProfiles.size shouldBe 1
+        val saved = component.state.value.savedProfiles[0]
+        saved.name shouldBe "Production Server"
+        saved.host shouldBe "mqtt.example.com"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `deleting a saved profile removes it from savedProfiles list`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+        val profile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Temp Profile",
+            host = "10.0.0.1",
+            port = 1883
+        )
+
+        component.onNameChanged(profile.name)
+        component.onHostChanged(profile.host)
+        component.onConnectClicked()
+        advanceUntilIdle()
+
+        component.state.value.savedProfiles.size shouldBe 1
+
+        component.onDeleteProfileClicked(profile)
+
+        component.state.value.savedProfiles.shouldBeEmpty()
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `opening connection component when repository is already connected does not auto trigger onConnected`() = runTest {
+        var onConnectedCalled = false
+        // Simulate repository already connected from a previous workspace session
+        fakeRepository.setConnected(
+            io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                name = "Active Mosquitto",
+                host = "127.0.0.1",
+                port = 1883,
+                clientId = "active_client",
+                protocolVersion = MqttProtocolVersion.MQTT_5_0
+            )
+        )
+
+        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+        advanceUntilIdle()
+
+        // onConnected must NOT be called without explicit user action
+        onConnectedCalled shouldBe false
+        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
 
         lifecycle.destroy()
     }

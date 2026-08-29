@@ -33,8 +33,12 @@ fun ConnectionDialog(
                 modifier = Modifier
                     .width(280.dp)
                     .fillMaxHeight(),
+                profiles = state.savedProfiles,
+                searchQuery = state.profileSearchQuery,
                 activeName = state.name,
-                onProfileSelected = { component.onNameChanged(it) }
+                onSearchQueryChanged = component::onProfileSearchQueryChanged,
+                onProfileSelected = component::onProfileSelected,
+                onNewProfileClicked = component::onNewProfileClicked
             )
 
             // Vertical Divider border-[#27272a]

@@ -13,6 +13,7 @@ import io.github.drlacheheb.mqtlin.domain.model.MqttMessage
 import io.github.drlacheheb.mqtlin.domain.model.MqttProtocolVersion
 import io.github.drlacheheb.mqtlin.domain.model.TransportProtocol
 import io.github.drlacheheb.mqtlin.domain.repository.MqttRepository
+import io.github.drlacheheb.mqtlin.domain.util.MqttErrorMapper
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -32,10 +33,20 @@ class HiveMqRepository : MqttRepository {
     private var mqtt5Client: Mqtt5AsyncClient? = null
     private var mqtt3Client: Mqtt3AsyncClient? = null
     private var currentConfig: ConnectionConfig? = null
+    private var isIntentionalDisconnect = false
 
     override suspend fun connect(config: ConnectionConfig) {
         _connectionState.value = ConnectionState.Connecting(config.host, config.port)
         currentConfig = config
+
+        // Clean up any existing connection before initiating a new one
+        if (mqtt5Client?.state?.isConnected == true || mqtt3Client?.state?.isConnected == true) {
+            isIntentionalDisconnect = true
+            try {
+                disconnect()
+            } catch (_: Exception) {}
+        }
+        isIntentionalDisconnect = false
 
         try {
             when (config.protocolVersion) {
@@ -44,7 +55,7 @@ class HiveMqRepository : MqttRepository {
             }
         } catch (e: Exception) {
             _connectionState.value = ConnectionState.Error(
-                message = e.message ?: "Failed to connect to broker at ${config.host}:${config.port}",
+                message = MqttErrorMapper.mapConnectionError(e, config.host, config.port),
                 cause = e
             )
         }
@@ -65,11 +76,15 @@ class HiveMqRepository : MqttRepository {
                 )
             }
             .addDisconnectedListener { context ->
-                if (_connectionState.value !is ConnectionState.Disconnected) {
+                if (!isIntentionalDisconnect && _connectionState.value !is ConnectionState.Disconnected) {
                     val cause = context.cause
-                    if (cause != null) {
+                    val isNormalClose = cause == null ||
+                        cause.message?.contains("Session expired as connection was closed", ignoreCase = true) == true ||
+                        cause.message?.contains("closed", ignoreCase = true) == true
+
+                    if (!isNormalClose && cause != null) {
                         _connectionState.value = ConnectionState.Error(
-                            message = cause.message ?: "Disconnected unexpectedly",
+                            message = MqttErrorMapper.mapConnectionError(cause, config.host, config.port),
                             cause = cause
                         )
                     } else {
@@ -125,7 +140,7 @@ class HiveMqRepository : MqttRepository {
         val connAck: Mqtt5ConnAck = client.connect(connectBuilder.build()).await()
         if (connAck.reasonCode.isError) {
             _connectionState.value = ConnectionState.Error(
-                message = "Broker rejected connection: ${connAck.reasonCode}",
+                message = MqttErrorMapper.mapConnectionError(Exception("Broker rejected: ${connAck.reasonCode}"), config.host, config.port),
                 cause = null
             )
         } else {
@@ -135,7 +150,12 @@ class HiveMqRepository : MqttRepository {
                 clientId = config.clientId,
                 protocolVersion = config.protocolVersion
             )
-            subscribe("#", 0)
+            try {
+                subscribe("#", 0)
+            } catch (subEx: Exception) {
+                // If the broker rejects '#' via ACL in SUBACK, we keep the connection active
+                println("Notice: Default '#' subscription rejected by broker ACL: ${subEx.message}")
+            }
         }
     }
 
@@ -154,11 +174,15 @@ class HiveMqRepository : MqttRepository {
                 )
             }
             .addDisconnectedListener { context ->
-                if (_connectionState.value !is ConnectionState.Disconnected) {
+                if (!isIntentionalDisconnect && _connectionState.value !is ConnectionState.Disconnected) {
                     val cause = context.cause
-                    if (cause != null) {
+                    val isNormalClose = cause == null ||
+                        cause.message?.contains("Session expired as connection was closed", ignoreCase = true) == true ||
+                        cause.message?.contains("closed", ignoreCase = true) == true
+
+                    if (!isNormalClose && cause != null) {
                         _connectionState.value = ConnectionState.Error(
-                            message = cause.message ?: "Disconnected unexpectedly",
+                            message = MqttErrorMapper.mapConnectionError(cause, config.host, config.port),
                             cause = cause
                         )
                     } else {
@@ -207,7 +231,7 @@ class HiveMqRepository : MqttRepository {
         val connAck: Mqtt3ConnAck = client.connect(connectBuilder.build()).await()
         if (connAck.returnCode.isError) {
             _connectionState.value = ConnectionState.Error(
-                message = "Broker rejected connection: ${connAck.returnCode}",
+                message = MqttErrorMapper.mapConnectionError(Exception("Broker rejected: ${connAck.returnCode}"), config.host, config.port),
                 cause = null
             )
         } else {
@@ -217,7 +241,12 @@ class HiveMqRepository : MqttRepository {
                 clientId = config.clientId,
                 protocolVersion = config.protocolVersion
             )
-            subscribe("#", 0)
+            try {
+                subscribe("#", 0)
+            } catch (subEx: Exception) {
+                // If the broker rejects '#' via ACL in SUBACK, we keep the connection active
+                println("Notice: Default '#' subscription rejected by broker ACL: ${subEx.message}")
+            }
         }
     }
 
@@ -278,32 +307,36 @@ class HiveMqRepository : MqttRepository {
             else -> MqttQos.AT_MOST_ONCE
         }
 
-        mqtt5Client?.let { client ->
-            val publishBuilder = client.publishWith()
-                .topic(topic)
-                .payload(payload)
-                .qos(mqttQos)
-                .retain(isRetained)
+        try {
+            mqtt5Client?.let { client ->
+                val publishBuilder = client.publishWith()
+                    .topic(topic)
+                    .payload(payload)
+                    .qos(mqttQos)
+                    .retain(isRetained)
 
-            if (userProperties.isNotEmpty()) {
-                val propsBuilder = com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties.builder()
-                userProperties.forEach { (key, value) ->
-                    propsBuilder.add(key, value)
+                if (userProperties.isNotEmpty()) {
+                    val propsBuilder = com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties.builder()
+                    userProperties.forEach { (key, value) ->
+                        propsBuilder.add(key, value)
+                    }
+                    publishBuilder.userProperties(propsBuilder.build())
                 }
-                publishBuilder.userProperties(propsBuilder.build())
+
+                publishBuilder.send().await()
             }
 
-            publishBuilder.send().await()
-        }
-
-        mqtt3Client?.let { client ->
-            client.publishWith()
-                .topic(topic)
-                .payload(payload)
-                .qos(mqttQos)
-                .retain(isRetained)
-                .send()
-                .await()
+            mqtt3Client?.let { client ->
+                client.publishWith()
+                    .topic(topic)
+                    .payload(payload)
+                    .qos(mqttQos)
+                    .retain(isRetained)
+                    .send()
+                    .await()
+            }
+        } catch (e: Exception) {
+            throw Exception(MqttErrorMapper.mapPublishError(e, topic), e)
         }
 
         // Optimistically update local message stream
@@ -320,6 +353,7 @@ class HiveMqRepository : MqttRepository {
     }
 
     override suspend fun disconnect() {
+        isIntentionalDisconnect = true
         try {
             mqtt5Client?.disconnect()?.await()
             mqtt3Client?.disconnect()?.await()
@@ -328,6 +362,7 @@ class HiveMqRepository : MqttRepository {
         } finally {
             mqtt5Client = null
             mqtt3Client = null
+            isIntentionalDisconnect = false
             _connectionState.value = ConnectionState.Disconnected
         }
     }

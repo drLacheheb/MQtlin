@@ -138,7 +138,8 @@ class DefaultWorkspaceComponent(
                 )
                 _state.update { it.copy(isPublishing = false, publishError = null) }
             } catch (e: Exception) {
-                _state.update { it.copy(isPublishing = false, publishError = e.message ?: "Failed to publish message") }
+                val userFriendlyMessage = io.github.drlacheheb.mqtlin.domain.util.MqttErrorMapper.mapPublishError(e, cleanTopic)
+                _state.update { it.copy(isPublishing = false, publishError = userFriendlyMessage) }
             }
         }
     }

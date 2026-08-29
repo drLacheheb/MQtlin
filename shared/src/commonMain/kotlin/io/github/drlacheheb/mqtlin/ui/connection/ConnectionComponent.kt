@@ -1,10 +1,13 @@
 package io.github.drlacheheb.mqtlin.ui.connection
 
 import com.arkivanov.decompose.value.Value
+import io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig
 import io.github.drlacheheb.mqtlin.domain.model.ConnectionState
 import io.github.drlacheheb.mqtlin.domain.model.MqttProtocolVersion
 import io.github.drlacheheb.mqtlin.domain.model.TransportProtocol
 import io.github.drlacheheb.mqtlin.domain.usecase.ValidationResult
+
+const val MAX_PROFILE_NAME_LENGTH = 32
 
 data class ConnectionUiState(
     val name: String = "Local Mosquitto",
@@ -17,7 +20,10 @@ data class ConnectionUiState(
     val password: String = "",
     val connectionState: ConnectionState = ConnectionState.Disconnected,
     val validationErrors: Map<ValidationResult.Field, String> = emptyMap(),
-    val isTesting: Boolean = false
+    val isTesting: Boolean = false,
+    val testSuccessMessage: String? = null,
+    val savedProfiles: List<ConnectionConfig> = emptyList(),
+    val profileSearchQuery: String = ""
 )
 
 interface ConnectionComponent {
@@ -32,6 +38,11 @@ interface ConnectionComponent {
     fun onUsernameChanged(username: String)
     fun onPasswordChanged(password: String)
     fun onGenerateRandomClientId()
+    fun onNewProfileClicked()
+    fun onProfileSelected(profile: ConnectionConfig)
+    fun onDeleteProfileClicked(profile: ConnectionConfig)
+    fun onProfileSearchQueryChanged(query: String)
+    fun onTestConnectionClicked()
     fun onConnectClicked()
     fun onDisconnectClicked()
     fun onDismissError()
