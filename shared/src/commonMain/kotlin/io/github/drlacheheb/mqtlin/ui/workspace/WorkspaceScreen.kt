@@ -1,6 +1,7 @@
 package io.github.drlacheheb.mqtlin.ui.workspace
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
@@ -36,7 +39,6 @@ fun WorkspaceScreen(
         // 1. Top Navigation Bar (56dp)
         TopNavBar(
             config = state.connectionConfig,
-            latencyMs = state.latencyMs,
             onOpenConnectionManager = component::onOpenConnectionManagerClicked
         )
 

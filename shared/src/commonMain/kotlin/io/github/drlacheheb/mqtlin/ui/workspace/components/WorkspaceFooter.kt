@@ -53,14 +53,14 @@ fun WorkspaceFooter(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(32.dp),
+            .height(28.dp),
         color = DarkSurfaceContainerLowest,
         border = BorderStroke(1.dp, DarkOutlineVariant)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -77,7 +77,7 @@ fun WorkspaceFooter(
                 Box(
                     modifier = Modifier
                         .width(1.dp)
-                        .height(14.dp)
+                        .height(12.dp)
                         .background(DarkOutlineVariant)
                 )
 
