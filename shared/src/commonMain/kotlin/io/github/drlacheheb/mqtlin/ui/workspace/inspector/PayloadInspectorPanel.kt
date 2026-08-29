@@ -74,6 +74,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.SyntaxPunctuation
 import io.github.drlacheheb.mqtlin.ui.theme.SyntaxString
 import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 import io.github.drlacheheb.mqtlin.ui.theme.UiLabelReg
+import io.github.drlacheheb.mqtlin.ui.util.highlightJson
 
 enum class InspectorTab { JSON, RAW, HEX, CHART }
 
@@ -307,7 +308,7 @@ fun PayloadInspectorPanel(
                 ) {
                     if (activeTab == InspectorTab.JSON) {
                         Text(
-                            text = buildHighlightedJson(displayText),
+                            text = highlightJson(displayText),
                             style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp)
                         )
                     } else {
@@ -474,58 +475,4 @@ private fun formatTimestamp(epochMs: Long): String {
     val secs = seconds % 60
     val millis = epochMs % 1000
     return "${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${millis.toString().padStart(3, '0')}"
-}
-
-private fun buildHighlightedJson(text: String): androidx.compose.ui.text.AnnotatedString {
-    return buildAnnotatedString {
-        var cursor = 0
-        val len = text.length
-
-        while (cursor < len) {
-            val ch = text[cursor]
-
-            if (ch == '"') {
-                val start = cursor
-                cursor++
-                while (cursor < len && text[cursor] != '"') {
-                    if (text[cursor] == '\\' && cursor + 1 < len) cursor++
-                    cursor++
-                }
-                if (cursor < len) cursor++ // consume closing quote
-                val strVal = text.substring(start, cursor)
-
-                // Check if key (followed by colon)
-                var lookAhead = cursor
-                while (lookAhead < len && text[lookAhead].isWhitespace()) lookAhead++
-                val isKey = lookAhead < len && text[lookAhead] == ':'
-
-                withStyle(SpanStyle(color = if (isKey) SyntaxKey else SyntaxString)) {
-                    append(strVal)
-                }
-            } else if (ch in "{}[],:") {
-                withStyle(SpanStyle(color = SyntaxPunctuation)) {
-                    append(ch)
-                }
-                cursor++
-            } else if (ch.isDigit() || ch == '-' || text.startsWith("true", cursor) || text.startsWith("false", cursor) || text.startsWith("null", cursor)) {
-                val start = cursor
-                if (text.startsWith("true", cursor)) {
-                    cursor += 4
-                } else if (text.startsWith("false", cursor)) {
-                    cursor += 5
-                } else if (text.startsWith("null", cursor)) {
-                    cursor += 4
-                } else {
-                    while (cursor < len && (text[cursor].isDigit() || text[cursor] in ".eE+-")) cursor++
-                }
-                val numVal = text.substring(start, cursor)
-                withStyle(SpanStyle(color = SyntaxNumber)) {
-                    append(numVal)
-                }
-            } else {
-                append(ch)
-                cursor++
-            }
-        }
-    }
 }

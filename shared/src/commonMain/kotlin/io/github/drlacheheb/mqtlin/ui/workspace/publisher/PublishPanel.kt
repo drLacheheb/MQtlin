@@ -45,6 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.util.JsonUtils
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinTextField
+import io.github.drlacheheb.mqtlin.ui.util.JsonVisualTransformation
 import io.github.drlacheheb.mqtlin.ui.theme.DarkBackground
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
@@ -205,8 +208,11 @@ fun PublishPanel(
                                 color = DarkOnSurface,
                                 lineHeight = 18.sp
                             ),
+                            visualTransformation = remember { JsonVisualTransformation() },
                             cursorBrush = SolidColor(MqtlinPrimary),
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerHoverIcon(PointerIcon.Text)
                         )
                     }
 
