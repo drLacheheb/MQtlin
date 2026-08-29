@@ -4,7 +4,7 @@ data class TopicNode(
     val segment: String,
     val fullPath: String,
     val isLeaf: Boolean,
-    val isExpanded: Boolean = true,
+    val isExpanded: Boolean = false,
     val children: List<TopicNode> = emptyList(),
     val messageCount: Long = 0,
     val messagesPerSec: Double = 0.0,

@@ -107,13 +107,13 @@ class TopicTreeTest {
 
         val homeNode = tree.findNode("home")
         homeNode.shouldNotBeNull()
-        homeNode.isExpanded shouldBe true
-
-        tree = tree.toggleExpanded("home")
-        tree.findNode("home")?.isExpanded shouldBe false
+        homeNode.isExpanded shouldBe false
 
         tree = tree.toggleExpanded("home")
         tree.findNode("home")?.isExpanded shouldBe true
+
+        tree = tree.toggleExpanded("home")
+        tree.findNode("home")?.isExpanded shouldBe false
     }
 
     @Test

@@ -48,17 +48,15 @@ fun WorkspaceScreen(
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            // Left Column: Topic Tree (340dp)
+            // Left Column: Topic Tree (250dp compact sidebar)
             TopicTreePanel(
                 topicTree = state.filteredTopicTree,
                 selectedTopicPath = state.selectedTopicPath,
                 filterQuery = state.filterQuery,
-                filterMode = state.filterMode,
                 onTopicSelected = component::onTopicSelected,
                 onToggleExpand = component::onToggleExpand,
                 onFilterQueryChanged = component::onFilterQueryChanged,
-                onFilterModeChanged = component::onFilterModeChanged,
-                modifier = Modifier.width(340.dp)
+                modifier = Modifier.width(250.dp)
             )
 
             // Divider

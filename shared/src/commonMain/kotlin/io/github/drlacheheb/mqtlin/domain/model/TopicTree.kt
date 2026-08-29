@@ -77,7 +77,7 @@ data class TopicTree(
                 segment = segment,
                 fullPath = fullPath,
                 isLeaf = isLeaf,
-                isExpanded = true,
+                isExpanded = false,
                 children = children,
                 messageCount = 1,
                 lastMessage = if (isLeaf) message else null,

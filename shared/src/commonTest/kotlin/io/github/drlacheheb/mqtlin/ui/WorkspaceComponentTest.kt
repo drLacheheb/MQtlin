@@ -119,7 +119,12 @@ class WorkspaceComponentTest {
         advanceUntilIdle()
 
         val initialNode = component.state.value.rawTopicTree.findNode("home")
-        initialNode?.isExpanded shouldBe true
+        initialNode?.isExpanded shouldBe false
+
+        component.onToggleExpand("home")
+
+        val expandedNode = component.state.value.rawTopicTree.findNode("home")
+        expandedNode?.isExpanded shouldBe true
 
         component.onToggleExpand("home")
 

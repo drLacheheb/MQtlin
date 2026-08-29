@@ -8,6 +8,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -22,10 +23,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.Icon
+import io.github.drlacheheb.mqtlin.ui.components.MqtlinSymbols
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,11 +45,13 @@ import androidx.compose.ui.unit.sp
 import io.github.drlacheheb.mqtlin.domain.model.TopicNode
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
+import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinOnPrimaryContainer
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimaryContainer
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinSecondary
+import io.github.drlacheheb.mqtlin.ui.theme.MqtlinTertiary
 
 @Composable
 fun TopicTreeNodeItem(
@@ -60,7 +63,7 @@ fun TopicTreeNodeItem(
 ) {
     val isSelected = selectedTopicPath == node.fullPath
     val isDirectory = !node.isLeaf || node.children.isNotEmpty()
-    val chevronRotation by animateFloatAsState(targetValue = if (node.isExpanded) 90f else 0f)
+    val arrowRotation by animateFloatAsState(targetValue = if (node.isExpanded) 0f else -90f)
 
     val infiniteTransition = rememberInfiniteTransition()
     val pulseScale by infiniteTransition.animateFloat(
@@ -73,14 +76,13 @@ fun TopicTreeNodeItem(
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Node Row: px-2 py-1.5 rounded-lg cursor-pointer hover:bg-surface-variant transition-colors
+        // Tree Node Row
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 1.dp)
                 .pointerHoverIcon(PointerIcon.Hand),
-            shape = RoundedCornerShape(4.dp),
-            color = if (isSelected) MqtlinPrimaryContainer else Color.Transparent
+            shape = RoundedCornerShape(2.dp),
+            color = if (isSelected) MqtlinTertiary.copy(alpha = 0.08f) else Color.Transparent
         ) {
             Row(
                 modifier = Modifier
@@ -91,97 +93,116 @@ fun TopicTreeNodeItem(
                             onToggleExpand(node.fullPath)
                         }
                     }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Chevron slot: exactly 16dp
+                // Expander arrow for directories
                 if (isDirectory) {
                     Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = "Expand",
-                        tint = if (isSelected) MqtlinOnPrimaryContainer else DarkOutlineVariant,
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = "Expand/Collapse",
+                        tint = if (isSelected) MqtlinTertiary else DarkOutlineVariant,
                         modifier = Modifier
                             .size(16.dp)
-                            .rotate(chevronRotation)
+                            .rotate(arrowRotation)
                             .pointerHoverIcon(PointerIcon.Hand)
                             .clickable { onToggleExpand(node.fullPath) }
                     )
-                } else {
-                    Box(modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
                 }
 
-                Spacer(modifier = Modifier.width(4.dp))
-
-                // Icon (Folder: text-primary-fixed-dim #C0C1FF, Tag: text-outline-variant #464554 / text-on-primary-container #0D0096)
+                // Folder / Topic Icon
                 if (isDirectory) {
+                    val folderIcon = if (node.isExpanded) MqtlinSymbols.FolderOpen else MqtlinSymbols.Folder
+                    val folderTint = if (node.isExpanded || isSelected) {
+                        MqtlinTertiary // Amber #FFB95F for open folders & selected
+                    } else {
+                        MqtlinPrimary // Lavender #C0C1FF for closed folders
+                    }
+
                     Icon(
-                        imageVector = Icons.Default.Folder,
+                        imageVector = folderIcon,
                         contentDescription = "Directory",
-                        tint = if (isSelected) MqtlinOnPrimaryContainer else MqtlinPrimary,
+                        tint = folderTint,
                         modifier = Modifier.size(16.dp)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Tag,
                         contentDescription = "Topic",
-                        tint = if (isSelected) MqtlinOnPrimaryContainer else DarkOutlineVariant,
-                        modifier = Modifier.size(16.dp)
+                        tint = if (isSelected) MqtlinTertiary else DarkOutlineVariant,
+                        modifier = Modifier.size(14.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(4.dp))
 
-                // Node segment name: font-mono-topic text-mono-topic
+                // Node segment name (Highlighted with #FFB95F amber when selected)
                 val textColor = if (isSelected) {
-                    MqtlinOnPrimaryContainer
-                } else if (isDirectory) {
+                    MqtlinTertiary // Amber #FFB95F for selected topic
+                } else if (isDirectory && node.isExpanded) {
                     DarkOnSurface
                 } else {
                     DarkOnSurfaceVariant
                 }
 
                 Text(
-                    text = if (isDirectory) "${node.segment}/" else node.segment,
+                    text = node.segment,
                     fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                     color = textColor,
                     modifier = Modifier.weight(1f)
                 )
 
-                // Trailing: Green pulse dot on activity (HTML lines 269 & 280)
-                if (System.currentTimeMillis() - node.lastUpdated < 5000) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .scale(pulseScale)
-                            .background(MqtlinSecondary, CircleShape)
-                    )
+                // Trailing: Live green pulse dot and message counter badge
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (System.currentTimeMillis() - node.lastUpdated < 5000) {
+                        Box(
+                            modifier = Modifier
+                                .size(5.dp)
+                                .scale(pulseScale)
+                                .background(MqtlinSecondary, CircleShape)
+                        )
+                    }
+
+                    if (node.messageCount > 0) {
+                        Text(
+                            text = if (node.messageCount >= 1000) "${node.messageCount / 1000}k" else "${node.messageCount}",
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) MqtlinTertiary.copy(alpha = 0.85f) else DarkOutline.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             }
         }
 
-        // Nested Children with vertical guide line: pl-6 border-l border-outline-variant/30 ml-3 flex flex-col mt-1
+        // Nested Children with vertical guide line (Indentation pl-4: 16.dp)
         if (isDirectory && node.isExpanded && node.children.isNotEmpty()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                    .padding(start = 14.dp, top = 2.dp)
+                    .height(IntrinsicSize.Min)
+                    .padding(start = 10.dp)
             ) {
-                // Vertical guide line
+                // Vertical branch line
                 Box(
                     modifier = Modifier
                         .width(1.dp)
                         .fillMaxHeight()
-                        .background(DarkOutlineVariant.copy(alpha = 0.35f))
+                        .background(DarkOutlineVariant.copy(alpha = 0.25f))
                 )
 
-                // Children Column indented
+                // Indented Children Column
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 10.dp)
+                        .padding(start = 6.dp)
                 ) {
                     node.children.forEach { child ->
                         TopicTreeNodeItem(
