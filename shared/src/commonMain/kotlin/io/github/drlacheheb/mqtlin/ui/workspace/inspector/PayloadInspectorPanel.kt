@@ -21,14 +21,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DataObject
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -41,6 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -76,7 +80,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 import io.github.drlacheheb.mqtlin.ui.theme.UiLabelReg
 import io.github.drlacheheb.mqtlin.ui.util.highlightJson
 
-enum class InspectorTab { JSON, RAW, HEX, CHART }
+enum class InspectorTab { JSON, HEX, DIFF, CHART }
 
 @Composable
 fun PayloadInspectorPanel(
@@ -84,11 +88,13 @@ fun PayloadInspectorPanel(
     modifier: Modifier = Modifier
 ) {
     var activeTab by remember { mutableStateOf(InspectorTab.JSON) }
+    var selectedHistoryIndex by remember(selectedNode?.fullPath) { mutableStateOf(0) }
+    var autoScrollToLatest by remember { mutableStateOf(true) }
 
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .background(DarkSurfaceContainerLowest) // HTML line 302: bg-surface-container-lowest (#0E0E11)
+            .background(DarkSurfaceContainerLowest)
     ) {
         if (selectedNode == null) {
             Box(
@@ -113,19 +119,31 @@ fun PayloadInspectorPanel(
                 }
             }
         } else {
-            val message = selectedNode.lastMessage
-            val rawPayloadText = message?.payloadString ?: ""
-            val formattedJsonText = remember(rawPayloadText) { JsonUtils.format(rawPayloadText) }
+            val historyList = selectedNode.history.ifEmpty {
+                selectedNode.lastMessage?.let { listOf(it) } ?: emptyList()
+            }
+
+            // If auto-scroll is enabled, keep viewing the latest message
+            val effectiveIndex = if (autoScrollToLatest) 0 else selectedHistoryIndex.coerceIn(0, (historyList.size - 1).coerceAtLeast(0))
+            val currentMessage = historyList.getOrNull(effectiveIndex) ?: selectedNode.lastMessage
+            val previousMessage = historyList.getOrNull(effectiveIndex + 1)
+            val isViewingHistoricalMessage = effectiveIndex > 0
+
+            val rawPayloadText = currentMessage?.payloadString ?: ""
+            val isJson = remember(rawPayloadText) { JsonUtils.isValidJson(rawPayloadText) }
+            val formattedJsonText = remember(rawPayloadText, isJson) {
+                if (isJson) JsonUtils.format(rawPayloadText) else rawPayloadText
+            }
 
             // Display text based on active tab
             val displayText = when (activeTab) {
                 InspectorTab.JSON -> formattedJsonText
-                InspectorTab.RAW -> rawPayloadText
-                InspectorTab.HEX -> HexUtils.formatHexDump(message?.payload ?: ByteArray(0))
+                InspectorTab.HEX -> HexUtils.formatHexDump(currentMessage?.payload ?: ByteArray(0))
+                InspectorTab.DIFF -> ""
                 InspectorTab.CHART -> "Real-time topic chart visualization"
             }
 
-            // Breadcrumb Header: p-panel_padding border-b border-outline-variant bg-surface-container-low (#1B1B1E)
+            // Breadcrumb Header
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -133,7 +151,7 @@ fun PayloadInspectorPanel(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Topic Path Pill: bg-surface-dim (#131316) border border-outline-variant px-3 py-1.5 rounded-lg
+                // Topic Path Pill
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
@@ -162,20 +180,21 @@ fun PayloadInspectorPanel(
                             tint = DarkOutlineVariant,
                             modifier = Modifier
                                 .size(16.dp)
+                                .pointerHoverIcon(PointerIcon.Hand)
                                 .clickable { }
                         )
                     }
                 }
 
-                // Metadata Chips: QoS, Retained, Size, Timestamp
+                // Metadata Chips: QoS, Retained, Size, Timestamp + History Indicator
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    MetadataChip(label = "QoS ${message?.qos ?: 0}")
+                    MetadataChip(label = "QoS ${currentMessage?.qos ?: 0}")
 
-                    if (message?.isRetained == true) {
+                    if (currentMessage?.isRetained == true) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
                             color = MqtlinTertiaryContainer.copy(alpha = 0.15f),
@@ -203,12 +222,46 @@ fun PayloadInspectorPanel(
                         }
                     }
 
-                    MetadataChip(label = "Size: ${message?.payload?.size ?: 0} B")
+                    MetadataChip(label = "Size: ${currentMessage?.payload?.size ?: 0} B")
 
                     MetadataChip(
-                        label = formatTimestamp(message?.timestamp ?: System.currentTimeMillis()),
+                        label = formatTimestamp(currentMessage?.timestamp ?: System.currentTimeMillis()),
                         icon = Icons.Default.Schedule
                     )
+
+                    if (isViewingHistoricalMessage) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFF332014),
+                            border = BorderStroke(1.dp, Color(0xFFFF9E64).copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .pointerHoverIcon(PointerIcon.Hand)
+                                .clickable {
+                                    selectedHistoryIndex = 0
+                                    autoScrollToLatest = true
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FiberManualRecord,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFF9E64),
+                                    modifier = Modifier.size(10.dp)
+                                )
+                                Text(
+                                    text = "History (#${historyList.size - effectiveIndex}) — Jump Live",
+                                    fontSize = 11.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFFFF9E64)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -219,7 +272,7 @@ fun PayloadInspectorPanel(
                     .background(DarkOutlineVariant)
             )
 
-            // Inspector Tabs Bar: bg-surface-container border-b border-outline-variant
+            // Inspector Tabs Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -232,9 +285,10 @@ fun PayloadInspectorPanel(
                     onClick = { activeTab = InspectorTab.JSON }
                 )
                 TabItem(
-                    label = "Raw",
-                    isSelected = activeTab == InspectorTab.RAW,
-                    onClick = { activeTab = InspectorTab.RAW }
+                    label = "Diff",
+                    isSelected = activeTab == InspectorTab.DIFF,
+                    icon = Icons.Default.CompareArrows,
+                    onClick = { activeTab = InspectorTab.DIFF }
                 )
                 TabItem(
                     label = "Hex",
@@ -244,7 +298,7 @@ fun PayloadInspectorPanel(
                 TabItem(
                     label = "Chart",
                     isSelected = activeTab == InspectorTab.CHART,
-                    icon = Icons.Default.ShowChart,
+                    icon = Icons.AutoMirrored.Filled.ShowChart,
                     onClick = { activeTab = InspectorTab.CHART }
                 )
             }
@@ -256,65 +310,98 @@ fun PayloadInspectorPanel(
                     .background(DarkOutlineVariant)
             )
 
-            // Editor / Viewer Area with Synchronized Scrolling
-            val verticalScrollState = rememberScrollState()
-            val horizontalScrollState = rememberScrollState()
-            val lines = displayText.lines()
-            val lineCount = if (lines.isEmpty()) 1 else lines.size
+            // Main Content Area
+            when (activeTab) {
+                InspectorTab.DIFF -> {
+                    DiffView(
+                        oldText = previousMessage?.payloadString ?: "",
+                        newText = currentMessage?.payloadString ?: "",
+                        oldLabel = if (previousMessage != null) "Msg #${historyList.size - effectiveIndex - 1} (${formatTimestamp(previousMessage.timestamp)})" else "No Earlier Msg",
+                        newLabel = "Msg #${historyList.size - effectiveIndex} (${formatTimestamp(currentMessage?.timestamp ?: 0L)})",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                InspectorTab.HEX -> {
+                    HexViewer(
+                        payload = currentMessage?.payload ?: ByteArray(0),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                InspectorTab.JSON -> {
+                    // Editor / Viewer Area with Synchronized Scrolling
+                    val verticalScrollState = rememberScrollState()
+                    val horizontalScrollState = rememberScrollState()
+                    val lines = displayText.lines()
+                    val lineCount = if (lines.isEmpty()) 1 else lines.size
 
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .background(DarkSurfaceContainerLowest)
-            ) {
-                // Line Numbers Gutter: bg-surface-dim (#131316) text-outline (#908FA0)
-                Column(
-                    modifier = Modifier
-                        .width(44.dp)
-                        .fillMaxHeight()
-                        .background(DarkSurfaceDim)
-                        .verticalScroll(verticalScrollState)
-                        .padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    for (i in 1..lineCount) {
-                        Text(
-                            text = i.toString(),
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = DarkOutline,
-                            lineHeight = 20.sp
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .background(DarkSurfaceContainerLowest)
+                    ) {
+                        // Line Numbers Gutter
+                        Column(
+                            modifier = Modifier
+                                .width(44.dp)
+                                .fillMaxHeight()
+                                .background(DarkSurfaceDim)
+                                .verticalScroll(verticalScrollState)
+                                .padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            for (i in 1..lineCount) {
+                                Text(
+                                    text = i.toString(),
+                                    fontSize = 12.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = DarkOutline,
+                                    lineHeight = 20.sp
+                                )
+                            }
+                        }
+
+                        // Gutter Right Divider
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .fillMaxHeight()
+                                .background(DarkOutlineVariant)
                         )
+
+                        // Code Area
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .verticalScroll(verticalScrollState)
+                                .horizontalScroll(horizontalScrollState)
+                                .padding(16.dp)
+                        ) {
+                            if (isJson) {
+                                Text(
+                                    text = highlightJson(displayText),
+                                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp)
+                                )
+                            } else {
+                                Text(
+                                    text = displayText,
+                                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOnSurface)
+                                )
+                            }
+                        }
                     }
                 }
-
-                // Gutter Right Divider
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(DarkOutlineVariant)
-                )
-
-                // Code Area: scrolls vertically & horizontally
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .verticalScroll(verticalScrollState)
-                        .horizontalScroll(horizontalScrollState)
-                        .padding(16.dp)
-                ) {
-                    if (activeTab == InspectorTab.JSON) {
+                InspectorTab.CHART -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            text = highlightJson(displayText),
-                            style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp)
-                        )
-                    } else {
-                        Text(
-                            text = displayText,
-                            style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOnSurface)
+                            text = "Real-time topic chart visualization",
+                            style = MonoCode.copy(fontSize = 13.sp, color = DarkOnSurfaceVariant)
                         )
                     }
                 }
@@ -328,33 +415,61 @@ fun PayloadInspectorPanel(
                     .background(DarkOutlineVariant)
             )
 
+            val canGoOlder = effectiveIndex < historyList.size - 1
+            val canGoNewer = effectiveIndex > 0
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkSurfaceContainer)
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = {}, modifier = Modifier.size(28.dp)) {
+                    IconButton(
+                        onClick = {
+                            if (canGoOlder) {
+                                selectedHistoryIndex = effectiveIndex + 1
+                                autoScrollToLatest = false
+                            }
+                        },
+                        enabled = canGoOlder,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .pointerHoverIcon(if (canGoOlder) PointerIcon.Hand else PointerIcon.Default)
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.NavigateBefore,
-                            contentDescription = "Previous Message",
-                            tint = DarkOutline,
+                            imageVector = Icons.AutoMirrored.Filled.NavigateBefore,
+                            contentDescription = "Older Message",
+                            tint = if (canGoOlder) DarkOnSurface else DarkOutlineVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
+
+                    val msgNumber = if (historyList.isEmpty()) 0 else historyList.size - effectiveIndex
                     Text(
-                        text = "Msg ${selectedNode.messageCount} of ${selectedNode.messageCount}",
-                        style = MonoTopic.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant),
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        text = "Msg $msgNumber of ${historyList.size}" + (currentMessage?.timestamp?.let { " (${formatTimestamp(it)})" } ?: ""),
+                        style = MonoTopic.copy(fontSize = 11.sp, color = if (isViewingHistoricalMessage) Color(0xFFFF9E64) else DarkOnSurfaceVariant),
+                        modifier = Modifier.padding(horizontal = 6.dp)
                     )
-                    IconButton(onClick = {}, modifier = Modifier.size(28.dp)) {
+
+                    IconButton(
+                        onClick = {
+                            if (canGoNewer) {
+                                selectedHistoryIndex = effectiveIndex - 1
+                                if (selectedHistoryIndex == 0) autoScrollToLatest = true
+                            }
+                        },
+                        enabled = canGoNewer,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .pointerHoverIcon(if (canGoNewer) PointerIcon.Hand else PointerIcon.Default)
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.NavigateNext,
-                            contentDescription = "Next Message",
-                            tint = DarkOutline,
+                            imageVector = Icons.AutoMirrored.Filled.NavigateNext,
+                            contentDescription = "Newer Message",
+                            tint = if (canGoNewer) DarkOnSurface else DarkOutlineVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -362,24 +477,32 @@ fun PayloadInspectorPanel(
 
                 Surface(
                     shape = RoundedCornerShape(4.dp),
-                    color = DarkSurfaceContainerHigh,
-                    border = BorderStroke(1.dp, DarkOutlineVariant)
+                    color = if (autoScrollToLatest) MqtlinPrimary.copy(alpha = 0.15f) else DarkSurfaceContainerHigh,
+                    border = BorderStroke(1.dp, if (autoScrollToLatest) MqtlinPrimary.copy(alpha = 0.40f) else DarkOutlineVariant),
+                    modifier = Modifier
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .clickable {
+                            autoScrollToLatest = !autoScrollToLatest
+                            if (autoScrollToLatest) selectedHistoryIndex = 0
+                        }
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "Auto Scroll",
-                            tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(14.dp)
+                            tint = if (autoScrollToLatest) MqtlinPrimary else DarkOnSurfaceVariant,
+                            modifier = Modifier.size(13.dp)
                         )
                         Text(
-                            text = "Auto-Scroll",
+                            text = if (autoScrollToLatest) "Live Auto-Scroll" else "Paused",
                             fontSize = 11.sp,
-                            color = DarkOnSurfaceVariant
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Medium,
+                            color = if (autoScrollToLatest) MqtlinPrimary else DarkOnSurfaceVariant
                         )
                     }
                 }

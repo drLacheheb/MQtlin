@@ -44,5 +44,9 @@ object JsonUtils {
             raw
         }
     }
+
+    fun isValidJson(raw: String): Boolean = validate(raw) == null
+
+    fun formatOrRaw(raw: String): String = format(raw)
 }
 
