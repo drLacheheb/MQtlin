@@ -1,9 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-white.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo.svg">
-    <img src="docs/assets/logo.svg" alt="Mqtlin Logo" width="180" />
-  </picture>
+  <img src="docs/assets/favicon.svg" alt="Mqtlin Logo" width="160" />
 </p>
 
 <h1 align="center">Mqtlin</h1>
