@@ -13,6 +13,7 @@ import io.github.drlacheheb.mqtlin.domain.repository.MqttRepository
 import io.github.drlacheheb.mqtlin.domain.repository.ProfileRepository
 import io.github.drlacheheb.mqtlin.domain.usecase.ValidateConnectionConfigUseCase
 import io.github.drlacheheb.mqtlin.domain.usecase.ValidationResult
+import io.github.drlacheheb.mqtlin.domain.util.MqttErrorMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,13 +22,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
+import kotlin.random.Random
 
 class DefaultConnectionComponent(
     componentContext: ComponentContext,
     private val mqttRepository: MqttRepository,
     private val profileRepository: ProfileRepository? = null,
     private val validateConfigUseCase: ValidateConnectionConfigUseCase = ValidateConnectionConfigUseCase(),
-    private val onConnected: () -> Unit = {},
+    private val onConnected: (ConnectionConfig) -> Unit = {},
     mainContext: CoroutineContext = Dispatchers.Main
 ) : ConnectionComponent, ComponentContext by componentContext {
 
@@ -36,8 +38,8 @@ class DefaultConnectionComponent(
     private val _state = MutableValue(ConnectionUiState())
     override val state: Value<ConnectionUiState> = _state
 
-    private var isTestMode = false
     private var isExplicitConnecting = false
+    private var activeConnectingConfig: ConnectionConfig? = null
 
     init {
         lifecycle.subscribe(
@@ -56,6 +58,11 @@ class DefaultConnectionComponent(
 
                 _state.update { state ->
                     if (activeProfile != null) {
+                        val currentRepoState = mqttRepository.connectionState.value
+                        val isCurrentlyConnected = currentRepoState is ConnectionState.Connected &&
+                            currentRepoState.host == activeProfile.host &&
+                            currentRepoState.port == activeProfile.port
+
                         state.copy(
                             savedProfiles = profiles,
                             name = activeProfile.name,
@@ -65,7 +72,8 @@ class DefaultConnectionComponent(
                             protocolVersion = activeProfile.protocolVersion,
                             transport = activeProfile.transport,
                             username = activeProfile.username ?: "",
-                            password = activeProfile.password ?: ""
+                            password = activeProfile.password ?: "",
+                            connectionState = if (isCurrentlyConnected) currentRepoState else ConnectionState.Disconnected
                         )
                     } else {
                         state.copy(savedProfiles = profiles)
@@ -76,35 +84,29 @@ class DefaultConnectionComponent(
 
         mqttRepository.connectionState
             .onEach { connState ->
-                if (isTestMode) {
-                    if (connState is ConnectionState.Connected) {
-                        _state.update {
-                            it.copy(
-                                isTesting = false,
-                                testSuccessMessage = "Successfully connected to ${it.host}:${it.portText}!",
-                                connectionState = ConnectionState.Disconnected
-                            )
-                        }
-                        isTestMode = false
-                        // Disconnect immediately after successful test
-                        scope.launch {
-                            mqttRepository.disconnect()
-                        }
-                    } else if (connState is ConnectionState.Error) {
-                        _state.update {
-                            it.copy(
-                                isTesting = false,
-                                testSuccessMessage = null,
-                                connectionState = connState
-                            )
-                        }
-                        isTestMode = false
+                if (connState is ConnectionState.Connected) {
+                    if (isExplicitConnecting) {
+                        isExplicitConnecting = false
+                        _state.update { it.copy(connectionState = connState) }
+                        val finalConfig = activeConnectingConfig ?: ConnectionConfig(
+                            name = _state.value.name,
+                            host = connState.host,
+                            port = connState.port,
+                            clientId = connState.clientId,
+                            protocolVersion = connState.protocolVersion
+                        )
+                        activeConnectingConfig = null
+                        onConnected(finalConfig)
+                    } else {
+                        val currentConfig = _state.value
+                        val isCurrentlyConnected = connState.host == currentConfig.host &&
+                            connState.port == currentConfig.portText.toIntOrNull()
+                        _state.update { it.copy(connectionState = if (isCurrentlyConnected) connState else ConnectionState.Disconnected) }
                     }
                 } else {
                     _state.update { it.copy(connectionState = connState) }
-                    if (isExplicitConnecting && connState is ConnectionState.Connected) {
+                    if (connState is ConnectionState.Error) {
                         isExplicitConnecting = false
-                        onConnected()
                     }
                 }
             }
@@ -116,94 +118,83 @@ class DefaultConnectionComponent(
     }
 
     override fun onHostChanged(host: String) {
-        _state.update {
-            it.copy(
-                host = host,
-                testSuccessMessage = null,
-                validationErrors = it.validationErrors - ValidationResult.Field.HOST
-            )
-        }
+        _state.update { it.copy(host = host) }
     }
 
     override fun onPortChanged(portText: String) {
-        _state.update {
-            it.copy(
-                portText = portText,
-                testSuccessMessage = null,
-                validationErrors = it.validationErrors - ValidationResult.Field.PORT
-            )
-        }
+        _state.update { it.copy(portText = portText.filter { ch -> ch.isDigit() }) }
     }
 
     override fun onClientIdChanged(clientId: String) {
-        _state.update {
-            it.copy(
-                clientId = clientId,
-                testSuccessMessage = null,
-                validationErrors = it.validationErrors - ValidationResult.Field.CLIENT_ID
-            )
-        }
+        _state.update { it.copy(clientId = clientId) }
     }
 
     override fun onProtocolVersionChanged(version: MqttProtocolVersion) {
-        _state.update { it.copy(protocolVersion = version, testSuccessMessage = null) }
+        _state.update { it.copy(protocolVersion = version) }
     }
 
     override fun onTransportChanged(transport: TransportProtocol) {
-        _state.update {
-            val updatedPort = if (it.portText == it.transport.defaultPort.toString()) {
-                transport.defaultPort.toString()
-            } else {
-                it.portText
-            }
-            it.copy(
-                transport = transport,
-                portText = updatedPort,
-                testSuccessMessage = null
-            )
+        val defaultPort = when (transport) {
+            TransportProtocol.TCP -> "1883"
+            TransportProtocol.TLS -> "8883"
+            TransportProtocol.WS -> "8083"
+            TransportProtocol.WSS -> "8084"
         }
+        _state.update { it.copy(transport = transport, portText = defaultPort) }
     }
 
     override fun onUsernameChanged(username: String) {
-        _state.update { it.copy(username = username, testSuccessMessage = null) }
+        _state.update { it.copy(username = username) }
     }
 
     override fun onPasswordChanged(password: String) {
-        _state.update { it.copy(password = password, testSuccessMessage = null) }
+        _state.update { it.copy(password = password) }
     }
 
     override fun onGenerateRandomClientId() {
-        val randomSuffix = (1..6).map { "0123456789abcdef".random() }.joinToString("")
-        val newClientId = "mqtlin_client_$randomSuffix"
-        _state.update {
-            it.copy(
-                clientId = newClientId,
-                testSuccessMessage = null,
-                validationErrors = it.validationErrors - ValidationResult.Field.CLIENT_ID
-            )
-        }
+        val randomHex = Random.nextBytes(4).joinToString("") { "%02x".format(it) }
+        _state.update { it.copy(clientId = "mqtlin_client_$randomHex") }
     }
 
     override fun onNewProfileClicked() {
-        val randomSuffix = (1..6).map { "0123456789abcdef".random() }.joinToString("")
-        val randomId = "mqtlin_client_$randomSuffix"
-        _state.update {
-            it.copy(
-                name = "New Connection",
-                host = "127.0.0.1",
-                portText = "1883",
-                clientId = randomId,
-                protocolVersion = MqttProtocolVersion.MQTT_5_0,
-                transport = TransportProtocol.TCP,
+        val randomHex = Random.nextBytes(3).joinToString("") { "%02x".format(it) }
+        val newProfile = ConnectionConfig(
+            name = "New Connection",
+            host = "127.0.0.1",
+            port = 1883,
+            clientId = "mqtlin_client_$randomHex",
+            protocolVersion = MqttProtocolVersion.MQTT_5_0,
+            transport = TransportProtocol.TCP
+        )
+        _state.update { state ->
+            state.copy(
+                name = newProfile.name,
+                host = newProfile.host,
+                portText = newProfile.port.toString(),
+                clientId = newProfile.clientId,
+                protocolVersion = newProfile.protocolVersion,
+                transport = newProfile.transport,
                 username = "",
                 password = "",
-                testSuccessMessage = null,
-                validationErrors = emptyMap()
+                savedProfiles = state.savedProfiles + newProfile,
+                validationErrors = emptyMap(),
+                testSuccessMessage = null
             )
+        }
+        profileRepository?.let { repo ->
+            scope.launch {
+                repo.saveProfile(newProfile)
+                repo.setLastSelectedProfileName(newProfile.name)
+            }
         }
     }
 
     override fun onProfileSelected(profile: ConnectionConfig) {
+        val currentRepoState = mqttRepository.connectionState.value
+        val isCurrentlyConnected = currentRepoState is ConnectionState.Connected &&
+            currentRepoState.host == profile.host &&
+            currentRepoState.port == profile.port
+
         _state.update {
             it.copy(
                 name = profile.name,
@@ -214,8 +205,9 @@ class DefaultConnectionComponent(
                 transport = profile.transport,
                 username = profile.username ?: "",
                 password = profile.password ?: "",
-                testSuccessMessage = null,
-                validationErrors = emptyMap()
+                connectionState = if (isCurrentlyConnected) currentRepoState else ConnectionState.Disconnected,
+                validationErrors = emptyMap(),
+                testSuccessMessage = null
             )
         }
         profileRepository?.let { repo ->
@@ -261,24 +253,40 @@ class DefaultConnectionComponent(
                 _state.update { it.copy(validationErrors = validation.errors, testSuccessMessage = null) }
             }
             ValidationResult.Valid -> {
-                isTestMode = true
                 _state.update {
                     it.copy(
                         isTesting = true,
                         testSuccessMessage = null,
-                        validationErrors = emptyMap(),
-                        connectionState = ConnectionState.Connecting(config.host, config.port)
+                        validationErrors = emptyMap()
                     )
                 }
                 scope.launch {
-                    mqttRepository.connect(config)
+                    val result = mqttRepository.testConnection(config)
+                    if (result.isSuccess) {
+                        _state.update {
+                            it.copy(
+                                isTesting = false,
+                                testSuccessMessage = "Successfully connected to ${config.host}:${config.port}!",
+                                connectionState = ConnectionState.Disconnected
+                            )
+                        }
+                    } else {
+                        val ex = result.exceptionOrNull()
+                        val errorMsg = MqttErrorMapper.mapConnectionError(ex, config.host, config.port)
+                        _state.update {
+                            it.copy(
+                                isTesting = false,
+                                testSuccessMessage = null,
+                                connectionState = ConnectionState.Error(errorMsg, ex)
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
     override fun onConnectClicked() {
-        isTestMode = false
         val currentState = _state.value
         val portInt = currentState.portText.toIntOrNull() ?: -1
 
@@ -316,6 +324,7 @@ class DefaultConnectionComponent(
                         repo.saveProfile(config)
                     }
                 }
+                activeConnectingConfig = config
                 isExplicitConnecting = true
                 scope.launch {
                     mqttRepository.connect(config)

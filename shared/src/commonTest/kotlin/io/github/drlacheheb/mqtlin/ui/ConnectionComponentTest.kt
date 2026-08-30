@@ -4,6 +4,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.destroy
 import com.arkivanov.essenty.lifecycle.resume
+import io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig
 import io.github.drlacheheb.mqtlin.domain.model.ConnectionState
 import io.github.drlacheheb.mqtlin.domain.model.MqttProtocolVersion
 import io.github.drlacheheb.mqtlin.domain.model.TransportProtocol
@@ -15,6 +16,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +35,7 @@ class ConnectionComponentTest {
     private fun createComponent(
         testScope: TestScope,
         profileRepository: io.github.drlacheheb.mqtlin.domain.repository.ProfileRepository? = null,
-        onConnected: () -> Unit = {}
+        onConnected: (ConnectionConfig) -> Unit = {}
     ): Pair<DefaultConnectionComponent, LifecycleRegistry> {
         val lifecycle = LifecycleRegistry()
         lifecycle.resume()
@@ -311,7 +313,7 @@ class ConnectionComponentTest {
         component.state.value.testSuccessMessage shouldBe null
         component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
         val error = component.state.value.connectionState as ConnectionState.Error
-        error.message shouldBe "Connection Refused"
+        error.message shouldContain "Connection refused"
 
         lifecycle.destroy()
     }
@@ -446,6 +448,73 @@ class ConnectionComponentTest {
         state.savedProfiles[0].name shouldBe "Saved AWS"
         state.name shouldBe "Saved AWS"
         state.host shouldBe "aws.iot.com"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `switching between connected profile and other profile toggles between Connected and Disconnected state`() = runTest {
+        val activeProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Local Active",
+            host = "127.0.0.1",
+            port = 1883,
+            clientId = "active_client"
+        )
+        val otherProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Remote Inactive",
+            host = "remote.broker.com",
+            port = 1883,
+            clientId = "remote_client"
+        )
+        fakeRepository.setConnected(activeProfile)
+
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(activeProfile, otherProfile)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        // Active profile is initially loaded and should be Connected
+        component.state.value.name shouldBe "Local Active"
+        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
+
+        // Switching to other profile should set state to Disconnected
+        component.onProfileSelected(otherProfile)
+        component.state.value.name shouldBe "Remote Inactive"
+        component.state.value.connectionState shouldBe ConnectionState.Disconnected
+
+        // Switching back to active profile should restore Connected state
+        component.onProfileSelected(activeProfile)
+        component.state.value.name shouldBe "Local Active"
+        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `testing connection does not disconnect active repository session`() = runTest {
+        val activeProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Active Mosquitto",
+            host = "127.0.0.1",
+            port = 1883,
+            clientId = "active_client"
+        )
+        fakeRepository.setConnected(activeProfile)
+
+        val (component, lifecycle) = createComponent(this)
+        component.onHostChanged("192.168.1.100")
+        component.onPortChanged("1883")
+
+        component.onTestConnectionClicked()
+        advanceUntilIdle()
+
+        // Test was successful for 192.168.1.100
+        component.state.value.testSuccessMessage shouldBe "Successfully connected to 192.168.1.100:1883!"
+
+        // Main repository connection state remains Connected to the active broker!
+        fakeRepository.connectionState.value.shouldBeInstanceOf<ConnectionState.Connected>()
+        (fakeRepository.connectionState.value as ConnectionState.Connected).host shouldBe "127.0.0.1"
 
         lifecycle.destroy()
     }

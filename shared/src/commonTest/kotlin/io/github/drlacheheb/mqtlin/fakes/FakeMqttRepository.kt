@@ -45,6 +45,17 @@ class FakeMqttRepository : MqttRepository {
         }
     }
 
+    override suspend fun testConnection(config: ConnectionConfig): Result<Unit> {
+        if (simulatedDelayMs > 0) {
+            delay(simulatedDelayMs)
+        }
+        return if (shouldFailConnection) {
+            Result.failure(Exception(failureErrorMessage))
+        } else {
+            Result.success(Unit)
+        }
+    }
+
     override suspend fun disconnect() {
         _connectionState.value = ConnectionState.Disconnected
     }

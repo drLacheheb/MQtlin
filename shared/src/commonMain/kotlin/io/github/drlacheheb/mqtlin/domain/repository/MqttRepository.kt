@@ -11,6 +11,7 @@ interface MqttRepository {
     val incomingMessages: SharedFlow<MqttMessage>
 
     suspend fun connect(config: ConnectionConfig)
+    suspend fun testConnection(config: ConnectionConfig): Result<Unit>
     suspend fun disconnect()
     suspend fun subscribe(topicFilter: String = "#", qos: Int = 0)
     suspend fun unsubscribe(topicFilter: String)

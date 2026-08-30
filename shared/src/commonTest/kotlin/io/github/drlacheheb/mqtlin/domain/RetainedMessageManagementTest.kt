@@ -43,6 +43,7 @@ class RetainedMessageManagementTest {
         )
 
         override suspend fun connect(config: ConnectionConfig) {}
+        override suspend fun testConnection(config: ConnectionConfig): Result<Unit> = Result.success(Unit)
         override suspend fun disconnect() {}
         override suspend fun subscribe(topicFilter: String, qos: Int) {}
         override suspend fun unsubscribe(topicFilter: String) {}

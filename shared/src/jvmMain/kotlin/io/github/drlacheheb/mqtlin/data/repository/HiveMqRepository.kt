@@ -57,11 +57,113 @@ class HiveMqRepository : MqttRepository {
                 MqttProtocolVersion.MQTT_5_0 -> connectMqtt5(config)
                 MqttProtocolVersion.MQTT_3_1_1 -> connectMqtt3(config)
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             _connectionState.value = ConnectionState.Error(
                 message = MqttErrorMapper.mapConnectionError(e, config.host, config.port),
                 cause = e
             )
+        }
+    }
+
+    override suspend fun testConnection(config: ConnectionConfig): Result<Unit> {
+        val testClientId = if (config.clientId.isNotBlank()) "${config.clientId}_test" else "mqtlin_test"
+        val testConfig = config.copy(clientId = testClientId)
+
+        return try {
+            when (testConfig.protocolVersion) {
+                MqttProtocolVersion.MQTT_5_0 -> {
+                    val clientBuilder = MqttClient.builder()
+                        .useMqttVersion5()
+                        .identifier(testConfig.clientId)
+                        .serverHost(testConfig.host)
+                        .serverPort(testConfig.port)
+
+                    when (testConfig.transport) {
+                        TransportProtocol.TLS -> clientBuilder.sslWithDefaultConfig()
+                        TransportProtocol.WS -> clientBuilder.webSocketWithDefaultConfig()
+                        TransportProtocol.WSS -> {
+                            clientBuilder.sslWithDefaultConfig()
+                            clientBuilder.webSocketWithDefaultConfig()
+                        }
+                        TransportProtocol.TCP -> {}
+                    }
+
+                    val testClient = clientBuilder.buildAsync()
+                    val connectBuilder = com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect.builder()
+                        .cleanStart(true)
+                        .keepAlive(10)
+
+                    if (!testConfig.username.isNullOrBlank()) {
+                        val authBuilder = connectBuilder.simpleAuth().username(testConfig.username)
+                        if (!testConfig.password.isNullOrBlank()) {
+                            authBuilder.password(testConfig.password.encodeToByteArray())
+                        }
+                        authBuilder.applySimpleAuth()
+                    }
+
+                    try {
+                        val connAck = testClient.connect(connectBuilder.build()).await()
+                        if (connAck.reasonCode.isError) {
+                            Result.failure(Exception("Broker rejected: ${connAck.reasonCode}"))
+                        } else {
+                            Result.success(Unit)
+                        }
+                    } finally {
+                        try {
+                            testClient.disconnect().await()
+                        } catch (_: Exception) {}
+                    }
+                }
+                MqttProtocolVersion.MQTT_3_1_1 -> {
+                    val clientBuilder = MqttClient.builder()
+                        .useMqttVersion3()
+                        .identifier(testConfig.clientId)
+                        .serverHost(testConfig.host)
+                        .serverPort(testConfig.port)
+
+                    when (testConfig.transport) {
+                        TransportProtocol.TLS -> clientBuilder.sslWithDefaultConfig()
+                        TransportProtocol.WS -> clientBuilder.webSocketWithDefaultConfig()
+                        TransportProtocol.WSS -> {
+                            clientBuilder.sslWithDefaultConfig()
+                            clientBuilder.webSocketWithDefaultConfig()
+                        }
+                        TransportProtocol.TCP -> {}
+                    }
+
+                    val testClient = clientBuilder.buildAsync()
+                    val connectBuilder = com.hivemq.client.mqtt.mqtt3.message.connect.Mqtt3Connect.builder()
+                        .cleanSession(true)
+                        .keepAlive(10)
+
+                    if (!testConfig.username.isNullOrBlank()) {
+                        val authBuilder = connectBuilder.simpleAuth().username(testConfig.username)
+                        if (!testConfig.password.isNullOrBlank()) {
+                            authBuilder.password(testConfig.password.encodeToByteArray())
+                        }
+                        authBuilder.applySimpleAuth()
+                    }
+
+                    try {
+                        val connAck = testClient.connect(connectBuilder.build()).await()
+                        if (connAck.returnCode.isError) {
+                            Result.failure(Exception("Broker rejected: ${connAck.returnCode}"))
+                        } else {
+                            Result.success(Unit)
+                        }
+                    } finally {
+                        try {
+                            testClient.disconnect().await()
+                        } catch (_: Exception) {}
+                    }
+                }
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            Result.failure(e)
         }
     }
 
@@ -339,6 +441,8 @@ class HiveMqRepository : MqttRepository {
                     .send()
                     .await()
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw Exception(MqttErrorMapper.mapPublishError(e, topic), e)
         }
