@@ -32,6 +32,7 @@ class ConnectionComponentTest {
 
     private fun createComponent(
         testScope: TestScope,
+        profileRepository: io.github.drlacheheb.mqtlin.domain.repository.ProfileRepository? = null,
         onConnected: () -> Unit = {}
     ): Pair<DefaultConnectionComponent, LifecycleRegistry> {
         val lifecycle = LifecycleRegistry()
@@ -40,6 +41,7 @@ class ConnectionComponentTest {
         val component = DefaultConnectionComponent(
             componentContext = context,
             mqttRepository = fakeRepository,
+            profileRepository = profileRepository,
             validateConfigUseCase = validateUseCase,
             onConnected = onConnected,
             mainContext = StandardTestDispatcher(testScope.testScheduler)
@@ -423,6 +425,27 @@ class ConnectionComponentTest {
         // onConnected must NOT be called without explicit user action
         onConnectedCalled shouldBe false
         component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `initial state loads saved profiles from ProfileRepository and populates active profile`() = runTest {
+        val initialProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Saved AWS",
+            host = "aws.iot.com",
+            port = 8883
+        )
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(initialProfiles = listOf(initialProfile))
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        val state = component.state.value
+        state.savedProfiles.size shouldBe 1
+        state.savedProfiles[0].name shouldBe "Saved AWS"
+        state.name shouldBe "Saved AWS"
+        state.host shouldBe "aws.iot.com"
 
         lifecycle.destroy()
     }

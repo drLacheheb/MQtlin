@@ -9,6 +9,7 @@ import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
 import io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig
 import io.github.drlacheheb.mqtlin.domain.repository.MqttRepository
+import io.github.drlacheheb.mqtlin.domain.repository.ProfileRepository
 import io.github.drlacheheb.mqtlin.ui.connection.DefaultConnectionComponent
 import io.github.drlacheheb.mqtlin.ui.workspace.DefaultWorkspaceComponent
 import kotlinx.serialization.Serializable
@@ -17,6 +18,7 @@ import kotlin.coroutines.CoroutineContext
 class DefaultRootComponent(
     componentContext: ComponentContext,
     private val mqttRepository: MqttRepository,
+    private val profileRepository: ProfileRepository? = null,
     private val mainContext: CoroutineContext? = null
 ) : RootComponent, ComponentContext by componentContext {
 
@@ -38,6 +40,7 @@ class DefaultRootComponent(
                     DefaultConnectionComponent(
                         componentContext = context,
                         mqttRepository = mqttRepository,
+                        profileRepository = profileRepository,
                         onConnected = {
                             val activeState = mqttRepository.connectionState.value
                             val connConfig = ConnectionConfig(
@@ -53,6 +56,7 @@ class DefaultRootComponent(
                     DefaultConnectionComponent(
                         componentContext = context,
                         mqttRepository = mqttRepository,
+                        profileRepository = profileRepository,
                         onConnected = {
                             val activeState = mqttRepository.connectionState.value
                             val connConfig = ConnectionConfig(
@@ -98,4 +102,3 @@ class DefaultRootComponent(
         data class Workspace(val config: ConnectionConfig) : Config
     }
 }
-

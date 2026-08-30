@@ -10,6 +10,7 @@ import io.github.drlacheheb.mqtlin.domain.model.ConnectionState
 import io.github.drlacheheb.mqtlin.domain.model.MqttProtocolVersion
 import io.github.drlacheheb.mqtlin.domain.model.TransportProtocol
 import io.github.drlacheheb.mqtlin.domain.repository.MqttRepository
+import io.github.drlacheheb.mqtlin.domain.repository.ProfileRepository
 import io.github.drlacheheb.mqtlin.domain.usecase.ValidateConnectionConfigUseCase
 import io.github.drlacheheb.mqtlin.domain.usecase.ValidationResult
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +25,7 @@ import kotlin.coroutines.CoroutineContext
 class DefaultConnectionComponent(
     componentContext: ComponentContext,
     private val mqttRepository: MqttRepository,
+    private val profileRepository: ProfileRepository? = null,
     private val validateConfigUseCase: ValidateConnectionConfigUseCase = ValidateConnectionConfigUseCase(),
     private val onConnected: () -> Unit = {},
     mainContext: CoroutineContext = Dispatchers.Main
@@ -43,6 +45,34 @@ class DefaultConnectionComponent(
                 scope.cancel()
             }
         )
+
+        // Load stored profiles from repository on startup
+        if (profileRepository != null) {
+            scope.launch {
+                val profiles = profileRepository.getAllProfiles()
+                val lastSelected = profileRepository.getLastSelectedProfileName()
+                val activeProfile = profiles.firstOrNull { it.name.equals(lastSelected, ignoreCase = true) }
+                    ?: profiles.firstOrNull()
+
+                _state.update { state ->
+                    if (activeProfile != null) {
+                        state.copy(
+                            savedProfiles = profiles,
+                            name = activeProfile.name,
+                            host = activeProfile.host,
+                            portText = activeProfile.port.toString(),
+                            clientId = activeProfile.clientId,
+                            protocolVersion = activeProfile.protocolVersion,
+                            transport = activeProfile.transport,
+                            username = activeProfile.username ?: "",
+                            password = activeProfile.password ?: ""
+                        )
+                    } else {
+                        state.copy(savedProfiles = profiles)
+                    }
+                }
+            }
+        }
 
         mqttRepository.connectionState
             .onEach { connState ->
@@ -121,9 +151,14 @@ class DefaultConnectionComponent(
 
     override fun onTransportChanged(transport: TransportProtocol) {
         _state.update {
+            val updatedPort = if (it.portText == it.transport.defaultPort.toString()) {
+                transport.defaultPort.toString()
+            } else {
+                it.portText
+            }
             it.copy(
                 transport = transport,
-                portText = transport.defaultPort.toString(),
+                portText = updatedPort,
                 testSuccessMessage = null
             )
         }
@@ -138,12 +173,20 @@ class DefaultConnectionComponent(
     }
 
     override fun onGenerateRandomClientId() {
-        val randomId = "mqtlin_client_" + (1..6).map { "0123456789abcdef".random() }.joinToString("")
-        onClientIdChanged(randomId)
+        val randomSuffix = (1..6).map { "0123456789abcdef".random() }.joinToString("")
+        val newClientId = "mqtlin_client_$randomSuffix"
+        _state.update {
+            it.copy(
+                clientId = newClientId,
+                testSuccessMessage = null,
+                validationErrors = it.validationErrors - ValidationResult.Field.CLIENT_ID
+            )
+        }
     }
 
     override fun onNewProfileClicked() {
-        val randomId = "mqtlin_client_" + (1..6).map { "0123456789abcdef".random() }.joinToString("")
+        val randomSuffix = (1..6).map { "0123456789abcdef".random() }.joinToString("")
+        val randomId = "mqtlin_client_$randomSuffix"
         _state.update {
             it.copy(
                 name = "New Connection",
@@ -175,12 +218,22 @@ class DefaultConnectionComponent(
                 validationErrors = emptyMap()
             )
         }
+        profileRepository?.let { repo ->
+            scope.launch {
+                repo.setLastSelectedProfileName(profile.name)
+            }
+        }
     }
 
     override fun onDeleteProfileClicked(profile: ConnectionConfig) {
         _state.update { state ->
             val updated = state.savedProfiles.filter { it.name != profile.name || it.host != profile.host }
             state.copy(savedProfiles = updated)
+        }
+        profileRepository?.let { repo ->
+            scope.launch {
+                repo.deleteProfile(profile.name)
+            }
         }
     }
 
@@ -257,6 +310,11 @@ class DefaultConnectionComponent(
                         validationErrors = emptyMap(),
                         testSuccessMessage = null
                     )
+                }
+                profileRepository?.let { repo ->
+                    scope.launch {
+                        repo.saveProfile(config)
+                    }
                 }
                 isExplicitConnecting = true
                 scope.launch {

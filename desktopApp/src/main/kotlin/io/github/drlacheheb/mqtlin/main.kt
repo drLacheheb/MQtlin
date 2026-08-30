@@ -24,6 +24,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import io.github.drlacheheb.mqtlin.data.repository.FileProfileRepository
 import io.github.drlacheheb.mqtlin.data.repository.HiveMqRepository
 import io.github.drlacheheb.mqtlin.ui.components.LocalWindowActions
 import io.github.drlacheheb.mqtlin.ui.components.WindowActions
@@ -35,11 +36,13 @@ import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
 fun main() = application {
     val lifecycle = LifecycleRegistry()
     val repository = HiveMqRepository()
+    val profileRepository = FileProfileRepository()
 
     val rootContext = DefaultComponentContext(lifecycle = lifecycle)
     val rootComponent = DefaultRootComponent(
         componentContext = rootContext,
-        mqttRepository = repository
+        mqttRepository = repository,
+        profileRepository = profileRepository
     )
 
     val windowState = rememberWindowState(
