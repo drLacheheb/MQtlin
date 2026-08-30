@@ -24,6 +24,7 @@ class DefaultWorkspaceComponent(
     private val mqttRepository: MqttRepository,
     private val onDisconnect: () -> Unit,
     private val onOpenConnectionManager: () -> Unit,
+    private val onOpenSettings: () -> Unit = {},
     mainContext: CoroutineContext = Dispatchers.Main
 ) : WorkspaceComponent, ComponentContext by componentContext {
 
@@ -193,5 +194,9 @@ class DefaultWorkspaceComponent(
 
     override fun onOpenConnectionManagerClicked() {
         onOpenConnectionManager()
+    }
+
+    override fun onOpenSettingsClicked() {
+        onOpenSettings()
     }
 }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -17,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
@@ -30,72 +28,126 @@ import io.github.drlacheheb.mqtlin.ui.components.LocalWindowActions
 import io.github.drlacheheb.mqtlin.ui.components.WindowActions
 import io.github.drlacheheb.mqtlin.ui.root.DefaultRootComponent
 import io.github.drlacheheb.mqtlin.ui.root.RootComponent
+import io.github.drlacheheb.mqtlin.ui.settings.SettingsScreen
 import io.github.drlacheheb.mqtlin.ui.theme.DarkBackground
 import io.github.drlacheheb.mqtlin.ui.theme.DarkBorder
+import io.github.drlacheheb.mqtlin.ui.theme.MqtlinTheme
+import javax.swing.SwingUtilities
 
-fun main() = application {
+fun <T> runOnUiThread(block: () -> T): T {
+    if (SwingUtilities.isEventDispatchThread()) {
+        return block()
+    }
+    var error: Throwable? = null
+    var result: T? = null
+    SwingUtilities.invokeAndWait {
+        try {
+            result = block()
+        } catch (e: Throwable) {
+            error = e
+        }
+    }
+    error?.also { throw it }
+    @Suppress("UNCHECKED_CAST")
+    return result as T
+}
+
+fun main() {
     val lifecycle = LifecycleRegistry()
     val repository = HiveMqRepository()
     val profileRepository = FileProfileRepository()
 
-    val rootContext = DefaultComponentContext(lifecycle = lifecycle)
-    val rootComponent = DefaultRootComponent(
-        componentContext = rootContext,
-        mqttRepository = repository,
-        profileRepository = profileRepository
-    )
+    val rootComponent = runOnUiThread {
+        DefaultRootComponent(
+            componentContext = DefaultComponentContext(lifecycle = lifecycle),
+            mqttRepository = repository,
+            profileRepository = profileRepository
+        )
+    }
 
-    val windowState = rememberWindowState(
-        size = DpSize(800.dp, 560.dp),
-        position = WindowPosition.Aligned(Alignment.Center)
-    )
+    application {
+        val windowState = rememberWindowState(
+            size = DpSize(800.dp, 560.dp),
+            position = WindowPosition.Aligned(Alignment.Center)
+        )
 
-    Window(
-        onCloseRequest = ::exitApplication,
-        state = windowState,
-        title = "MQtlin",
-        icon = painterResource("icons/icon.png"),
-        undecorated = true,
-        resizable = true
-    ) {
-        val childStack by rootComponent.childStack.subscribeAsState()
-        val isWorkspace = childStack.active.instance is RootComponent.RootChild.Workspace
+        // Primary Window (Connection Manager / Workspace)
+        Window(
+            onCloseRequest = ::exitApplication,
+            state = windowState,
+            title = "MQtlin",
+            icon = painterResource("icons/icon.png"),
+            undecorated = true,
+            resizable = true
+        ) {
+            val childStack by rootComponent.childStack.subscribeAsState()
+            val isWorkspace = childStack.active.instance is RootComponent.RootChild.Workspace
 
-        // Dynamically adjust window size and position between Connection Manager and Workspace
-        LaunchedEffect(isWorkspace) {
-            if (isWorkspace) {
-                windowState.size = DpSize(1280.dp, 800.dp)
-                windowState.position = WindowPosition.Aligned(Alignment.Center)
-            } else {
-                windowState.size = DpSize(800.dp, 560.dp)
-                windowState.position = WindowPosition.Aligned(Alignment.Center)
+            // Dynamically adjust window size and position between Connection Manager and Workspace
+            LaunchedEffect(isWorkspace) {
+                if (isWorkspace) {
+                    windowState.size = DpSize(1280.dp, 800.dp)
+                    windowState.position = WindowPosition.Aligned(Alignment.Center)
+                } else {
+                    windowState.size = DpSize(800.dp, 560.dp)
+                    windowState.position = WindowPosition.Aligned(Alignment.Center)
+                }
+            }
+
+            LifecycleController(lifecycle, windowState)
+
+            val windowActions = WindowActions(
+                onMinimize = { windowState.isMinimized = true },
+                onMaximizeRestore = {
+                    windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
+                        WindowPlacement.Floating
+                    } else {
+                        WindowPlacement.Maximized
+                    }
+                },
+                onClose = { exitApplication() },
+                isMaximized = windowState.placement == WindowPlacement.Maximized
+            )
+
+            CompositionLocalProvider(LocalWindowActions provides windowActions) {
+                WindowDraggableArea {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(DarkBackground)
+                            .border(1.dp, DarkBorder)
+                    ) {
+                        App(rootComponent = rootComponent)
+                    }
+                }
             }
         }
 
-        LifecycleController(lifecycle, windowState)
+        // Auxiliary Multi-Window: Settings Window
+        val dialogSlot by rootComponent.dialogSlot.subscribeAsState()
+        val dialogChild = dialogSlot.child?.instance
 
-        val windowActions = WindowActions(
-            onMinimize = { windowState.isMinimized = true },
-            onMaximizeRestore = {
-                windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
-                    WindowPlacement.Floating
-                } else {
-                    WindowPlacement.Maximized
-                }
-            },
-            onClose = { exitApplication() },
-            isMaximized = windowState.placement == WindowPlacement.Maximized
-        )
+        if (dialogChild is RootComponent.DialogChild.Settings) {
+            val settingsWindowState = rememberWindowState(
+                size = DpSize(520.dp, 380.dp),
+                position = WindowPosition.Aligned(Alignment.Center)
+            )
 
-        CompositionLocalProvider(LocalWindowActions provides windowActions) {
-            WindowDraggableArea {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(DarkBackground)
-                        .border(1.dp, DarkBorder)
-                ) {
-                    App(rootComponent = rootComponent)
+            Window(
+                onCloseRequest = rootComponent::onDismissDialog,
+                state = settingsWindowState,
+                title = "MQtlin Settings",
+                icon = painterResource("icons/icon.png"),
+                undecorated = true,
+                resizable = false
+            ) {
+                MqtlinTheme {
+                    WindowDraggableArea {
+                        SettingsScreen(
+                            component = dialogChild.component,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }

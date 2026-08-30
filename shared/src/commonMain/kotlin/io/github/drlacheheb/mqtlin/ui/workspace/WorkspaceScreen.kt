@@ -39,7 +39,8 @@ fun WorkspaceScreen(
         // 1. Top Navigation Bar (56dp)
         TopNavBar(
             config = state.connectionConfig,
-            onOpenConnectionManager = component::onOpenConnectionManagerClicked
+            onOpenConnectionManager = component::onOpenConnectionManagerClicked,
+            onOpenSettings = component::onOpenSettingsClicked
         )
 
         // 2. Main 3-Column Workspace (340dp / 1fr / 380dp)

@@ -41,6 +41,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 fun TopNavBar(
     config: ConnectionConfig?,
     onOpenConnectionManager: () -> Unit,
+    onOpenSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Header: h-10.5 (42px) bg-surface-container border-b border-outline-variant
@@ -130,14 +131,14 @@ fun TopNavBar(
 
                     // Settings Button (⚙)
                     IconButton(
-                        onClick = onOpenConnectionManager,
+                        onClick = onOpenSettings,
                         modifier = Modifier
                             .size(28.dp)
                             .pointerHoverIcon(PointerIcon.Hand)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Connection Settings",
+                            contentDescription = "Application Settings",
                             tint = DarkOnSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )

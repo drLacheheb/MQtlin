@@ -29,7 +29,8 @@ class WorkspaceComponentTest {
     private fun createComponent(
         testScope: TestScope,
         onDisconnect: () -> Unit = {},
-        onOpenConnectionManager: () -> Unit = {}
+        onOpenConnectionManager: () -> Unit = {},
+        onOpenSettings: () -> Unit = {}
     ): Pair<DefaultWorkspaceComponent, LifecycleRegistry> {
         val lifecycle = LifecycleRegistry()
         lifecycle.resume()
@@ -40,6 +41,7 @@ class WorkspaceComponentTest {
             mqttRepository = fakeRepository,
             onDisconnect = onDisconnect,
             onOpenConnectionManager = onOpenConnectionManager,
+            onOpenSettings = onOpenSettings,
             mainContext = StandardTestDispatcher(testScope.testScheduler)
         )
         testScope.advanceUntilIdle()
@@ -271,6 +273,28 @@ class WorkspaceComponentTest {
 
         onDisconnectCalled shouldBe true
 
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `clicking onOpenConnectionManager triggers callback`() = runTest {
+        var onConnectionManagerCalled = false
+        val (component, lifecycle) = createComponent(this, onOpenConnectionManager = { onConnectionManagerCalled = true })
+
+        component.onOpenConnectionManagerClicked()
+
+        onConnectionManagerCalled shouldBe true
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `clicking onOpenSettings triggers callback`() = runTest {
+        var onSettingsCalled = false
+        val (component, lifecycle) = createComponent(this, onOpenSettings = { onSettingsCalled = true })
+
+        component.onOpenSettingsClicked()
+
+        onSettingsCalled shouldBe true
         lifecycle.destroy()
     }
 }

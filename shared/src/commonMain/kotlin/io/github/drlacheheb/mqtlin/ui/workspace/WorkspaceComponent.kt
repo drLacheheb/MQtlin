@@ -39,4 +39,5 @@ interface WorkspaceComponent {
     fun onDeleteRetainedBranch(branchPath: String)
     fun onDisconnectClicked()
     fun onOpenConnectionManagerClicked()
+    fun onOpenSettingsClicked()
 }
