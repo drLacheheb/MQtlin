@@ -186,4 +186,32 @@ class TopicTreeTest {
         filtered.findNode("home/kitchen/temp").shouldNotBeNull()
         filtered.findNode("home/kitchen/light").shouldBeNull()
     }
+
+    @Test
+    fun `topic node can be both a parent folder and an active topic with direct payload`() {
+        var tree = TopicTree()
+        // First, publish directly to parent topic
+        tree = tree.insert(MqttMessage("home/living-room", "active".encodeToByteArray()))
+        // Next, publish to subtopic
+        tree = tree.insert(MqttMessage("home/living-room/temperature", "21.5".encodeToByteArray()))
+
+        val livingRoomNode = tree.findNode("home/living-room")
+        livingRoomNode.shouldNotBeNull()
+        livingRoomNode.children shouldHaveSize 1
+        livingRoomNode.lastMessage?.payloadString shouldBe "active"
+        livingRoomNode.children[0].segment shouldBe "temperature"
+        livingRoomNode.children[0].lastMessage?.payloadString shouldBe "21.5"
+    }
+
+    @Test
+    fun `findNode successfully finds parent directory nodes and leaf nodes`() {
+        var tree = TopicTree()
+        tree = tree.insert(MqttMessage("devices/esp32/sensor1/temp", "25".encodeToByteArray()))
+
+        tree.findNode("devices").shouldNotBeNull()
+        tree.findNode("devices/esp32").shouldNotBeNull()
+        tree.findNode("devices/esp32/sensor1").shouldNotBeNull()
+        tree.findNode("devices/esp32/sensor1/temp").shouldNotBeNull()
+        tree.findNode("devices/esp32/unknown").shouldBeNull()
+    }
 }

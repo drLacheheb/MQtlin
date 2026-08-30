@@ -35,6 +35,8 @@ interface WorkspaceComponent {
         isRetained: Boolean,
         userProperties: Map<String, String> = emptyMap()
     )
+    fun onDeleteRetainedTopic(topic: String)
+    fun onDeleteRetainedBranch(branchPath: String)
     fun onDisconnectClicked()
     fun onOpenConnectionManagerClicked()
 }

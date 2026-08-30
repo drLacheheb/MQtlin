@@ -100,8 +100,34 @@ class WorkspaceComponentTest {
 
         val state = component.state.value
         state.selectedTopicPath shouldBe "factory/sensor/pressure"
-        state.selectedNode.shouldNotBeNull()
-        state.selectedNode?.lastMessage?.payloadString shouldBe "101.3"
+        val selected = state.selectedNode
+        selected.shouldNotBeNull()
+        selected.lastMessage?.payloadString shouldBe "101.3"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `selecting directory node updates selectedTopicPath and selectedNode with children in state`() = runTest {
+        val (component, lifecycle) = createComponent(this)
+
+        fakeRepository.emitMessage(
+            MqttMessage(
+                topic = "factory/sensor/pressure",
+                payload = "101.3".encodeToByteArray()
+            )
+        )
+        advanceUntilIdle()
+
+        component.onTopicSelected("factory/sensor")
+
+        val state = component.state.value
+        state.selectedTopicPath shouldBe "factory/sensor"
+        val selectedNode = state.selectedNode
+        selectedNode.shouldNotBeNull()
+        selectedNode.segment shouldBe "sensor"
+        selectedNode.children shouldHaveSize 1
+        selectedNode.children[0].segment shouldBe "pressure"
 
         lifecycle.destroy()
     }

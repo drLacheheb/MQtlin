@@ -26,5 +26,24 @@ data class TopicNode(
         val newChildren = (children + newChild).sortedBy { it.segment }
         return copy(children = newChildren)
     }
+
+    fun collectAllRetainedLeafPaths(): List<String> {
+        val list = mutableListOf<String>()
+        if (lastMessage?.isRetained == true) {
+            list.add(fullPath)
+        }
+        children.forEach { child ->
+            list.addAll(child.collectAllRetainedLeafPaths())
+        }
+        return list
+    }
+
+    fun countRetainedDescendants(): Int {
+        var count = if (lastMessage?.isRetained == true) 1 else 0
+        children.forEach { child ->
+            count += child.countRetainedDescendants()
+        }
+        return count
+    }
 }
 

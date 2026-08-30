@@ -144,6 +144,47 @@ class DefaultWorkspaceComponent(
         }
     }
 
+    override fun onDeleteRetainedTopic(topic: String) {
+        val cleanTopic = topic.trim().removePrefix("/")
+        if (cleanTopic.isBlank()) return
+
+        scope.launch {
+            try {
+                mqttRepository.publish(
+                    topic = cleanTopic,
+                    payload = byteArrayOf(),
+                    qos = 0,
+                    isRetained = true
+                )
+            } catch (e: Exception) {
+                println("Failed to delete retained message on $cleanTopic: ${e.message}")
+            }
+        }
+    }
+
+    override fun onDeleteRetainedBranch(branchPath: String) {
+        val cleanBranch = branchPath.trim().removePrefix("/")
+        if (cleanBranch.isBlank()) return
+
+        scope.launch {
+            val node = _state.value.rawTopicTree.findNode(cleanBranch)
+            val retainedPaths = node?.collectAllRetainedLeafPaths() ?: emptyList()
+
+            retainedPaths.forEach { topicPath ->
+                try {
+                    mqttRepository.publish(
+                        topic = topicPath,
+                        payload = byteArrayOf(),
+                        qos = 0,
+                        isRetained = true
+                    )
+                } catch (e: Exception) {
+                    println("Failed to delete retained message on $topicPath: ${e.message}")
+                }
+            }
+        }
+    }
+
     override fun onDisconnectClicked() {
         scope.launch {
             mqttRepository.disconnect()
