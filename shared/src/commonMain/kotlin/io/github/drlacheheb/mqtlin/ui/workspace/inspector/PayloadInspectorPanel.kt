@@ -27,6 +27,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainerLowest
 import io.github.drlacheheb.mqtlin.ui.workspace.components.PurgeRetainedDialog
+import io.github.drlacheheb.mqtlin.ui.workspace.inspector.header.formatInspectorTimestamp
 
 /**
  * Main Payload Inspector Panel orchestrating topic metadata, message history navigation,
