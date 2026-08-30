@@ -122,9 +122,15 @@ class DefaultConnectionComponent(
 
     override fun onSaveProfileName() {
         val currentState = _state.value
+        val oldName = currentProfileOriginalName
         val trimmedName = currentState.name.trim()
-        val finalName = if (trimmedName.isBlank()) {
-            currentProfileOriginalName ?: "New Connection"
+
+        val isDuplicate = currentState.savedProfiles.any {
+            it.name.equals(trimmedName, ignoreCase = true) && (oldName == null || !it.name.equals(oldName, ignoreCase = true))
+        }
+
+        val finalName = if (trimmedName.isBlank() || isDuplicate) {
+            oldName ?: "New Connection"
         } else {
             trimmedName
         }
@@ -141,7 +147,6 @@ class DefaultConnectionComponent(
             password = currentState.password.ifBlank { null }
         )
 
-        val oldName = currentProfileOriginalName
         currentProfileOriginalName = finalName
 
         _state.update { state ->
@@ -215,9 +220,18 @@ class DefaultConnectionComponent(
     }
 
     override fun onNewProfileClicked() {
+        val existingNames = _state.value.savedProfiles.map { it.name.trim().lowercase() }.toSet()
+        val baseName = "New Connection"
+        var uniqueName = baseName
+        var counter = 2
+        while (uniqueName.lowercase() in existingNames) {
+            uniqueName = "$baseName $counter"
+            counter++
+        }
+
         val randomHex = Random.nextBytes(3).joinToString("") { "%02x".format(it) }
         val newProfile = ConnectionConfig(
-            name = "New Connection",
+            name = uniqueName,
             host = "127.0.0.1",
             port = 1883,
             clientId = "mqtlin_client_$randomHex",
@@ -350,8 +364,19 @@ class DefaultConnectionComponent(
         val currentState = _state.value
         val portInt = currentState.portText.toIntOrNull() ?: -1
 
+        val oldName = currentProfileOriginalName
+        val rawName = currentState.name.trim()
+        val isDuplicate = currentState.savedProfiles.any {
+            it.name.equals(rawName, ignoreCase = true) && (oldName == null || !it.name.equals(oldName, ignoreCase = true))
+        }
+        val resolvedName = if (rawName.isBlank() || isDuplicate) {
+            oldName ?: "New Connection"
+        } else {
+            rawName
+        }
+
         val config = ConnectionConfig(
-            name = currentState.name,
+            name = resolvedName,
             host = currentState.host.trim(),
             port = portInt,
             clientId = currentState.clientId.trim(),
@@ -361,8 +386,7 @@ class DefaultConnectionComponent(
             password = currentState.password.ifBlank { null }
         )
 
-        val oldName = currentProfileOriginalName
-        currentProfileOriginalName = config.name
+        currentProfileOriginalName = resolvedName
 
         when (val validation = validateConfigUseCase(config)) {
             is ValidationResult.Invalid -> {

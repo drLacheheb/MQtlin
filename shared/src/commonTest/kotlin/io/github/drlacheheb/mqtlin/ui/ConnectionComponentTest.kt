@@ -604,4 +604,63 @@ class ConnectionComponentTest {
 
         lifecycle.destroy()
     }
+
+    @Test
+    fun `creating multiple new profiles assigns auto-incrementing numbered names`() = runTest {
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository()
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        // 1st new profile -> "New Connection"
+        component.onNewProfileClicked()
+        advanceUntilIdle()
+        component.state.value.name shouldBe "New Connection"
+
+        // 2nd new profile -> "New Connection 2"
+        component.onNewProfileClicked()
+        advanceUntilIdle()
+        component.state.value.name shouldBe "New Connection 2"
+
+        // 3rd new profile -> "New Connection 3"
+        component.onNewProfileClicked()
+        advanceUntilIdle()
+        component.state.value.name shouldBe "New Connection 3"
+
+        val names = component.state.value.savedProfiles.map { it.name }
+        names shouldContain "New Connection"
+        names shouldContain "New Connection 2"
+        names shouldContain "New Connection 3"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `renaming a profile to an existing profile name is rejected and reverts to original name`() = runTest {
+        val profileA = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Profile Alpha", host = "127.0.0.1", port = 1883)
+        val profileB = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Profile Beta", host = "127.0.0.1", port = 1884)
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(profileA, profileB)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        // Select Profile Alpha
+        component.onProfileSelected(profileA)
+        advanceUntilIdle()
+        component.state.value.name shouldBe "Profile Alpha"
+
+        // Try to rename Profile Alpha to "Profile Beta" (which already exists)
+        component.onNameChanged("Profile Beta")
+        component.onSaveProfileName()
+        advanceUntilIdle()
+
+        // Duplicate name rejected, reverts to original name "Profile Alpha"
+        component.state.value.name shouldBe "Profile Alpha"
+        component.state.value.savedProfiles.map { it.name } shouldContain "Profile Alpha"
+        component.state.value.savedProfiles.map { it.name } shouldContain "Profile Beta"
+
+        lifecycle.destroy()
+    }
 }
