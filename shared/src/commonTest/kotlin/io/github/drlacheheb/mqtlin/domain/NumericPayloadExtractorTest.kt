@@ -2,9 +2,11 @@ package io.github.drlacheheb.mqtlin.domain
 
 import io.github.drlacheheb.mqtlin.domain.model.MqttMessage
 import io.github.drlacheheb.mqtlin.domain.util.NumericPayloadExtractor
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.maps.shouldBeEmpty
+import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -70,5 +72,30 @@ class NumericPayloadExtractorTest {
         points[1].value shouldBe 22.0
         points[2].timestamp shouldBe 3000L
         points[2].value shouldBe 23.0
+    }
+
+    @Test
+    fun `buildTimeSeries handles empty history and missing metric keys gracefully`() {
+        val emptyPoints = NumericPayloadExtractor.buildTimeSeries(emptyList(), "value")
+        emptyPoints.shouldBeEmpty()
+
+        val historyWithMissingKeys = listOf(
+            MqttMessage(topic = "sensor/a", payload = """{"temp": 22.5}""".encodeToByteArray(), timestamp = 3000L),
+            MqttMessage(topic = "sensor/a", payload = """{"humidity": 65}""".encodeToByteArray(), timestamp = 2000L),
+            MqttMessage(topic = "sensor/a", payload = """{"temp": 20.0}""".encodeToByteArray(), timestamp = 1000L)
+        )
+
+        val tempPoints = NumericPayloadExtractor.buildTimeSeries(historyWithMissingKeys, "temp")
+        tempPoints shouldHaveSize 2
+        tempPoints[0].value shouldBe 20.0
+        tempPoints[1].value shouldBe 22.5
+    }
+
+    @Test
+    fun `extractMetrics ignores boolean and null JSON primitives`() {
+        val json = """{"active": true, "error": null, "count": 10}"""
+        val metrics = NumericPayloadExtractor.extractMetrics(json)
+        metrics shouldHaveSize 1
+        metrics["count"] shouldBe 10.0
     }
 }
