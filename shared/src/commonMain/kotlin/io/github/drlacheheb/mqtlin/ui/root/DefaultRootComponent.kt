@@ -9,8 +9,7 @@ import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.router.stack.pop
-import com.arkivanov.decompose.router.stack.pushToFront
+import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
 import io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig
 import io.github.drlacheheb.mqtlin.domain.repository.MqttRepository
@@ -52,6 +51,10 @@ class DefaultRootComponent(
         dialogNav.activate(DialogNavConfig.Settings)
     }
 
+    override fun onOpenConnectionManager() {
+        dialogNav.activate(DialogNavConfig.ConnectionManager)
+    }
+
     override fun onDismissDialog() {
         dialogNav.dismiss()
     }
@@ -64,14 +67,8 @@ class DefaultRootComponent(
                         componentContext = context,
                         mqttRepository = mqttRepository,
                         profileRepository = profileRepository,
-                        onConnected = {
-                            val activeState = mqttRepository.connectionState.value
-                            val connConfig = ConnectionConfig(
-                                host = (activeState as? io.github.drlacheheb.mqtlin.domain.model.ConnectionState.Connected)?.host ?: "127.0.0.1",
-                                port = (activeState as? io.github.drlacheheb.mqtlin.domain.model.ConnectionState.Connected)?.port ?: 1883,
-                                clientId = (activeState as? io.github.drlacheheb.mqtlin.domain.model.ConnectionState.Connected)?.clientId ?: "mqtlin_client"
-                            )
-                            navigation.pushToFront(Config.Workspace(connConfig))
+                        onConnected = { connConfig ->
+                            navigation.replaceAll(Config.Workspace(connConfig))
                         },
                         mainContext = mainContext
                     )
@@ -80,14 +77,8 @@ class DefaultRootComponent(
                         componentContext = context,
                         mqttRepository = mqttRepository,
                         profileRepository = profileRepository,
-                        onConnected = {
-                            val activeState = mqttRepository.connectionState.value
-                            val connConfig = ConnectionConfig(
-                                host = (activeState as? io.github.drlacheheb.mqtlin.domain.model.ConnectionState.Connected)?.host ?: "127.0.0.1",
-                                port = (activeState as? io.github.drlacheheb.mqtlin.domain.model.ConnectionState.Connected)?.port ?: 1883,
-                                clientId = (activeState as? io.github.drlacheheb.mqtlin.domain.model.ConnectionState.Connected)?.clientId ?: "mqtlin_client"
-                            )
-                            navigation.pushToFront(Config.Workspace(connConfig))
+                        onConnected = { connConfig ->
+                            navigation.replaceAll(Config.Workspace(connConfig))
                         }
                     )
                 }
@@ -99,8 +90,8 @@ class DefaultRootComponent(
                         componentContext = context,
                         config = config.config,
                         mqttRepository = mqttRepository,
-                        onDisconnect = { navigation.pop() },
-                        onOpenConnectionManager = { navigation.pushToFront(Config.Connection) },
+                        onDisconnect = { navigation.replaceAll(Config.Connection) },
+                        onOpenConnectionManager = ::onOpenConnectionManager,
                         onOpenSettings = ::onOpenSettings,
                         mainContext = mainContext
                     )
@@ -109,8 +100,8 @@ class DefaultRootComponent(
                         componentContext = context,
                         config = config.config,
                         mqttRepository = mqttRepository,
-                        onDisconnect = { navigation.pop() },
-                        onOpenConnectionManager = { navigation.pushToFront(Config.Connection) },
+                        onDisconnect = { navigation.replaceAll(Config.Connection) },
+                        onOpenConnectionManager = ::onOpenConnectionManager,
                         onOpenSettings = ::onOpenSettings
                     )
                 }
@@ -127,6 +118,31 @@ class DefaultRootComponent(
                 )
                 RootComponent.DialogChild.Settings(settingsComponent)
             }
+            is DialogNavConfig.ConnectionManager -> {
+                val connectionComponent = if (mainContext != null) {
+                    DefaultConnectionComponent(
+                        componentContext = context,
+                        mqttRepository = mqttRepository,
+                        profileRepository = profileRepository,
+                        onConnected = { connConfig ->
+                            dialogNav.dismiss()
+                            navigation.replaceAll(Config.Workspace(connConfig))
+                        },
+                        mainContext = mainContext
+                    )
+                } else {
+                    DefaultConnectionComponent(
+                        componentContext = context,
+                        mqttRepository = mqttRepository,
+                        profileRepository = profileRepository,
+                        onConnected = { connConfig ->
+                            dialogNav.dismiss()
+                            navigation.replaceAll(Config.Workspace(connConfig))
+                        }
+                    )
+                }
+                RootComponent.DialogChild.ConnectionManager(connectionComponent)
+            }
         }
 
     @Serializable
@@ -142,5 +158,8 @@ class DefaultRootComponent(
     private sealed interface DialogNavConfig {
         @Serializable
         data object Settings : DialogNavConfig
+
+        @Serializable
+        data object ConnectionManager : DialogNavConfig
     }
 }

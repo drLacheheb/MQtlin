@@ -26,6 +26,7 @@ import io.github.drlacheheb.mqtlin.data.repository.FileProfileRepository
 import io.github.drlacheheb.mqtlin.data.repository.HiveMqRepository
 import io.github.drlacheheb.mqtlin.ui.components.LocalWindowActions
 import io.github.drlacheheb.mqtlin.ui.components.WindowActions
+import io.github.drlacheheb.mqtlin.ui.connection.ConnectionDialog
 import io.github.drlacheheb.mqtlin.ui.root.DefaultRootComponent
 import io.github.drlacheheb.mqtlin.ui.root.RootComponent
 import io.github.drlacheheb.mqtlin.ui.settings.SettingsScreen
@@ -123,33 +124,81 @@ fun main() {
             }
         }
 
-        // Auxiliary Multi-Window: Settings Window
+        // Auxiliary Multi-Windows (Settings, Connection Switcher)
         val dialogSlot by rootComponent.dialogSlot.subscribeAsState()
-        val dialogChild = dialogSlot.child?.instance
 
-        if (dialogChild is RootComponent.DialogChild.Settings) {
-            val settingsWindowState = rememberWindowState(
-                size = DpSize(520.dp, 380.dp),
-                position = WindowPosition.Aligned(Alignment.Center)
-            )
+        when (val dialogChild = dialogSlot.child?.instance) {
+            is RootComponent.DialogChild.Settings -> {
+                val settingsWindowState = rememberWindowState(
+                    size = DpSize(520.dp, 380.dp),
+                    position = WindowPosition.Aligned(Alignment.Center)
+                )
 
-            Window(
-                onCloseRequest = rootComponent::onDismissDialog,
-                state = settingsWindowState,
-                title = "MQtlin Settings",
-                icon = painterResource("icons/icon.png"),
-                undecorated = true,
-                resizable = false
-            ) {
-                MqtlinTheme {
-                    WindowDraggableArea {
-                        SettingsScreen(
-                            component = dialogChild.component,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                Window(
+                    onCloseRequest = rootComponent::onDismissDialog,
+                    state = settingsWindowState,
+                    title = "MQtlin Settings",
+                    icon = painterResource("icons/icon.png"),
+                    undecorated = true,
+                    resizable = false
+                ) {
+                    MqtlinTheme {
+                        WindowDraggableArea {
+                            SettingsScreen(
+                                component = dialogChild.component,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
             }
+            is RootComponent.DialogChild.ConnectionManager -> {
+                val connectionWindowState = rememberWindowState(
+                    size = DpSize(800.dp, 560.dp),
+                    position = WindowPosition.Aligned(Alignment.Center)
+                )
+
+                val dialogWindowActions = WindowActions(
+                    onMinimize = { connectionWindowState.isMinimized = true },
+                    onMaximizeRestore = {
+                        connectionWindowState.placement = if (connectionWindowState.placement == WindowPlacement.Maximized) {
+                            WindowPlacement.Floating
+                        } else {
+                            WindowPlacement.Maximized
+                        }
+                    },
+                    onClose = { rootComponent.onDismissDialog() },
+                    isMaximized = connectionWindowState.placement == WindowPlacement.Maximized
+                )
+
+                Window(
+                    onCloseRequest = rootComponent::onDismissDialog,
+                    state = connectionWindowState,
+                    title = "MQtlin - Switch Connection",
+                    icon = painterResource("icons/icon.png"),
+                    undecorated = true,
+                    resizable = true
+                ) {
+                    CompositionLocalProvider(LocalWindowActions provides dialogWindowActions) {
+                        MqtlinTheme {
+                            WindowDraggableArea {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(DarkBackground)
+                                        .border(1.dp, DarkBorder)
+                                ) {
+                                    ConnectionDialog(
+                                        component = dialogChild.component,
+                                        onCancel = rootComponent::onDismissDialog
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            null -> {}
         }
     }
 }

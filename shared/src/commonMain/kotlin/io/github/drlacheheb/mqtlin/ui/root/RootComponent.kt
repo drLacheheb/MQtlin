@@ -12,6 +12,7 @@ interface RootComponent {
     val dialogSlot: Value<ChildSlot<*, DialogChild>>
 
     fun onOpenSettings()
+    fun onOpenConnectionManager()
     fun onDismissDialog()
 
     sealed interface RootChild {
@@ -21,5 +22,6 @@ interface RootComponent {
 
     sealed interface DialogChild {
         class Settings(val component: SettingsComponent) : DialogChild
+        class ConnectionManager(val component: ConnectionComponent) : DialogChild
     }
 }

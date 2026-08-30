@@ -7,6 +7,9 @@ import com.arkivanov.essenty.lifecycle.resume
 import io.github.drlacheheb.mqtlin.fakes.FakeMqttRepository
 import io.github.drlacheheb.mqtlin.ui.root.DefaultRootComponent
 import io.github.drlacheheb.mqtlin.ui.root.RootComponent
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -55,5 +58,58 @@ class RootComponentTest {
 
         lifecycle.destroy()
     }
-}
 
+    @Test
+    fun `onOpenConnectionManager activates DialogChild ConnectionManager without closing workspace`() = runTest {
+        val (root, lifecycle) = createRootComponent(this)
+
+        // 1. Connect to initial workspace
+        val connectionChild = root.childStack.value.active.instance as RootComponent.RootChild.Connection
+        connectionChild.component.onConnectClicked()
+        advanceUntilIdle()
+
+        root.childStack.value.active.instance.shouldBeInstanceOf<RootComponent.RootChild.Workspace>()
+        root.dialogSlot.value.child.shouldBeNull()
+
+        // 2. Open Connection Manager from workspace
+        root.onOpenConnectionManager()
+
+        root.dialogSlot.value.child.shouldNotBeNull()
+        root.dialogSlot.value.child?.instance.shouldBeInstanceOf<RootComponent.DialogChild.ConnectionManager>()
+        // Workspace remains active in background
+        root.childStack.value.active.instance.shouldBeInstanceOf<RootComponent.RootChild.Workspace>()
+
+        // 3. Dismiss dialog
+        root.onDismissDialog()
+        root.dialogSlot.value.child.shouldBeNull()
+        root.childStack.value.active.instance.shouldBeInstanceOf<RootComponent.RootChild.Workspace>()
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `connecting inside ConnectionManager dialog dismisses dialog and transitions to new workspace`() = runTest {
+        val (root, lifecycle) = createRootComponent(this)
+
+        // 1. Connect to initial workspace
+        val connectionChild = root.childStack.value.active.instance as RootComponent.RootChild.Connection
+        connectionChild.component.onConnectClicked()
+        advanceUntilIdle()
+
+        // 2. Open Connection Manager dialog
+        root.onOpenConnectionManager()
+        val dialogInstance = root.dialogSlot.value.child?.instance as RootComponent.DialogChild.ConnectionManager
+
+        // 3. Connect to second broker
+        dialogInstance.component.onHostChanged("broker.emqx.io")
+        dialogInstance.component.onConnectClicked()
+        advanceUntilIdle()
+
+        // Dialog should now be closed and active workspace updated
+        root.dialogSlot.value.child.shouldBeNull()
+        val activeWorkspace = root.childStack.value.active.instance as RootComponent.RootChild.Workspace
+        activeWorkspace.component.state.value.connectionConfig?.host shouldBe "broker.emqx.io"
+
+        lifecycle.destroy()
+    }
+}
