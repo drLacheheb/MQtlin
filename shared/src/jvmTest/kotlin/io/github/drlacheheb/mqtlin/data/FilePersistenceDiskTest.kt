@@ -22,9 +22,10 @@ class FilePersistenceDiskTest {
             val repo = FileProfileRepository(baseDirectory = tempDir)
             val initial = repo.getAllProfiles()
 
-            // Auto-provisions 3 default profiles
-            initial shouldHaveSize 3
+            // Auto-provisions 2 default profiles
+            initial shouldHaveSize 2
             initial.map { it.name } shouldContain "Local Mosquitto"
+            initial.map { it.name } shouldContain "HiveMQ Public Broker"
 
             // Save custom profile
             val custom = ConnectionConfig(name = "Disk Test Broker", host = "192.168.1.200", port = 1883)
@@ -33,14 +34,14 @@ class FilePersistenceDiskTest {
             // Re-instantiate repository pointing to same directory to verify persistence across restarts
             val repo2 = FileProfileRepository(baseDirectory = tempDir)
             val loaded = repo2.getAllProfiles()
-            loaded shouldHaveSize 4
+            loaded shouldHaveSize 3
             loaded.map { it.name } shouldContain "Disk Test Broker"
             repo2.getLastSelectedProfileName() shouldBe "Disk Test Broker"
 
             // Delete profile
             repo2.deleteProfile("Disk Test Broker")
             val afterDelete = repo2.getAllProfiles()
-            afterDelete shouldHaveSize 3
+            afterDelete shouldHaveSize 2
         } finally {
             tempDir.deleteRecursively()
         }
@@ -71,6 +72,28 @@ class FilePersistenceDiskTest {
             loaded.maxHistoryPerTopic shouldBe 250
             loaded.autoReconnect shouldBe false
             loaded.defaultProtocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `FileProfileRepository serves subsequent requests from in-memory cache`() = runTest {
+        val tempDir = Files.createTempDirectory("mqtlin_cache_test").toFile()
+        try {
+            val repo = FileProfileRepository(baseDirectory = tempDir)
+            val initial = repo.getAllProfiles()
+            initial shouldHaveSize 2
+
+            // Save new profile updates in-memory cache and disk
+            repo.saveProfile(ConnectionConfig(name = "Cached Broker", host = "cache.io"))
+            repo.getAllProfiles() shouldHaveSize 3
+            repo.getLastSelectedProfileName() shouldBe "Cached Broker"
+
+            // Delete profile updates in-memory cache
+            repo.deleteProfile("Cached Broker")
+            repo.getAllProfiles() shouldHaveSize 2
+            repo.getLastSelectedProfileName() shouldBe null
         } finally {
             tempDir.deleteRecursively()
         }

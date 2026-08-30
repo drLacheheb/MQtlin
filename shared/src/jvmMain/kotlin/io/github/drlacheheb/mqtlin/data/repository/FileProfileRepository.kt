@@ -39,14 +39,6 @@ class FileProfileRepository(
             transport = TransportProtocol.TCP
         ),
         ConnectionConfig(
-            name = "EMQX Public Broker",
-            host = "broker.emqx.io",
-            port = 1883,
-            clientId = "mqtlin_emqx",
-            protocolVersion = MqttProtocolVersion.MQTT_5_0,
-            transport = TransportProtocol.TCP
-        ),
-        ConnectionConfig(
             name = "HiveMQ Public Broker",
             host = "broker.hivemq.com",
             port = 1883,
