@@ -56,6 +56,8 @@ fun WorkspaceScreen(
                 onTopicSelected = component::onTopicSelected,
                 onToggleExpand = component::onToggleExpand,
                 onFilterQueryChanged = component::onFilterQueryChanged,
+                onDeleteRetainedTopic = component::onDeleteRetainedTopic,
+                onDeleteRetainedBranch = component::onDeleteRetainedBranch,
                 modifier = Modifier.width(250.dp)
             )
 

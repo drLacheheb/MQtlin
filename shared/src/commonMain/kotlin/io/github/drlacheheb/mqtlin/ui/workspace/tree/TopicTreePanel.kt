@@ -37,6 +37,8 @@ fun TopicTreePanel(
     onTopicSelected: (String) -> Unit,
     onToggleExpand: (String) -> Unit,
     onFilterQueryChanged: (String) -> Unit,
+    onDeleteRetainedTopic: ((String) -> Unit)? = null,
+    onDeleteRetainedBranch: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -116,7 +118,9 @@ fun TopicTreePanel(
                             selectedTopicPath = selectedTopicPath,
                             depth = 0,
                             onTopicSelected = onTopicSelected,
-                            onToggleExpand = onToggleExpand
+                            onToggleExpand = onToggleExpand,
+                            onDeleteRetainedTopic = onDeleteRetainedTopic,
+                            onDeleteRetainedBranch = onDeleteRetainedBranch
                         )
                     }
                 }
