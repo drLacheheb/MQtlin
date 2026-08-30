@@ -56,23 +56,31 @@ class FileProfileRepository(
         )
     )
 
+    private var cachedProfiles: List<ConnectionConfig>? = null
+    private var cachedLastSelected: String? = null
+
     override suspend fun getAllProfiles(): List<ConnectionConfig> = withContext(Dispatchers.IO) {
         mutex.withLock {
+            cachedProfiles?.let { return@withContext it }
             ensureDirectoryAndDefaults()
-            readProfilesFromFile()
+            val loaded = readProfilesFromFile()
+            cachedProfiles = loaded
+            loaded
         }
     }
 
     override suspend fun saveProfile(profile: ConnectionConfig) = withContext(Dispatchers.IO) {
         mutex.withLock {
             ensureDirectoryAndDefaults()
-            val existing = readProfilesFromFile().toMutableList()
+            val existing = (cachedProfiles ?: readProfilesFromFile()).toMutableList()
             val index = existing.indexOfFirst { it.name.equals(profile.name, ignoreCase = true) }
             if (index >= 0) {
                 existing[index] = profile
             } else {
                 existing.add(profile)
             }
+            cachedProfiles = existing
+            cachedLastSelected = profile.name
             writeProfilesToFile(existing)
             lastProfileFile.writeText(profile.name)
         }
@@ -81,12 +89,14 @@ class FileProfileRepository(
     override suspend fun deleteProfile(profileName: String) = withContext(Dispatchers.IO) {
         mutex.withLock {
             ensureDirectoryAndDefaults()
-            val existing = readProfilesFromFile().toMutableList()
+            val existing = (cachedProfiles ?: readProfilesFromFile()).toMutableList()
             val removed = existing.removeAll { it.name.equals(profileName, ignoreCase = true) }
             if (removed) {
+                cachedProfiles = existing
                 writeProfilesToFile(existing)
                 if (lastProfileFile.exists() && lastProfileFile.readText().trim().equals(profileName, ignoreCase = true)) {
                     lastProfileFile.delete()
+                    cachedLastSelected = null
                 }
             }
         }
@@ -94,9 +104,14 @@ class FileProfileRepository(
 
     override suspend fun getLastSelectedProfileName(): String? = withContext(Dispatchers.IO) {
         mutex.withLock {
+            if (cachedLastSelected != null) {
+                return@withContext cachedLastSelected
+            }
             if (lastProfileFile.exists()) {
                 val name = lastProfileFile.readText().trim()
-                name.ifBlank { null }
+                val result = name.ifBlank { null }
+                cachedLastSelected = result
+                result
             } else {
                 null
             }
@@ -105,6 +120,7 @@ class FileProfileRepository(
 
     override suspend fun setLastSelectedProfileName(name: String) = withContext(Dispatchers.IO) {
         mutex.withLock {
+            cachedLastSelected = name.trim()
             ensureDirectoryAndDefaults()
             lastProfileFile.writeText(name.trim())
         }

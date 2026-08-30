@@ -13,6 +13,8 @@ import io.github.drlacheheb.mqtlin.domain.usecase.ValidationResult
 import io.github.drlacheheb.mqtlin.fakes.FakeMqttRepository
 import io.github.drlacheheb.mqtlin.ui.connection.DefaultConnectionComponent
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.shouldBe
@@ -515,6 +517,90 @@ class ConnectionComponentTest {
         // Main repository connection state remains Connected to the active broker!
         fakeRepository.connectionState.value.shouldBeInstanceOf<ConnectionState.Connected>()
         (fakeRepository.connectionState.value as ConnectionState.Connected).host shouldBe "127.0.0.1"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `editing profile name and saving updates savedProfiles list and repository`() = runTest {
+        val initialProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Local Mosquitto",
+            host = "127.0.0.1",
+            port = 1883
+        )
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(initialProfile)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        component.state.value.name shouldBe "Local Mosquitto"
+
+        // User types new name
+        component.onNameChanged("My Office Mosquitto")
+        // User presses Enter or leaves focus (save name)
+        component.onSaveProfileName()
+        advanceUntilIdle()
+
+        // UI state updated
+        component.state.value.name shouldBe "My Office Mosquitto"
+        val savedNames = component.state.value.savedProfiles.map { it.name }
+        savedNames shouldContain "My Office Mosquitto"
+        savedNames shouldNotContain "Local Mosquitto"
+
+        // Repository updated
+        val repoProfiles = fakeProfileRepo.getAllProfiles().map { it.name }
+        repoProfiles shouldContain "My Office Mosquitto"
+        repoProfiles shouldNotContain "Local Mosquitto"
+        fakeProfileRepo.getLastSelectedProfileName() shouldBe "My Office Mosquitto"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `saving blank profile name falls back to original profile name`() = runTest {
+        val initialProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Production Cluster",
+            host = "broker.emqx.io",
+            port = 1883
+        )
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(initialProfile)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        // User clears name to blank
+        component.onNameChanged("   ")
+        component.onSaveProfileName()
+        advanceUntilIdle()
+
+        // Falls back to original name
+        component.state.value.name shouldBe "Production Cluster"
+        component.state.value.savedProfiles.map { it.name } shouldContain "Production Cluster"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `editing name of newly created profile and saving commits new profile name`() = runTest {
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository()
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        component.onNewProfileClicked()
+        advanceUntilIdle()
+
+        component.onNameChanged("Custom IoT Lab")
+        component.onSaveProfileName()
+        advanceUntilIdle()
+
+        component.state.value.name shouldBe "Custom IoT Lab"
+        component.state.value.savedProfiles.map { it.name } shouldContain "Custom IoT Lab"
+        fakeProfileRepo.getLastSelectedProfileName() shouldBe "Custom IoT Lab"
 
         lifecycle.destroy()
     }

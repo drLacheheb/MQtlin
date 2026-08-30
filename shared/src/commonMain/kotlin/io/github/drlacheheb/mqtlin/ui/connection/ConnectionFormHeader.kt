@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,10 +25,17 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +54,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 fun ConnectionFormHeader(
     profileName: String,
     onNameChange: (String) -> Unit,
+    onNameSave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -81,7 +91,8 @@ fun ConnectionFormHeader(
 
                 InlineEditableProfileName(
                     name = profileName,
-                    onNameChange = onNameChange
+                    onNameChange = onNameChange,
+                    onNameSave = onNameSave
                 )
             }
 
@@ -101,9 +112,12 @@ fun ConnectionFormHeader(
 fun InlineEditableProfileName(
     name: String,
     onNameChange: (String) -> Unit,
+    onNameSave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
     var isHovered by remember { mutableStateOf(false) }
+    var hadFocus by remember { mutableStateOf(false) }
     var isFocused by remember { mutableStateOf(false) }
 
     Box(
@@ -151,9 +165,31 @@ fun InlineEditableProfileName(
             ),
             singleLine = true,
             cursorBrush = SolidColor(MqtlinPrimary),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                    onNameSave()
+                }
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .onFocusChanged { isFocused = it.isFocused }
+                .onFocusChanged { focusState ->
+                    isFocused = focusState.isFocused
+                    if (hadFocus && !focusState.isFocused) {
+                        onNameSave()
+                    }
+                    hadFocus = focusState.isFocused
+                }
+                .onKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyDown && (keyEvent.key == Key.Enter || keyEvent.key == Key.NumPadEnter)) {
+                        focusManager.clearFocus()
+                        onNameSave()
+                        true
+                    } else {
+                        false
+                    }
+                }
         )
     }
 }

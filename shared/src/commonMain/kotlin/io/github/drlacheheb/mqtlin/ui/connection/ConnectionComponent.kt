@@ -30,6 +30,7 @@ interface ConnectionComponent {
     val state: Value<ConnectionUiState>
 
     fun onNameChanged(name: String)
+    fun onSaveProfileName()
     fun onHostChanged(host: String)
     fun onPortChanged(portText: String)
     fun onClientIdChanged(clientId: String)

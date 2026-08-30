@@ -40,6 +40,7 @@ class DefaultConnectionComponent(
 
     private var isExplicitConnecting = false
     private var activeConnectingConfig: ConnectionConfig? = null
+    private var currentProfileOriginalName: String? = null
 
     init {
         lifecycle.subscribe(
@@ -55,6 +56,8 @@ class DefaultConnectionComponent(
                 val lastSelected = profileRepository.getLastSelectedProfileName()
                 val activeProfile = profiles.firstOrNull { it.name.equals(lastSelected, ignoreCase = true) }
                     ?: profiles.firstOrNull()
+
+                currentProfileOriginalName = activeProfile?.name
 
                 _state.update { state ->
                     if (activeProfile != null) {
@@ -117,6 +120,61 @@ class DefaultConnectionComponent(
         _state.update { it.copy(name = name.take(MAX_PROFILE_NAME_LENGTH)) }
     }
 
+    override fun onSaveProfileName() {
+        val currentState = _state.value
+        val trimmedName = currentState.name.trim()
+        val finalName = if (trimmedName.isBlank()) {
+            currentProfileOriginalName ?: "New Connection"
+        } else {
+            trimmedName
+        }
+
+        val portInt = currentState.portText.toIntOrNull() ?: 1883
+        val updatedConfig = ConnectionConfig(
+            name = finalName,
+            host = currentState.host.trim().ifBlank { "127.0.0.1" },
+            port = portInt,
+            clientId = currentState.clientId.trim(),
+            protocolVersion = currentState.protocolVersion,
+            transport = currentState.transport,
+            username = currentState.username.ifBlank { null },
+            password = currentState.password.ifBlank { null }
+        )
+
+        val oldName = currentProfileOriginalName
+        currentProfileOriginalName = finalName
+
+        _state.update { state ->
+            val updatedList = state.savedProfiles.toMutableList()
+            val index = if (oldName != null) {
+                updatedList.indexOfFirst { it.name.equals(oldName, ignoreCase = true) }
+            } else {
+                updatedList.indexOfFirst { it.name.equals(finalName, ignoreCase = true) }
+            }
+
+            if (index >= 0) {
+                updatedList[index] = updatedConfig
+            } else {
+                updatedList.add(updatedConfig)
+            }
+
+            state.copy(
+                name = finalName,
+                savedProfiles = updatedList
+            )
+        }
+
+        profileRepository?.let { repo ->
+            scope.launch {
+                if (oldName != null && !oldName.equals(finalName, ignoreCase = true)) {
+                    repo.deleteProfile(oldName)
+                }
+                repo.saveProfile(updatedConfig)
+                repo.setLastSelectedProfileName(finalName)
+            }
+        }
+    }
+
     override fun onHostChanged(host: String) {
         _state.update { it.copy(host = host) }
     }
@@ -166,6 +224,7 @@ class DefaultConnectionComponent(
             protocolVersion = MqttProtocolVersion.MQTT_5_0,
             transport = TransportProtocol.TCP
         )
+        currentProfileOriginalName = newProfile.name
         _state.update { state ->
             state.copy(
                 name = newProfile.name,
@@ -190,6 +249,7 @@ class DefaultConnectionComponent(
     }
 
     override fun onProfileSelected(profile: ConnectionConfig) {
+        currentProfileOriginalName = profile.name
         val currentRepoState = mqttRepository.connectionState.value
         val isCurrentlyConnected = currentRepoState is ConnectionState.Connected &&
             currentRepoState.host == profile.host &&
@@ -301,17 +361,25 @@ class DefaultConnectionComponent(
             password = currentState.password.ifBlank { null }
         )
 
+        val oldName = currentProfileOriginalName
+        currentProfileOriginalName = config.name
+
         when (val validation = validateConfigUseCase(config)) {
             is ValidationResult.Invalid -> {
                 _state.update { it.copy(validationErrors = validation.errors) }
             }
             ValidationResult.Valid -> {
                 _state.update { state ->
-                    val existingIndex = state.savedProfiles.indexOfFirst { it.name == config.name }
-                    val updatedProfiles = if (existingIndex >= 0) {
-                        state.savedProfiles.toMutableList().apply { set(existingIndex, config) }
+                    val updatedProfiles = state.savedProfiles.toMutableList()
+                    val index = if (oldName != null) {
+                        updatedProfiles.indexOfFirst { it.name.equals(oldName, ignoreCase = true) }
                     } else {
-                        state.savedProfiles + config
+                        updatedProfiles.indexOfFirst { it.name.equals(config.name, ignoreCase = true) }
+                    }
+                    if (index >= 0) {
+                        updatedProfiles[index] = config
+                    } else {
+                        updatedProfiles.add(config)
                     }
                     state.copy(
                         savedProfiles = updatedProfiles,
@@ -321,7 +389,11 @@ class DefaultConnectionComponent(
                 }
                 profileRepository?.let { repo ->
                     scope.launch {
+                        if (oldName != null && !oldName.equals(config.name, ignoreCase = true)) {
+                            repo.deleteProfile(oldName)
+                        }
                         repo.saveProfile(config)
+                        repo.setLastSelectedProfileName(config.name)
                     }
                 }
                 activeConnectingConfig = config

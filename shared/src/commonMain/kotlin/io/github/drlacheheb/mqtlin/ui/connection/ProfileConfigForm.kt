@@ -54,7 +54,8 @@ fun ProfileConfigForm(
         // 1. Breadcrumb Title Header & Window Controls
         ConnectionFormHeader(
             profileName = state.name,
-            onNameChange = component::onNameChanged
+            onNameChange = component::onNameChanged,
+            onNameSave = component::onSaveProfileName
         )
 
         // 2. Main Form Fields (Scrollable area)
