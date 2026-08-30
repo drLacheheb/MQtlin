@@ -46,3 +46,8 @@ compose.desktop {
         }
     }
 }
+
+tasks.matching { it.name.startsWith("hotRun") }.configureEach {
+    dependsOn(tasks.named("classes"))
+    notCompatibleWithConfigurationCache("Compose Hot Reload runs an interactive agent with dynamic classpath mutation")
+}

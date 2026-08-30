@@ -33,7 +33,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.MqtlinOnPrimary
 @Composable
 fun ConnectionFormFooter(
     state: ConnectionUiState,
-    onCancel: () -> Unit,
+    onCancel: (() -> Unit)?,
     onDisconnect: () -> Unit,
     onTestConnection: () -> Unit,
     onConnect: () -> Unit,
@@ -55,10 +55,14 @@ fun ConnectionFormFooter(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MqtlinTextButton(
-                onClick = onCancel
-            ) {
-                Text("Cancel")
+            if (onCancel != null) {
+                MqtlinTextButton(
+                    onClick = onCancel
+                ) {
+                    Text("Cancel")
+                }
+            } else {
+                Spacer(modifier = Modifier.width(1.dp))
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

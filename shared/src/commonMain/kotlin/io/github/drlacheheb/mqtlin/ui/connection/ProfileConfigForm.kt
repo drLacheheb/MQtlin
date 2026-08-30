@@ -45,17 +45,11 @@ import io.github.drlacheheb.mqtlin.ui.theme.MqtlinError
 fun ProfileConfigForm(
     state: ConnectionUiState,
     component: ConnectionComponent,
-    onCancel: () -> Unit,
+    onCancel: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val focusManager = LocalFocusManager.current
-
     Column(
-        modifier = modifier
-            .background(ModalSurface)
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { focusManager.clearFocus() })
-            }
+        modifier = modifier.background(ModalSurface)
     ) {
         // 1. Breadcrumb Title Header & Window Controls
         ConnectionFormHeader(

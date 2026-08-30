@@ -18,7 +18,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.ModalSurface
 @Composable
 fun ConnectionDialog(
     component: ConnectionComponent,
-    onCancel: () -> Unit = {}
+    onCancel: (() -> Unit)? = null
 ) {
     val state by component.state.subscribeAsState()
 
