@@ -3,6 +3,7 @@ package io.github.drlacheheb.mqtlin.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import io.github.drlacheheb.mqtlin.ui.components.ProvidePlatformContextMenu
 
 private val DarkColorScheme = darkColorScheme(
     primary = MqtlinPrimary,
@@ -45,6 +46,10 @@ fun MqtlinTheme(
     MaterialTheme(
         colorScheme = DarkColorScheme,
         typography = MqtlinTypography,
-        content = content
+        content = {
+            ProvidePlatformContextMenu {
+                content()
+            }
+        }
     )
 }
