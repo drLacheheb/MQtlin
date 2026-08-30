@@ -87,11 +87,7 @@ fun TopicTreeNodeItem(
             Row(
                 modifier = Modifier
                     .clickable {
-                        if (node.isLeaf) {
-                            onTopicSelected(node.fullPath)
-                        } else {
-                            onToggleExpand(node.fullPath)
-                        }
+                        onTopicSelected(node.fullPath)
                     }
                     .padding(horizontal = 6.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically

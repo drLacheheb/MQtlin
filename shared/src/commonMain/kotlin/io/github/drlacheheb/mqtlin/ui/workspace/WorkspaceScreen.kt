@@ -70,6 +70,8 @@ fun WorkspaceScreen(
             // Center Column: Payload Inspector (1fr)
             PayloadInspectorPanel(
                 selectedNode = state.selectedNode,
+                onDeleteRetainedTopic = component::onDeleteRetainedTopic,
+                onDeleteRetainedBranch = component::onDeleteRetainedBranch,
                 modifier = Modifier.weight(1f)
             )
 
