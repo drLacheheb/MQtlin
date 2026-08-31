@@ -87,7 +87,7 @@ fun TopicNodeContextMenu(
                 shortcut = "Del",
                 isDestructive = true,
                 onClick = {
-                    onDeleteRetainedTopic?.invoke(node.fullPath)
+                    onDeleteRetainedTopic(node.fullPath)
                     onDismissRequest()
                 }
             )

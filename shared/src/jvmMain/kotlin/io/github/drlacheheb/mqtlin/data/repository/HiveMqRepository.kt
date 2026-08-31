@@ -184,11 +184,10 @@ class HiveMqRepository : MqttRepository {
             .addDisconnectedListener { context ->
                 if (!isIntentionalDisconnect && _connectionState.value !is ConnectionState.Disconnected) {
                     val cause = context.cause
-                    val isNormalClose = cause == null ||
-                        cause.message?.contains("Session expired as connection was closed", ignoreCase = true) == true ||
+                    val isNormalClose = cause.message?.contains("Session expired as connection was closed", ignoreCase = true) == true ||
                         cause.message?.contains("closed", ignoreCase = true) == true
 
-                    if (!isNormalClose && cause != null) {
+                    if (!isNormalClose) {
                         _connectionState.value = ConnectionState.Error(
                             message = MqttErrorMapper.mapConnectionError(cause, config.host, config.port),
                             cause = cause
@@ -282,11 +281,10 @@ class HiveMqRepository : MqttRepository {
             .addDisconnectedListener { context ->
                 if (!isIntentionalDisconnect && _connectionState.value !is ConnectionState.Disconnected) {
                     val cause = context.cause
-                    val isNormalClose = cause == null ||
-                        cause.message?.contains("Session expired as connection was closed", ignoreCase = true) == true ||
+                    val isNormalClose = cause.message?.contains("Session expired as connection was closed", ignoreCase = true) == true ||
                         cause.message?.contains("closed", ignoreCase = true) == true
 
-                    if (!isNormalClose && cause != null) {
+                    if (!isNormalClose) {
                         _connectionState.value = ConnectionState.Error(
                             message = MqttErrorMapper.mapConnectionError(cause, config.host, config.port),
                             cause = cause

@@ -30,7 +30,6 @@ DisableProgramGroupPage=yes
 
 ; Modern Dark Theme UI Styling
 WizardStyle=modern dark
-WizardResizable=no
 
 ; Allow installation for both regular users and admins
 PrivilegesRequired=lowest

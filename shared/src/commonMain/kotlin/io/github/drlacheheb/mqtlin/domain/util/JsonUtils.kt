@@ -1,8 +1,10 @@
 package io.github.drlacheheb.mqtlin.domain.util
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 
+@OptIn(ExperimentalSerializationApi::class)
 object JsonUtils {
 
     private val prettyJson = Json {
