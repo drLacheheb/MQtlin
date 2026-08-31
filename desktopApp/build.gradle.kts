@@ -36,11 +36,21 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
-            modules("java.instrument", "jdk.unsupported")
+            modules(
+                "java.desktop",
+                "java.instrument",
+                "java.logging",
+                "java.management",
+                "java.naming",
+                "java.prefs",
+                "java.sql",
+                "java.xml",
+                "jdk.unsupported",
+            )
             packageName = "MQtlin"
             packageVersion = semver
             description = "MQtlin - Modern MQTT Explorer & Broker Client"
-            copyright = "© 2026 MQtlin"
+            copyright = "Copyright (c) 2026 MQtlin"
             vendor = "io.github.drlacheheb"
 
             windows {
@@ -51,6 +61,7 @@ compose.desktop {
             macOS {
                 iconFile.set(project.file("src/main/resources/icons/icon.icns"))
                 bundleID = "io.github.drlacheheb.mqtlin"
+                dockName = "MQtlin"
             }
             linux {
                 iconFile.set(project.file("src/main/resources/icons/icon.png"))
