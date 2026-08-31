@@ -27,8 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,6 +38,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceDim
 import io.github.drlacheheb.mqtlin.ui.theme.MonoCode
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinPrimary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinSecondary
+import io.github.drlacheheb.mqtlin.ui.util.createClipEntry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -50,7 +50,7 @@ fun TopicPathPill(
     fullTopicPath: String,
     modifier: Modifier = Modifier,
 ) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
     val coroutineScope = rememberCoroutineScope()
     var isCopied by remember { mutableStateOf(false) }
 
@@ -83,9 +83,9 @@ fun TopicPathPill(
                     Modifier
                         .pointerHoverIcon(PointerIcon.Hand)
                         .clickable {
-                            clipboardManager.setText(AnnotatedString(fullTopicPath))
                             isCopied = true
                             coroutineScope.launch {
+                                clipboard.setClipEntry(createClipEntry(fullTopicPath))
                                 delay(1500)
                                 isCopied = false
                             }

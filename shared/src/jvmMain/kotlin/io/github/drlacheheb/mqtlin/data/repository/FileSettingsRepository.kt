@@ -38,7 +38,7 @@ class FileSettingsRepository(
                     try {
                         val text = settingsFile.readText()
                         if (text.isBlank()) AppSettings() else json.decodeFromString(text)
-                    } catch (e: Exception) {
+                    } catch (ignored: Exception) {
                         AppSettings()
                     }
                 }

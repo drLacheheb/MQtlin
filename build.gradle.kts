@@ -28,15 +28,6 @@ subprojects {
         }
     }
 
-    tasks.matching { it.name.startsWith("ktlint") && (it.name.endsWith("Check") || it.name.endsWith("Format")) }.configureEach {
-        if (this is SourceTask) {
-            setSource(
-                project.fileTree("src") {
-                    include("**/*.kt", "**/*.kts")
-                },
-            )
-        }
-    }
 
     dependencies {
         "detektPlugins"(rootProject.libs.detekt.compose.rules)

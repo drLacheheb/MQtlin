@@ -44,7 +44,7 @@ fun TimeSeriesCanvas(
     maxValue: Double,
     pulseAlpha: Float,
     hoverOffset: Offset?,
-    onHoverChanged: (Offset?, TimeSeriesPoint?) -> Unit,
+    onHoverChange: (Offset?, TimeSeriesPoint?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -73,13 +73,13 @@ fun TimeSeriesCanvas(
                                         if (timeSeries.size > 1 && chartWidth > 0 && pos.x in paddingStart..(size.width - paddingEnd)) {
                                             val fraction = ((pos.x - paddingStart) / chartWidth).coerceIn(0f, 1f)
                                             val index = (fraction * (timeSeries.size - 1)).toInt().coerceIn(0, timeSeries.size - 1)
-                                            onHoverChanged(pos, timeSeries[index])
+                                            onHoverChange(pos, timeSeries[index])
                                         } else {
-                                            onHoverChanged(pos, null)
+                                            onHoverChange(pos, null)
                                         }
                                     }
                                     PointerEventType.Exit -> {
-                                        onHoverChanged(null, null)
+                                        onHoverChange(null, null)
                                     }
                                 }
                             }

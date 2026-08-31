@@ -11,18 +11,28 @@ complexity:
   active: true
   CyclomaticComplexMethod:
     active: true
-    threshold: 45
+    threshold: 15
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Test'
   LongMethod:
     active: true
-    threshold: 250
+    threshold: 60
+    ignoreAnnotated:
+      - 'Composable'
+      - 'Test'
   LongParameterList:
     active: true
     functionThreshold: 12
     constructorThreshold: 12
     ignoreDefaultParameters: true
+    ignoreAnnotated:
+      - 'Composable'
   NestedBlockDepth:
     active: true
-    threshold: 8
+    threshold: 4
+    ignoreAnnotated:
+      - 'Composable'
   TooManyFunctions:
     active: false
   LargeClass:
@@ -31,6 +41,8 @@ complexity:
 coroutines:
   active: true
   GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
     active: true
   InjectDispatcher:
     active: false
@@ -70,7 +82,7 @@ potential-bugs:
   UnreachableCode:
     active: true
   UnsafeCallOnNullableType:
-    active: false
+    active: true
 
 style:
   active: true
@@ -120,6 +132,6 @@ Compose:
   CompositionLocalAllowlist:
     active: false
   ParameterNaming:
-    active: false
+    active: true
   MultipleEmitters:
-    active: false
+    active: true

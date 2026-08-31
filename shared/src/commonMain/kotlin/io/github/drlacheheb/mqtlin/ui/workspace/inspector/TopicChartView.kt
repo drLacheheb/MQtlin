@@ -136,7 +136,7 @@ fun TopicChartView(
                 maxValue = maxValue,
                 pulseAlpha = pulseAlpha,
                 hoverOffset = hoverOffset,
-                onHoverChanged = { offset, pt ->
+                onHoverChange = { offset, pt ->
                     hoverOffset = offset
                     hoveredPoint = pt
                 },

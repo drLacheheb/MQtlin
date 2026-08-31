@@ -67,7 +67,7 @@ import io.github.drlacheheb.mqtlin.ui.workspace.components.PurgeRetainedDialog
 fun TopicTreeNodeItem(
     node: TopicNode,
     selectedTopicPath: String?,
-    onTopicSelected: (String) -> Unit,
+    onTopicSelect: (String) -> Unit,
     onToggleExpand: (String) -> Unit,
     modifier: Modifier = Modifier,
     depth: Int = 0,
@@ -99,9 +99,9 @@ fun TopicTreeNodeItem(
                     .fillMaxWidth()
                     .pointerHoverIcon(PointerIcon.Hand)
                     .onClick(matcher = PointerMatcher.mouse(PointerButton.Primary)) {
-                        onTopicSelected(node.fullPath)
+                        onTopicSelect(node.fullPath)
                     }.onClick(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
-                        onTopicSelected(node.fullPath)
+                        onTopicSelect(node.fullPath)
                         showContextMenu = true
                     },
             shape = RoundedCornerShape(2.dp),
@@ -204,7 +204,7 @@ fun TopicTreeNodeItem(
                     expanded = showContextMenu,
                     node = node,
                     onDismissRequest = { showContextMenu = false },
-                    onTopicSelected = onTopicSelected,
+                    onTopicSelect = onTopicSelect,
                     onDeleteRetainedTopic = onDeleteRetainedTopic,
                     onOpenPurgeDialog = { showPurgeBranchDialog = true },
                 )
@@ -239,7 +239,7 @@ fun TopicTreeNodeItem(
                             node = child,
                             selectedTopicPath = selectedTopicPath,
                             depth = depth + 1,
-                            onTopicSelected = onTopicSelected,
+                            onTopicSelect = onTopicSelect,
                             onToggleExpand = onToggleExpand,
                             onDeleteRetainedTopic = onDeleteRetainedTopic,
                             onDeleteRetainedBranch = onDeleteRetainedBranch,

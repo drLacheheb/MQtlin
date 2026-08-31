@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+kotlin {
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}
+
 dependencies {
     implementation(project(":shared"))
 
@@ -15,6 +21,7 @@ dependencies {
     implementation(libs.decompose.core)
     implementation(libs.decompose.compose)
 
+    implementation(libs.compose.components.resources)
     implementation(libs.compose.uiToolingPreview)
 }
 

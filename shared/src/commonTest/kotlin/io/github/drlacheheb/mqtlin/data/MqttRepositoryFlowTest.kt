@@ -34,11 +34,11 @@ class MqttRepositoryFlowTest {
 
                 val connecting = awaitItem()
                 connecting.shouldBeInstanceOf<ConnectionState.Connecting>()
-                (connecting as ConnectionState.Connecting).host shouldBe "broker.emqx.io"
+                connecting.host shouldBe "broker.emqx.io"
 
                 val connected = awaitItem()
                 connected.shouldBeInstanceOf<ConnectionState.Connected>()
-                (connected as ConnectionState.Connected).host shouldBe "broker.emqx.io"
+                connected.host shouldBe "broker.emqx.io"
 
                 cancelAndIgnoreRemainingEvents()
             }

@@ -65,8 +65,7 @@ class ValidateConnectionConfigUseCaseTest {
         val result = useCase(config)
 
         result.shouldBeInstanceOf<ValidationResult.Invalid>()
-        val invalid = result as ValidationResult.Invalid
-        invalid.errors shouldContainKey ValidationResult.Field.HOST
+        result.errors shouldContainKey ValidationResult.Field.HOST
     }
 
     @Test
@@ -81,8 +80,7 @@ class ValidateConnectionConfigUseCaseTest {
         val result = useCase(config)
 
         result.shouldBeInstanceOf<ValidationResult.Invalid>()
-        val invalid = result as ValidationResult.Invalid
-        invalid.errors shouldContainKey ValidationResult.Field.PORT
+        result.errors shouldContainKey ValidationResult.Field.PORT
     }
 
     @Test
@@ -97,8 +95,7 @@ class ValidateConnectionConfigUseCaseTest {
         val result = useCase(config)
 
         result.shouldBeInstanceOf<ValidationResult.Invalid>()
-        val invalid = result as ValidationResult.Invalid
-        invalid.errors shouldContainKey ValidationResult.Field.PORT
+        result.errors shouldContainKey ValidationResult.Field.PORT
     }
 
     @Test
@@ -113,8 +110,7 @@ class ValidateConnectionConfigUseCaseTest {
         val result = useCase(config)
 
         result.shouldBeInstanceOf<ValidationResult.Invalid>()
-        val invalid = result as ValidationResult.Invalid
-        invalid.errors shouldContainKey ValidationResult.Field.CLIENT_ID
+        result.errors shouldContainKey ValidationResult.Field.CLIENT_ID
     }
 
     @Test
@@ -129,9 +125,8 @@ class ValidateConnectionConfigUseCaseTest {
         val result = useCase(config)
 
         result.shouldBeInstanceOf<ValidationResult.Invalid>()
-        val invalid = result as ValidationResult.Invalid
-        invalid.errors shouldContainKey ValidationResult.Field.HOST
-        invalid.errors shouldContainKey ValidationResult.Field.PORT
-        invalid.errors shouldContainKey ValidationResult.Field.CLIENT_ID
+        result.errors shouldContainKey ValidationResult.Field.HOST
+        result.errors shouldContainKey ValidationResult.Field.PORT
+        result.errors shouldContainKey ValidationResult.Field.CLIENT_ID
     }
 }

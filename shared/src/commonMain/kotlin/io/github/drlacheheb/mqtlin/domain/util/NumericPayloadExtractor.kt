@@ -39,7 +39,7 @@ object NumericPayloadExtractor {
                 val map = mutableMapOf<String, Double>()
                 flattenJsonNumeric(element, "", map)
                 if (map.isNotEmpty()) return map
-            } catch (e: Exception) {
+            } catch (ignored: Exception) {
                 // Fallthrough to scalar extraction
             }
         }
@@ -68,23 +68,32 @@ object NumericPayloadExtractor {
         outMap: MutableMap<String, Double>,
     ) {
         when (element) {
-            is JsonObject -> {
-                element.forEach { (key, child) ->
-                    val newKey = if (prefix.isEmpty()) key else "$prefix.$key"
-                    flattenJsonNumeric(child, newKey, outMap)
-                }
-            }
-            is JsonPrimitive -> {
-                element.doubleOrNull?.let { doubleVal ->
-                    if (!doubleVal.isNaN() && !doubleVal.isInfinite()) {
-                        val finalKey = if (prefix.isEmpty()) "value" else prefix
-                        outMap[finalKey] = doubleVal
-                    }
-                }
-            }
-            else -> {
-                // arrays ignored for numeric extraction
-            }
+            is JsonObject -> flattenJsonObject(element, prefix, outMap)
+            is JsonPrimitive -> flattenJsonPrimitive(element, prefix, outMap)
+            else -> {}
+        }
+    }
+
+    private fun flattenJsonObject(
+        element: JsonObject,
+        prefix: String,
+        outMap: MutableMap<String, Double>,
+    ) {
+        element.forEach { (key, child) ->
+            val newKey = if (prefix.isEmpty()) key else "$prefix.$key"
+            flattenJsonNumeric(child, newKey, outMap)
+        }
+    }
+
+    private fun flattenJsonPrimitive(
+        element: JsonPrimitive,
+        prefix: String,
+        outMap: MutableMap<String, Double>,
+    ) {
+        val doubleVal = element.doubleOrNull ?: return
+        if (!doubleVal.isNaN() && !doubleVal.isInfinite()) {
+            val finalKey = if (prefix.isEmpty()) "value" else prefix
+            outMap[finalKey] = doubleVal
         }
     }
 

@@ -466,9 +466,25 @@ class DefaultConnectionComponent(
 
     override fun onConnectClicked() {
         val currentState = _state.value
-        val portInt = currentState.portText.toIntOrNull() ?: -1
-
         val oldName = currentProfileOriginalName
+        val config = buildResolvedConfig(currentState, oldName)
+        currentProfileOriginalName = config.name
+
+        when (val validation = validateConfigUseCase(config)) {
+            is ValidationResult.Invalid -> {
+                _state.update { it.copy(validationErrors = validation.errors) }
+            }
+            ValidationResult.Valid -> {
+                saveProfileStateAndConnect(config, oldName)
+            }
+        }
+    }
+
+    private fun buildResolvedConfig(
+        currentState: ConnectionUiState,
+        oldName: String?,
+    ): ConnectionConfig {
+        val portInt = currentState.portText.toIntOrNull() ?: -1
         val rawName = currentState.name.trim()
         val isDuplicate =
             currentState.savedProfiles.any {
@@ -481,59 +497,54 @@ class DefaultConnectionComponent(
                 rawName
             }
 
-        val config =
-            ConnectionConfig(
-                name = resolvedName,
-                host = currentState.host.trim(),
-                port = portInt,
-                clientId = currentState.clientId.trim(),
-                protocolVersion = currentState.protocolVersion,
-                transport = currentState.transport,
-                username = currentState.username.ifBlank { null },
-                password = currentState.password.ifBlank { null },
+        return ConnectionConfig(
+            name = resolvedName,
+            host = currentState.host.trim(),
+            port = portInt,
+            clientId = currentState.clientId.trim(),
+            protocolVersion = currentState.protocolVersion,
+            transport = currentState.transport,
+            username = currentState.username.ifBlank { null },
+            password = currentState.password.ifBlank { null },
+        )
+    }
+
+    private fun saveProfileStateAndConnect(
+        config: ConnectionConfig,
+        oldName: String?,
+    ) {
+        _state.update { state ->
+            val updatedProfiles = state.savedProfiles.toMutableList()
+            val index =
+                if (oldName != null) {
+                    updatedProfiles.indexOfFirst { it.name.equals(oldName, ignoreCase = true) }
+                } else {
+                    updatedProfiles.indexOfFirst { it.name.equals(config.name, ignoreCase = true) }
+                }
+            if (index >= 0) {
+                updatedProfiles[index] = config
+            } else {
+                updatedProfiles.add(config)
+            }
+            state.copy(
+                savedProfiles = updatedProfiles,
+                validationErrors = emptyMap(),
+                testSuccessMessage = null,
             )
-
-        currentProfileOriginalName = resolvedName
-
-        when (val validation = validateConfigUseCase(config)) {
-            is ValidationResult.Invalid -> {
-                _state.update { it.copy(validationErrors = validation.errors) }
+        }
+        profileRepository?.let { repo ->
+            scope.launch {
+                if (oldName != null && !oldName.equals(config.name, ignoreCase = true)) {
+                    repo.deleteProfile(oldName)
+                }
+                repo.saveProfile(config)
+                repo.setLastSelectedProfileName(config.name)
             }
-            ValidationResult.Valid -> {
-                _state.update { state ->
-                    val updatedProfiles = state.savedProfiles.toMutableList()
-                    val index =
-                        if (oldName != null) {
-                            updatedProfiles.indexOfFirst { it.name.equals(oldName, ignoreCase = true) }
-                        } else {
-                            updatedProfiles.indexOfFirst { it.name.equals(config.name, ignoreCase = true) }
-                        }
-                    if (index >= 0) {
-                        updatedProfiles[index] = config
-                    } else {
-                        updatedProfiles.add(config)
-                    }
-                    state.copy(
-                        savedProfiles = updatedProfiles,
-                        validationErrors = emptyMap(),
-                        testSuccessMessage = null,
-                    )
-                }
-                profileRepository?.let { repo ->
-                    scope.launch {
-                        if (oldName != null && !oldName.equals(config.name, ignoreCase = true)) {
-                            repo.deleteProfile(oldName)
-                        }
-                        repo.saveProfile(config)
-                        repo.setLastSelectedProfileName(config.name)
-                    }
-                }
-                activeConnectingConfig = config
-                isExplicitConnecting = true
-                scope.launch {
-                    mqttRepository.connect(config)
-                }
-            }
+        }
+        activeConnectingConfig = config
+        isExplicitConnecting = true
+        scope.launch {
+            mqttRepository.connect(config)
         }
     }
 

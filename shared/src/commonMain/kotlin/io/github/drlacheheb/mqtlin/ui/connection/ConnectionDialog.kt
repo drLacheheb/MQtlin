@@ -38,11 +38,11 @@ fun ConnectionDialog(
                 profiles = state.savedProfiles,
                 searchQuery = state.profileSearchQuery,
                 activeName = state.name,
-                onSearchQueryChanged = component::onProfileSearchQueryChanged,
-                onProfileSelected = component::onProfileSelected,
+                onSearchQueryChange = component::onProfileSearchQueryChanged,
+                onProfileSelect = component::onProfileSelected,
                 onDuplicateProfile = component::onDuplicateProfileClicked,
                 onDeleteProfile = component::onDeleteProfileClicked,
-                onNewProfileClicked = component::onNewProfileClicked,
+                onNewProfileClick = component::onNewProfileClicked,
             )
 
             // Vertical Divider border-[#27272a]

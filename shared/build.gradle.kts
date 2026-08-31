@@ -7,7 +7,15 @@ plugins {
 }
 
 kotlin {
-    jvm()
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+
+    jvm {
+        compilerOptions {
+            allWarningsAsErrors.set(true)
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -78,4 +86,9 @@ sqldelight {
             packageName.set("io.github.drlacheheb.mqtlin.database")
         }
     }
+}
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "io.github.drlacheheb.mqtlin.resources"
 }

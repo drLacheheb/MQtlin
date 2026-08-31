@@ -174,7 +174,7 @@ class FileProfileRepository(
         return try {
             val text = profilesFile.readText()
             if (text.isBlank()) defaultProfiles else json.decodeFromString(text)
-        } catch (e: Exception) {
+        } catch (ignored: Exception) {
             defaultProfiles
         }
     }

@@ -44,7 +44,7 @@ enum class InspectorTab { JSON, HEX, DIFF, CHART }
 @Composable
 fun InspectorTabsBar(
     activeTab: InspectorTab,
-    onTabSelected: (InspectorTab) -> Unit,
+    onTabSelect: (InspectorTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -58,24 +58,24 @@ fun InspectorTabsBar(
             TabItem(
                 label = "JSON",
                 isSelected = activeTab == InspectorTab.JSON,
-                onClick = { onTabSelected(InspectorTab.JSON) },
+                onClick = { onTabSelect(InspectorTab.JSON) },
             )
             TabItem(
                 label = "Diff",
                 isSelected = activeTab == InspectorTab.DIFF,
                 icon = Icons.AutoMirrored.Filled.CompareArrows,
-                onClick = { onTabSelected(InspectorTab.DIFF) },
+                onClick = { onTabSelect(InspectorTab.DIFF) },
             )
             TabItem(
                 label = "Hex",
                 isSelected = activeTab == InspectorTab.HEX,
-                onClick = { onTabSelected(InspectorTab.HEX) },
+                onClick = { onTabSelect(InspectorTab.HEX) },
             )
             TabItem(
                 label = "Chart",
                 isSelected = activeTab == InspectorTab.CHART,
                 icon = Icons.AutoMirrored.Filled.ShowChart,
-                onClick = { onTabSelected(InspectorTab.CHART) },
+                onClick = { onTabSelect(InspectorTab.CHART) },
             )
         }
 

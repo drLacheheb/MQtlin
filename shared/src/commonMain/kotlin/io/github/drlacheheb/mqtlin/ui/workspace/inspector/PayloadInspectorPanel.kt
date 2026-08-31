@@ -91,14 +91,14 @@ fun PayloadInspectorPanel(
                 BranchOverviewView(
                     node = selectedNode,
                     retainedDescendantPaths = retainedDescendants,
-                    onPurgeClicked = { showPurgeBranchDialog = true },
+                    onPurgeClick = { showPurgeBranchDialog = true },
                     modifier = Modifier.weight(1f),
                 )
             } else {
                 // 3. Tab Navigation Bar
                 InspectorTabsBar(
                     activeTab = activeTab,
-                    onTabSelected = { activeTab = it },
+                    onTabSelect = { activeTab = it },
                 )
 
                 // 4. Active View Content

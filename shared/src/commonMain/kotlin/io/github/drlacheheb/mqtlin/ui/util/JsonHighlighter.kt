@@ -32,61 +32,87 @@ fun highlightJson(text: String): AnnotatedString =
 
         while (cursor < len) {
             val ch = text[cursor]
+            cursor =
+                when {
+                    ch == '"' -> appendJsonString(text, cursor, len)
+                    ch in "{}[],:" -> appendPunctuation(ch, cursor)
+                    ch.isDigit() || ch == '-' -> appendNumber(text, cursor, len)
+                    else -> appendKeywordOrChar(text, cursor, ch)
+                }
+        }
+    }
 
-            if (ch == '"') {
-                val start = cursor
-                cursor++
-                while (cursor < len && text[cursor] != '"') {
-                    if (text[cursor] == '\\' && cursor + 1 < len) {
-                        cursor++ // escape next char
-                    }
-                    cursor++
-                }
-                if (cursor < len) cursor++ // consume closing quote
-                val strVal = text.substring(start, cursor)
+private fun AnnotatedString.Builder.appendJsonString(
+    text: String,
+    startPos: Int,
+    len: Int,
+): Int {
+    var cursor = startPos + 1
+    while (cursor < len && text[cursor] != '"') {
+        if (text[cursor] == '\\' && cursor + 1 < len) {
+            cursor++
+        }
+        cursor++
+    }
+    if (cursor < len) cursor++
+    val strVal = text.substring(startPos, cursor)
 
-                // Check if this string is a JSON object key (followed by colon)
-                var lookAhead = cursor
-                while (lookAhead < len && text[lookAhead].isWhitespace()) lookAhead++
-                val isKey = lookAhead < len && text[lookAhead] == ':'
+    var lookAhead = cursor
+    while (lookAhead < len && text[lookAhead].isWhitespace()) lookAhead++
+    val isKey = lookAhead < len && text[lookAhead] == ':'
 
-                withStyle(SpanStyle(color = if (isKey) JsonSyntaxColors.Key else JsonSyntaxColors.StringVal)) {
-                    append(strVal)
-                }
-            } else if (ch in "{}[],:") {
-                withStyle(SpanStyle(color = JsonSyntaxColors.Punctuation)) {
-                    append(ch)
-                }
-                cursor++
-            } else if (ch.isDigit() || ch == '-') {
-                val start = cursor
-                cursor++
-                while (cursor < len && (text[cursor].isDigit() || text[cursor] in ".eE+-")) {
-                    cursor++
-                }
-                val numVal = text.substring(start, cursor)
-                withStyle(SpanStyle(color = JsonSyntaxColors.NumberVal)) {
-                    append(numVal)
-                }
-            } else if (text.startsWith("true", cursor)) {
-                withStyle(SpanStyle(color = JsonSyntaxColors.BooleanOrNull)) {
-                    append("true")
-                }
-                cursor += 4
-            } else if (text.startsWith("false", cursor)) {
-                withStyle(SpanStyle(color = JsonSyntaxColors.BooleanOrNull)) {
-                    append("false")
-                }
-                cursor += 5
-            } else if (text.startsWith("null", cursor)) {
-                withStyle(SpanStyle(color = JsonSyntaxColors.BooleanOrNull)) {
-                    append("null")
-                }
-                cursor += 4
-            } else {
-                append(ch)
-                cursor++
-            }
+    withStyle(SpanStyle(color = if (isKey) JsonSyntaxColors.Key else JsonSyntaxColors.StringVal)) {
+        append(strVal)
+    }
+    return cursor
+}
+
+private fun AnnotatedString.Builder.appendPunctuation(
+    ch: Char,
+    cursor: Int,
+): Int {
+    withStyle(SpanStyle(color = JsonSyntaxColors.Punctuation)) {
+        append(ch)
+    }
+    return cursor + 1
+}
+
+private fun AnnotatedString.Builder.appendNumber(
+    text: String,
+    startPos: Int,
+    len: Int,
+): Int {
+    var cursor = startPos + 1
+    while (cursor < len && (text[cursor].isDigit() || text[cursor] in ".eE+-")) {
+        cursor++
+    }
+    withStyle(SpanStyle(color = JsonSyntaxColors.NumberVal)) {
+        append(text.substring(startPos, cursor))
+    }
+    return cursor
+}
+
+private fun AnnotatedString.Builder.appendKeywordOrChar(
+    text: String,
+    cursor: Int,
+    ch: Char,
+): Int =
+    when {
+        text.startsWith("true", cursor) -> {
+            withStyle(SpanStyle(color = JsonSyntaxColors.BooleanOrNull)) { append("true") }
+            cursor + 4
+        }
+        text.startsWith("false", cursor) -> {
+            withStyle(SpanStyle(color = JsonSyntaxColors.BooleanOrNull)) { append("false") }
+            cursor + 5
+        }
+        text.startsWith("null", cursor) -> {
+            withStyle(SpanStyle(color = JsonSyntaxColors.BooleanOrNull)) { append("null") }
+            cursor + 4
+        }
+        else -> {
+            append(ch)
+            cursor + 1
         }
     }
 

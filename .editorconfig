@@ -22,7 +22,9 @@ ktlint_compose_parameter-naming = disabled
 ktlint_compose_multiple-emitters-check = disabled
 
 [**/build/**]
-ktlint_disabled = true
+ktlint_standard = disabled
+ktlint_compose = disabled
 
 [**/generated/**]
-ktlint_disabled = true
+ktlint_standard = disabled
+ktlint_compose = disabled

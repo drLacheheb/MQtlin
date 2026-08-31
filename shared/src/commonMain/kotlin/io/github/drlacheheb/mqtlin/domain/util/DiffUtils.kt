@@ -31,61 +31,55 @@ object DiffUtils {
         newText: String,
         prettifyJson: Boolean = true,
     ): DiffResult {
-        val effectiveOld = if (prettifyJson && JsonUtils.isValidJson(oldText)) JsonUtils.formatOrRaw(oldText) else oldText
-        val effectiveNew = if (prettifyJson && JsonUtils.isValidJson(newText)) JsonUtils.formatOrRaw(newText) else newText
+        val effectiveOld = formatIfJson(oldText, prettifyJson)
+        val effectiveNew = formatIfJson(newText, prettifyJson)
 
         val oldLines = if (effectiveOld.isEmpty()) emptyList() else effectiveOld.lines()
         val newLines = if (effectiveNew.isEmpty()) emptyList() else effectiveNew.lines()
 
         val lcsMatrix = computeLcsMatrix(oldLines, newLines)
-        val diffLines = mutableListOf<DiffLine>()
+        return backtrackDiff(oldLines, newLines, lcsMatrix)
+    }
 
+    private fun formatIfJson(
+        text: String,
+        prettifyJson: Boolean,
+    ): String =
+        if (prettifyJson && JsonUtils.isValidJson(text)) {
+            JsonUtils.formatOrRaw(text)
+        } else {
+            text
+        }
+
+    private fun backtrackDiff(
+        oldLines: List<String>,
+        newLines: List<String>,
+        lcsMatrix: Array<IntArray>,
+    ): DiffResult {
         var i = oldLines.size
         var j = newLines.size
         var additions = 0
         var deletions = 0
-
         val reversedDiff = mutableListOf<DiffLine>()
 
         while (i > 0 || j > 0) {
             if (i > 0 && j > 0 && oldLines[i - 1] == newLines[j - 1]) {
-                reversedDiff.add(
-                    DiffLine(
-                        type = DiffType.UNCHANGED,
-                        text = oldLines[i - 1],
-                        oldLineNumber = i,
-                        newLineNumber = j,
-                    ),
-                )
+                reversedDiff.add(DiffLine(DiffType.UNCHANGED, oldLines[i - 1], i, j))
                 i--
                 j--
             } else if (j > 0 && (i == 0 || lcsMatrix[i][j - 1] >= lcsMatrix[i - 1][j])) {
-                reversedDiff.add(
-                    DiffLine(
-                        type = DiffType.ADDED,
-                        text = newLines[j - 1],
-                        newLineNumber = j,
-                    ),
-                )
+                reversedDiff.add(DiffLine(DiffType.ADDED, newLines[j - 1], newLineNumber = j))
                 additions++
                 j--
-            } else if (i > 0 && (j == 0 || lcsMatrix[i][j - 1] < lcsMatrix[i - 1][j])) {
-                reversedDiff.add(
-                    DiffLine(
-                        type = DiffType.DELETED,
-                        text = oldLines[i - 1],
-                        oldLineNumber = i,
-                    ),
-                )
+            } else if (i > 0) {
+                reversedDiff.add(DiffLine(DiffType.DELETED, oldLines[i - 1], oldLineNumber = i))
                 deletions++
                 i--
             }
         }
 
-        diffLines.addAll(reversedDiff.reversed())
-
         return DiffResult(
-            lines = diffLines,
+            lines = reversedDiff.reversed(),
             additions = additions,
             deletions = deletions,
             hasChanges = additions > 0 || deletions > 0,

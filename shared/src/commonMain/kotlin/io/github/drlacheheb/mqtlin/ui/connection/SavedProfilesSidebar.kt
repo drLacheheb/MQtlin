@@ -38,11 +38,11 @@ fun SavedProfilesSidebar(
     searchQuery: String,
     activeName: String,
     modifier: Modifier = Modifier,
-    onSearchQueryChanged: (String) -> Unit = {},
-    onProfileSelected: (ConnectionConfig) -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
+    onProfileSelect: (ConnectionConfig) -> Unit = {},
     onDuplicateProfile: (ConnectionConfig) -> Unit = {},
     onDeleteProfile: (ConnectionConfig) -> Unit = {},
-    onNewProfileClicked: () -> Unit = {},
+    onNewProfileClick: () -> Unit = {},
 ) {
     val filteredProfiles =
         if (searchQuery.isBlank()) {
@@ -68,7 +68,7 @@ fun SavedProfilesSidebar(
         ) {
             MqtlinTextField(
                 value = searchQuery,
-                onValueChange = onSearchQueryChanged,
+                onValueChange = onSearchQueryChange,
                 placeholder = "Search profiles...",
                 height = 34.dp,
                 isMonospace = false,
@@ -149,7 +149,7 @@ fun SavedProfilesSidebar(
                         profile = profile,
                         isActive = isActive,
                         badge = badge,
-                        onClick = { onProfileSelected(profile) },
+                        onClick = { onProfileSelect(profile) },
                         onDuplicate = { onDuplicateProfile(profile) },
                         onDelete = { onDeleteProfile(profile) },
                     )
@@ -168,7 +168,7 @@ fun SavedProfilesSidebar(
         // New Profile Button (p-panel_padding border-t border-[#27272a])
         Box(modifier = Modifier.padding(12.dp)) {
             MqtlinOutlinedButton(
-                onClick = onNewProfileClicked,
+                onClick = onNewProfileClick,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(

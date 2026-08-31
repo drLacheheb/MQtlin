@@ -52,7 +52,7 @@ import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 fun BranchOverviewView(
     node: TopicNode,
     retainedDescendantPaths: List<String>,
-    onPurgeClicked: () -> Unit,
+    onPurgeClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -147,7 +147,7 @@ fun BranchOverviewView(
                         modifier =
                             Modifier
                                 .pointerHoverIcon(PointerIcon.Hand)
-                                .clickable { onPurgeClicked() },
+                                .clickable { onPurgeClick() },
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),

@@ -42,7 +42,7 @@ object JsonUtils {
         return try {
             val element = prettyJson.parseToJsonElement(trimmed)
             prettyJson.encodeToString(JsonElement.serializer(), element)
-        } catch (e: Exception) {
+        } catch (ignored: Exception) {
             raw
         }
     }

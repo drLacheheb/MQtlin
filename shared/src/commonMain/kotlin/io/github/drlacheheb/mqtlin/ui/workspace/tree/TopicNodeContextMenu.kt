@@ -8,13 +8,15 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.unit.dp
 import io.github.drlacheheb.mqtlin.domain.model.TopicNode
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinContextMenu
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinContextMenuDivider
 import io.github.drlacheheb.mqtlin.ui.components.MqtlinContextMenuItem
+import io.github.drlacheheb.mqtlin.ui.util.createClipEntry
+import kotlinx.coroutines.launch
 
 /**
  * Secondary mouse click popup context menu for a topic tree node.
@@ -24,11 +26,12 @@ fun TopicNodeContextMenu(
     expanded: Boolean,
     node: TopicNode,
     onDismissRequest: () -> Unit,
-    onTopicSelected: (String) -> Unit,
+    onTopicSelect: (String) -> Unit,
     onDeleteRetainedTopic: ((String) -> Unit)?,
     onOpenPurgeDialog: () -> Unit,
 ) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val coroutineScope = rememberCoroutineScope()
 
     MqtlinContextMenu(
         expanded = expanded,
@@ -41,7 +44,9 @@ fun TopicNodeContextMenu(
             leadingIcon = Icons.Default.ContentCopy,
             shortcut = "Ctrl+C",
             onClick = {
-                clipboardManager.setText(AnnotatedString(node.fullPath))
+                coroutineScope.launch {
+                    clipboard.setClipEntry(createClipEntry(node.fullPath))
+                }
                 onDismissRequest()
             },
         )
@@ -53,7 +58,9 @@ fun TopicNodeContextMenu(
                 leadingIcon = Icons.Default.Description,
                 shortcut = "Ctrl+Shift+C",
                 onClick = {
-                    clipboardManager.setText(AnnotatedString(node.lastMessage.payloadString))
+                    coroutineScope.launch {
+                        clipboard.setClipEntry(createClipEntry(node.lastMessage.payloadString))
+                    }
                     onDismissRequest()
                 },
             )
@@ -65,7 +72,7 @@ fun TopicNodeContextMenu(
             leadingIcon = Icons.AutoMirrored.Filled.Send,
             shortcut = "Enter",
             onClick = {
-                onTopicSelected(node.fullPath)
+                onTopicSelect(node.fullPath)
                 onDismissRequest()
             },
         )
