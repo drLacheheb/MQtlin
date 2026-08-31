@@ -168,7 +168,7 @@ jobs:
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install -y --user flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
           flatpak-builder --user --force-clean --repo=flatpak-repo flatpak-build installer/linux/flatpak/io.github.drlacheheb.MQtlin.yml
-          flatpak build-bundle flatpak-repo dist/MQtlin-x86_64.flatpak io.github.drlacheheb.MQtlin 24.08
+          flatpak build-bundle flatpak-repo dist/MQtlin-x86_64.flatpak io.github.drlacheheb.MQtlin
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4

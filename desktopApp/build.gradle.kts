@@ -40,7 +40,7 @@ compose.desktop {
                 shortcut = true
             }
             macOS {
-                iconFile.set(project.file("src/main/resources/icons/icon.png"))
+                iconFile.set(project.file("src/main/resources/icons/icon.icns"))
                 bundleID = "io.github.drlacheheb.mqtlin"
             }
             linux {
