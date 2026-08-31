@@ -1,0 +1,36 @@
+app-id: io.github.drlacheheb.MQtlin
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: MQtlin
+
+finish-args:
+  # Network access for connecting to MQTT brokers (TCP, TLS, WS, WSS)
+  - --share=network
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  # File access to persistent user settings
+  - --filesystem=~/.mqtlin:create
+
+modules:
+  - name: mqtlin
+    buildsystem: simple
+    build-commands:
+      - install -d /app/bin /app/lib/mqtlin /app/share/applications /app/share/metainfo /app/share/icons/hicolor/256x256/apps
+      - cp -r * /app/lib/mqtlin/
+      - ln -s /app/lib/mqtlin/bin/MQtlin /app/bin/MQtlin
+      - install -Dm644 io.github.drlacheheb.MQtlin.desktop /app/share/applications/io.github.drlacheheb.MQtlin.desktop
+      - install -Dm644 io.github.drlacheheb.MQtlin.metainfo.xml /app/share/metainfo/io.github.drlacheheb.MQtlin.metainfo.xml
+      - install -Dm644 icon.png /app/share/icons/hicolor/256x256/apps/io.github.drlacheheb.MQtlin.png
+    sources:
+      - type: dir
+        path: ../../../desktopApp/build/compose/binaries/main/app/MQtlin
+      - type: file
+        path: io.github.drlacheheb.MQtlin.desktop
+      - type: file
+        path: io.github.drlacheheb.MQtlin.metainfo.xml
+      - type: file
+        path: ../../../desktopApp/src/main/resources/icons/icon.png
+

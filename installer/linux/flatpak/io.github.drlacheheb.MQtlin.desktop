@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=MQtlin
+GenericName=MQTT Explorer
+Comment=Modern MQTT Explorer & Real-Time Broker Client
+Exec=MQtlin %u
+Icon=io.github.drlacheheb.MQtlin
+Categories=Development;Network;
+MimeType=application/x-mqtlin;
+Terminal=false
+StartupNotify=true
+StartupWMClass=io-github-drlacheheb-mqtlin-MainKt
+Keywords=mqtt;broker;explorer;iot;homeassistant;
+

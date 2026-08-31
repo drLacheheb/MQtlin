@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.drlacheheb.MQtlin</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>MQtlin</name>
+  <summary>Modern, high-performance MQTT Explorer &amp; Broker Client</summary>
+
+  <description>
+    <p>
+      MQtlin is a comprehensive, modern MQTT exploration and debugging client designed for IoT developers, home automation enthusiasts, and backend engineers.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Interactive real-time hierarchical topic tree</li>
+      <li>Comprehensive payload inspector (Formatted JSON, Raw Text, Hex Dump)</li>
+      <li>Side-by-side and structural payload diff viewer</li>
+      <li>Live numeric charting with auto-scaling time-series axes</li>
+      <li>Retained message management and recursive branch purge</li>
+      <li>Saved broker connection profiles and multi-window workspace</li>
+      <li>Full support for MQTT 3.1.1 and MQTT 5.0 over TCP, TLS, and WebSockets</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.drlacheheb.MQtlin.desktop</launchable>
+
+  <provides>
+    <id>io.github.drlacheheb.MQtlin.desktop</id>
+  </provides>
+
+  <url type="homepage">https://github.com/drlacheheb/mqtlin</url>
+  <url type="bugtracker">https://github.com/drlacheheb/mqtlin/issues</url>
+
+  <developer_name>Yacine Lacheheb</developer_name>
+
+  <releases>
+    <release version="0.1.0-beta.1" date="2026-08-31">
+      <description>
+        <p>Beta 1 release of MQtlin featuring real-time hierarchical topic exploration, multi-format payload inspection, diff viewer, live sensor charting, and multi-profile connection management.</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+</component>
+
