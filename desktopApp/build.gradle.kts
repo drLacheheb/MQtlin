@@ -18,14 +18,18 @@ dependencies {
     implementation(libs.compose.uiToolingPreview)
 }
 
+val appVersion = libs.versions.app.version.get()
+val semver = appVersion.substringBefore("-")
+
 compose.desktop {
     application {
         mainClass = "io.github.drlacheheb.mqtlin.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
+            modules("java.instrument", "jdk.unsupported")
             packageName = "MQtlin"
-            packageVersion = "1.0.0"
+            packageVersion = semver
             description = "MQtlin - Modern MQTT Explorer & Broker Client"
             copyright = "© 2026 MQtlin"
             vendor = "io.github.drlacheheb"
@@ -45,6 +49,30 @@ compose.desktop {
             }
         }
     }
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println(appVersion)
+    }
+}
+
+tasks.register<Exec>("packageInnoSetup") {
+    dependsOn(tasks.named("createDistributable"))
+    group = "compose desktop"
+    description = "Compiles custom Modern Dark Windows Setup Wizard using Inno Setup"
+
+    val isccCandidates = listOf(
+        System.getenv("LOCALAPPDATA")?.let { "$it\\Programs\\Inno Setup 6\\ISCC.exe" },
+        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe",
+        "C:\\Program Files\\Inno Setup 6\\ISCC.exe",
+        "ISCC.exe"
+    ).filterNotNull()
+
+    val isccPath = isccCandidates.firstOrNull { File(it).exists() } ?: "ISCC.exe"
+    val setupScript = rootProject.file("installer/windows/setup.iss").absolutePath
+
+    commandLine(isccPath, "/DMyAppVersion=$appVersion", setupScript)
 }
 
 tasks.matching { it.name.startsWith("hotRun") }.configureEach {

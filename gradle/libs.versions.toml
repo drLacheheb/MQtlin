@@ -1,4 +1,5 @@
 [versions]
+app-version = "0.1.0-beta.1"
 androidx-lifecycle = "2.11.0-beta01"
 composeMultiplatform = "1.11.1"
 junit = "4.13.2"
