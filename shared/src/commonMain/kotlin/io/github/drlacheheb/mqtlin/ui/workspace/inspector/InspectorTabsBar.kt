@@ -45,44 +45,46 @@ enum class InspectorTab { JSON, HEX, DIFF, CHART }
 fun InspectorTabsBar(
     activeTab: InspectorTab,
     onTabSelected: (InspectorTab) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(DarkSurfaceContainer)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .background(DarkSurfaceContainer),
         ) {
             TabItem(
                 label = "JSON",
                 isSelected = activeTab == InspectorTab.JSON,
-                onClick = { onTabSelected(InspectorTab.JSON) }
+                onClick = { onTabSelected(InspectorTab.JSON) },
             )
             TabItem(
                 label = "Diff",
                 isSelected = activeTab == InspectorTab.DIFF,
                 icon = Icons.AutoMirrored.Filled.CompareArrows,
-                onClick = { onTabSelected(InspectorTab.DIFF) }
+                onClick = { onTabSelected(InspectorTab.DIFF) },
             )
             TabItem(
                 label = "Hex",
                 isSelected = activeTab == InspectorTab.HEX,
-                onClick = { onTabSelected(InspectorTab.HEX) }
+                onClick = { onTabSelected(InspectorTab.HEX) },
             )
             TabItem(
                 label = "Chart",
                 isSelected = activeTab == InspectorTab.CHART,
                 icon = Icons.AutoMirrored.Filled.ShowChart,
-                onClick = { onTabSelected(InspectorTab.CHART) }
+                onClick = { onTabSelected(InspectorTab.CHART) },
             )
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkOutlineVariant)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkOutlineVariant),
         )
     }
 }
@@ -92,27 +94,37 @@ private fun TabItem(
     label: String,
     isSelected: Boolean,
     icon: ImageVector? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(IntrinsicSize.Max)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClick = onClick)
-            .background(if (isSelected) DarkSurfaceContainerLow else Color.Transparent),
-        verticalArrangement = Arrangement.Bottom
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .width(IntrinsicSize.Max)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .clickable(onClick = onClick)
+                .background(if (isSelected) DarkSurfaceContainerLow else Color.Transparent),
+        verticalArrangement = Arrangement.Bottom,
     ) {
         Row(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = label,
-                style = if (isSelected) UiLabelBold.copy(fontSize = 14.sp, color = MqtlinPrimary) else UiLabelReg.copy(fontSize = 14.sp, color = DarkOnSurfaceVariant),
-                maxLines = 1
+                style =
+                    if (isSelected) {
+                        UiLabelBold.copy(
+                            fontSize = 14.sp,
+                            color = MqtlinPrimary,
+                        )
+                    } else {
+                        UiLabelReg.copy(fontSize = 14.sp, color = DarkOnSurfaceVariant)
+                    },
+                maxLines = 1,
             )
             if (icon != null) {
                 Spacer(modifier = Modifier.width(4.dp))
@@ -120,16 +132,17 @@ private fun TabItem(
                     imageVector = icon,
                     contentDescription = null,
                     tint = if (isSelected) MqtlinPrimary else DarkOnSurfaceVariant,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(14.dp),
                 )
             }
         }
         if (isSelected) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(MqtlinPrimary)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .background(MqtlinPrimary),
             )
         }
     }

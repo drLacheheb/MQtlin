@@ -7,7 +7,7 @@ data class MqttMessage(
     val qos: Int = 0,
     val isRetained: Boolean = false,
     val timestamp: Long = System.currentTimeMillis(),
-    val userProperties: Map<String, String> = emptyMap()
+    val userProperties: Map<String, String> = emptyMap(),
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -35,4 +35,3 @@ data class MqttMessage(
         return result
     }
 }
-

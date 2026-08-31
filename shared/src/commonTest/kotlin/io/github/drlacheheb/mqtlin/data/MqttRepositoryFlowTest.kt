@@ -10,54 +10,56 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class MqttRepositoryFlowTest {
-
     private val repository = FakeMqttRepository()
 
     @Test
-    fun `connectionState initially emits Disconnected`() = runTest {
-        repository.connectionState.test {
-            awaitItem() shouldBe ConnectionState.Disconnected
-            cancelAndIgnoreRemainingEvents()
+    fun `connectionState initially emits Disconnected`() =
+        runTest {
+            repository.connectionState.test {
+                awaitItem() shouldBe ConnectionState.Disconnected
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `connect emits Connecting then Connected sequence`() = runTest {
-        repository.simulatedDelayMs = 10L
-        val config = ConnectionConfig(host = "broker.emqx.io", port = 1883)
+    fun `connect emits Connecting then Connected sequence`() =
+        runTest {
+            repository.simulatedDelayMs = 10L
+            val config = ConnectionConfig(host = "broker.emqx.io", port = 1883)
 
-        repository.connectionState.test {
-            awaitItem() shouldBe ConnectionState.Disconnected
+            repository.connectionState.test {
+                awaitItem() shouldBe ConnectionState.Disconnected
 
-            repository.connect(config)
+                repository.connect(config)
 
-            val connecting = awaitItem()
-            connecting.shouldBeInstanceOf<ConnectionState.Connecting>()
-            (connecting as ConnectionState.Connecting).host shouldBe "broker.emqx.io"
+                val connecting = awaitItem()
+                connecting.shouldBeInstanceOf<ConnectionState.Connecting>()
+                (connecting as ConnectionState.Connecting).host shouldBe "broker.emqx.io"
 
-            val connected = awaitItem()
-            connected.shouldBeInstanceOf<ConnectionState.Connected>()
-            (connected as ConnectionState.Connected).host shouldBe "broker.emqx.io"
+                val connected = awaitItem()
+                connected.shouldBeInstanceOf<ConnectionState.Connected>()
+                (connected as ConnectionState.Connected).host shouldBe "broker.emqx.io"
 
-            cancelAndIgnoreRemainingEvents()
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `disconnect emits Disconnected state`() = runTest {
-        val config = ConnectionConfig(host = "127.0.0.1", port = 1883)
+    fun `disconnect emits Disconnected state`() =
+        runTest {
+            val config = ConnectionConfig(host = "127.0.0.1", port = 1883)
 
-        repository.connectionState.test {
-            awaitItem() shouldBe ConnectionState.Disconnected
+            repository.connectionState.test {
+                awaitItem() shouldBe ConnectionState.Disconnected
 
-            repository.connect(config)
-            awaitItem().shouldBeInstanceOf<ConnectionState.Connecting>()
-            awaitItem().shouldBeInstanceOf<ConnectionState.Connected>()
+                repository.connect(config)
+                awaitItem().shouldBeInstanceOf<ConnectionState.Connecting>()
+                awaitItem().shouldBeInstanceOf<ConnectionState.Connected>()
 
-            repository.disconnect()
-            awaitItem() shouldBe ConnectionState.Disconnected
+                repository.disconnect()
+                awaitItem() shouldBe ConnectionState.Disconnected
 
-            cancelAndIgnoreRemainingEvents()
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 }

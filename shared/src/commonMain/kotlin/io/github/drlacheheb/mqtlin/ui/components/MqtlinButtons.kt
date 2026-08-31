@@ -40,26 +40,29 @@ fun MqtlinPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     height: Dp = 36.dp,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .height(height)
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+        modifier =
+            modifier
+                .height(height)
+                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MqtlinPrimary,
-            contentColor = MqtlinOnPrimary,
-            disabledContainerColor = MqtlinPrimary.copy(alpha = 0.4f),
-            disabledContentColor = MqtlinOnPrimary.copy(alpha = 0.5f)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 0.dp
-        )
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MqtlinPrimary,
+                contentColor = MqtlinOnPrimary,
+                disabledContainerColor = MqtlinPrimary.copy(alpha = 0.4f),
+                disabledContentColor = MqtlinOnPrimary.copy(alpha = 0.5f),
+            ),
+        elevation =
+            ButtonDefaults.buttonElevation(
+                defaultElevation = 2.dp,
+                pressedElevation = 0.dp,
+            ),
     ) {
         ProvideTextStyle(value = UiLabelBold.copy(color = MqtlinOnPrimary)) {
             content()
@@ -81,21 +84,23 @@ fun MqtlinOutlinedButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     height: Dp = 36.dp,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .height(height)
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+        modifier =
+            modifier
+                .height(height)
+                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         border = BorderStroke(1.dp, DarkBorder),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = DarkOnSurface
-        )
+        colors =
+            ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.Transparent,
+                contentColor = DarkOnSurface,
+            ),
     ) {
         ProvideTextStyle(value = UiLabelBold.copy(color = DarkOnSurface)) {
             content()
@@ -115,19 +120,21 @@ fun MqtlinTextButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     height: Dp = 36.dp,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     TextButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .height(height)
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+        modifier =
+            modifier
+                .height(height)
+                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-        colors = ButtonDefaults.textButtonColors(
-            contentColor = DarkOnSurfaceVariant
-        )
+        colors =
+            ButtonDefaults.textButtonColors(
+                contentColor = DarkOnSurfaceVariant,
+            ),
     ) {
         ProvideTextStyle(value = UiLabelBold.copy(color = DarkOnSurfaceVariant)) {
             content()
@@ -147,20 +154,22 @@ fun MqtlinDangerButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     height: Dp = 36.dp,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .height(height)
-            .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+        modifier =
+            modifier
+                .height(height)
+                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
         shape = RoundedCornerShape(4.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MqtlinError,
-            contentColor = MqtlinOnError
-        )
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MqtlinError,
+                contentColor = MqtlinOnError,
+            ),
     ) {
         ProvideTextStyle(value = UiLabelBold.copy(color = MqtlinOnError)) {
             content()

@@ -11,7 +11,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class NumericPayloadExtractorTest {
-
     @Test
     fun `extractMetrics parses raw scalar numbers`() {
         NumericPayloadExtractor.extractMetrics("42")["value"] shouldBe 42.0
@@ -34,7 +33,8 @@ class NumericPayloadExtractorTest {
         flatMetrics["temperature"]!! shouldBe (21.5 plusOrMinus 0.001)
         flatMetrics["humidity"]!! shouldBe (60.0 plusOrMinus 0.001)
 
-        val nestedJson = """
+        val nestedJson =
+            """
             {
                 "device_id": "ESP_01",
                 "metrics": {
@@ -42,7 +42,7 @@ class NumericPayloadExtractorTest {
                     "rssi": -65
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         val nestedMetrics = NumericPayloadExtractor.extractMetrics(nestedJson)
         nestedMetrics["metrics.voltage"]!! shouldBe (3.28 plusOrMinus 0.001)
         nestedMetrics["metrics.rssi"]!! shouldBe (-65.0 plusOrMinus 0.001)
@@ -58,11 +58,12 @@ class NumericPayloadExtractorTest {
 
     @Test
     fun `buildTimeSeries orders points chronologically and extracts chosen metric`() {
-        val history = listOf(
-            MqttMessage(topic = "sensor/temp", payload = "23.0".encodeToByteArray(), timestamp = 3000L),
-            MqttMessage(topic = "sensor/temp", payload = "22.0".encodeToByteArray(), timestamp = 2000L),
-            MqttMessage(topic = "sensor/temp", payload = "21.0".encodeToByteArray(), timestamp = 1000L)
-        )
+        val history =
+            listOf(
+                MqttMessage(topic = "sensor/temp", payload = "23.0".encodeToByteArray(), timestamp = 3000L),
+                MqttMessage(topic = "sensor/temp", payload = "22.0".encodeToByteArray(), timestamp = 2000L),
+                MqttMessage(topic = "sensor/temp", payload = "21.0".encodeToByteArray(), timestamp = 1000L),
+            )
 
         val points = NumericPayloadExtractor.buildTimeSeries(history, "value")
         points shouldHaveSize 3
@@ -79,11 +80,12 @@ class NumericPayloadExtractorTest {
         val emptyPoints = NumericPayloadExtractor.buildTimeSeries(emptyList(), "value")
         emptyPoints.shouldBeEmpty()
 
-        val historyWithMissingKeys = listOf(
-            MqttMessage(topic = "sensor/a", payload = """{"temp": 22.5}""".encodeToByteArray(), timestamp = 3000L),
-            MqttMessage(topic = "sensor/a", payload = """{"humidity": 65}""".encodeToByteArray(), timestamp = 2000L),
-            MqttMessage(topic = "sensor/a", payload = """{"temp": 20.0}""".encodeToByteArray(), timestamp = 1000L)
-        )
+        val historyWithMissingKeys =
+            listOf(
+                MqttMessage(topic = "sensor/a", payload = """{"temp": 22.5}""".encodeToByteArray(), timestamp = 3000L),
+                MqttMessage(topic = "sensor/a", payload = """{"humidity": 65}""".encodeToByteArray(), timestamp = 2000L),
+                MqttMessage(topic = "sensor/a", payload = """{"temp": 20.0}""".encodeToByteArray(), timestamp = 1000L),
+            )
 
         val tempPoints = NumericPayloadExtractor.buildTimeSeries(historyWithMissingKeys, "temp")
         tempPoints shouldHaveSize 2

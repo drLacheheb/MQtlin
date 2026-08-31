@@ -55,44 +55,47 @@ fun ConnectionFormHeader(
     profileName: String,
     onNameChange: (String) -> Unit,
     onNameSave: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .padding(start = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .padding(start = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f, fill = false)
+                modifier = Modifier.weight(1f, fill = false),
             ) {
                 Text(
                     text = "Connection Settings",
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = DarkOnSurfaceVariant
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = DarkOnSurfaceVariant,
+                        ),
                 )
 
                 Text(
                     text = "›",
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = DarkOutlineMuted
-                    ),
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    style =
+                        TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = DarkOutlineMuted,
+                        ),
+                    modifier = Modifier.padding(horizontal = 8.dp),
                 )
 
                 InlineEditableProfileName(
                     name = profileName,
                     onNameChange = onNameChange,
-                    onNameSave = onNameSave
+                    onNameSave = onNameSave,
                 )
             }
 
@@ -100,10 +103,11 @@ fun ConnectionFormHeader(
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkBorder)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkBorder),
         )
     }
 }
@@ -113,7 +117,7 @@ fun InlineEditableProfileName(
     name: String,
     onNameChange: (String) -> Unit,
     onNameSave: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
     var isHovered by remember { mutableStateOf(false) }
@@ -121,75 +125,77 @@ fun InlineEditableProfileName(
     var isFocused by remember { mutableStateOf(false) }
 
     Box(
-        modifier = modifier
-            .widthIn(min = 60.dp, max = 240.dp)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        when (event.type) {
-                            PointerEventType.Enter -> isHovered = true
-                            PointerEventType.Exit -> isHovered = false
+        modifier =
+            modifier
+                .widthIn(min = 60.dp, max = 240.dp)
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            when (event.type) {
+                                PointerEventType.Enter -> isHovered = true
+                                PointerEventType.Exit -> isHovered = false
+                            }
                         }
                     }
-                }
-            }
-            .drawBehind {
-                val strokeColor = when {
-                    isFocused -> MqtlinPrimary
-                    isHovered -> DarkBorderHover
-                    else -> Color.Transparent
-                }
-                if (strokeColor != Color.Transparent) {
-                    drawLine(
-                        color = strokeColor,
-                        start = Offset(0f, size.height - 1f),
-                        end = Offset(size.width, size.height - 1f),
-                        strokeWidth = if (isFocused) 1.5.dp.toPx() else 1.dp.toPx()
-                    )
-                }
-            }
-            .padding(horizontal = 2.dp, vertical = 2.dp),
-        contentAlignment = Alignment.CenterStart
+                }.drawBehind {
+                    val strokeColor =
+                        when {
+                            isFocused -> MqtlinPrimary
+                            isHovered -> DarkBorderHover
+                            else -> Color.Transparent
+                        }
+                    if (strokeColor != Color.Transparent) {
+                        drawLine(
+                            color = strokeColor,
+                            start = Offset(0f, size.height - 1f),
+                            end = Offset(size.width, size.height - 1f),
+                            strokeWidth = if (isFocused) 1.5.dp.toPx() else 1.dp.toPx(),
+                        )
+                    }
+                }.padding(horizontal = 2.dp, vertical = 2.dp),
+        contentAlignment = Alignment.CenterStart,
     ) {
         BasicTextField(
             value = name,
             onValueChange = { input ->
                 onNameChange(input.take(MAX_PROFILE_NAME_LENGTH))
             },
-            textStyle = TextStyle(
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = DarkOnSurface,
-                textAlign = TextAlign.Start
-            ),
+            textStyle =
+                TextStyle(
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = DarkOnSurface,
+                    textAlign = TextAlign.Start,
+                ),
             singleLine = true,
             cursorBrush = SolidColor(MqtlinPrimary),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    focusManager.clearFocus()
-                    onNameSave()
-                }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focusState ->
-                    isFocused = focusState.isFocused
-                    if (hadFocus && !focusState.isFocused) {
-                        onNameSave()
-                    }
-                    hadFocus = focusState.isFocused
-                }
-                .onKeyEvent { keyEvent ->
-                    if (keyEvent.type == KeyEventType.KeyDown && (keyEvent.key == Key.Enter || keyEvent.key == Key.NumPadEnter)) {
+            keyboardActions =
+                KeyboardActions(
+                    onDone = {
                         focusManager.clearFocus()
                         onNameSave()
-                        true
-                    } else {
-                        false
-                    }
-                }
+                    },
+                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        isFocused = focusState.isFocused
+                        if (hadFocus && !focusState.isFocused) {
+                            onNameSave()
+                        }
+                        hadFocus = focusState.isFocused
+                    }.onKeyEvent { keyEvent ->
+                        if (keyEvent.type == KeyEventType.KeyDown && (keyEvent.key == Key.Enter || keyEvent.key == Key.NumPadEnter)) {
+                            focusManager.clearFocus()
+                            onNameSave()
+                            true
+                        } else {
+                            false
+                        }
+                    },
         )
     }
 }

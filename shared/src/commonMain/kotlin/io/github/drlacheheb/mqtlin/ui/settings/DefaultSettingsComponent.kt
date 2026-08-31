@@ -6,9 +6,9 @@ import com.arkivanov.decompose.value.Value
 
 class DefaultSettingsComponent(
     componentContext: ComponentContext,
-    private val onDismiss: () -> Unit = {}
-) : SettingsComponent, ComponentContext by componentContext {
-
+    private val onDismiss: () -> Unit = {},
+) : SettingsComponent,
+    ComponentContext by componentContext {
     private val _state = MutableValue(SettingsUiState())
     override val state: Value<SettingsUiState> = _state
 

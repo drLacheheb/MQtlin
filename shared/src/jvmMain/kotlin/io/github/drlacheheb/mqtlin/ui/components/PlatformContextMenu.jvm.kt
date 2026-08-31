@@ -36,72 +36,80 @@ import kotlin.math.roundToInt
  * with MQtlin's dark, compact, pixel-perfect styling positioned precisely at cursor coordinates.
  */
 object MqtlinContextMenuRepresentation : ContextMenuRepresentation {
-
     @Composable
-    override fun Representation(state: ContextMenuState, items: () -> List<androidx.compose.foundation.ContextMenuItem>) {
+    override fun Representation(
+        state: ContextMenuState,
+        items: () -> List<androidx.compose.foundation.ContextMenuItem>,
+    ) {
         val status = state.status
         if (status is ContextMenuState.Status.Open) {
-            val positionProvider = remember(status.rect) {
-                object : PopupPositionProvider {
-                    override fun calculatePosition(
-                        anchorBounds: IntRect,
-                        windowSize: IntSize,
-                        layoutDirection: LayoutDirection,
-                        popupContentSize: IntSize
-                    ): IntOffset {
-                        val margin = 6 // Safety margin in pixels from window edge for shadows
+            val positionProvider =
+                remember(status.rect) {
+                    object : PopupPositionProvider {
+                        override fun calculatePosition(
+                            anchorBounds: IntRect,
+                            windowSize: IntSize,
+                            layoutDirection: LayoutDirection,
+                            popupContentSize: IntSize,
+                        ): IntOffset {
+                            val margin = 6 // Safety margin in pixels from window edge for shadows
 
-                        val cursorX = anchorBounds.left + status.rect.left.roundToInt() + 2
-                        val cursorY = anchorBounds.top + status.rect.bottom.roundToInt() + 2
+                            val cursorX = anchorBounds.left + status.rect.left.roundToInt() + 2
+                            val cursorY = anchorBounds.top + status.rect.bottom.roundToInt() + 2
 
-                        // Horizontal: Open right of cursor, or flip left if near right edge
-                        val x = if (cursorX + popupContentSize.width <= windowSize.width - margin) {
-                            cursorX.coerceAtLeast(margin)
-                        } else {
-                            (cursorX - popupContentSize.width - 4)
-                                .coerceIn(margin, (windowSize.width - popupContentSize.width - margin).coerceAtLeast(margin))
+                            // Horizontal: Open right of cursor, or flip left if near right edge
+                            val x =
+                                if (cursorX + popupContentSize.width <= windowSize.width - margin) {
+                                    cursorX.coerceAtLeast(margin)
+                                } else {
+                                    (cursorX - popupContentSize.width - 4)
+                                        .coerceIn(margin, (windowSize.width - popupContentSize.width - margin).coerceAtLeast(margin))
+                                }
+
+                            // Vertical: Open below cursor, or flip upward if near bottom edge
+                            val y =
+                                if (cursorY + popupContentSize.height <= windowSize.height - margin) {
+                                    cursorY.coerceAtLeast(margin)
+                                } else {
+                                    (anchorBounds.top + status.rect.top.roundToInt() - popupContentSize.height - 2)
+                                        .coerceIn(margin, (windowSize.height - popupContentSize.height - margin).coerceAtLeast(margin))
+                                }
+                            return IntOffset(x, y)
                         }
-
-                        // Vertical: Open below cursor, or flip upward if near bottom edge
-                        val y = if (cursorY + popupContentSize.height <= windowSize.height - margin) {
-                            cursorY.coerceAtLeast(margin)
-                        } else {
-                            (anchorBounds.top + status.rect.top.roundToInt() - popupContentSize.height - 2)
-                                .coerceIn(margin, (windowSize.height - popupContentSize.height - margin).coerceAtLeast(margin))
-                        }
-                        return IntOffset(x, y)
                     }
                 }
-            }
 
             Popup(
                 popupPositionProvider = positionProvider,
                 onDismissRequest = { state.status = ContextMenuState.Status.Closed },
-                properties = PopupProperties(focusable = false)
+                properties = PopupProperties(focusable = false),
             ) {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
                     color = DarkSurfaceContainerLow,
                     border = BorderStroke(1.dp, ContextMenuBorderColor),
                     shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .width(180.dp)
-                        .clip(RoundedCornerShape(6.dp))
+                    modifier =
+                        Modifier
+                            .width(180.dp)
+                            .clip(RoundedCornerShape(6.dp)),
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp)),
                     ) {
                         items().forEach { item ->
                             val label = item.label
-                            val (icon, shortcut) = when (label.lowercase().trim()) {
-                                "cut" -> Pair(Icons.Default.ContentCut, "Ctrl+X")
-                                "copy" -> Pair(Icons.Default.ContentCopy, "Ctrl+C")
-                                "paste" -> Pair(Icons.Default.ContentPaste, "Ctrl+V")
-                                "select all" -> Pair(Icons.Default.SelectAll, "Ctrl+A")
-                                else -> Pair(Icons.Default.Edit, null)
-                            }
+                            val (icon, shortcut) =
+                                when (label.lowercase().trim()) {
+                                    "cut" -> Pair(Icons.Default.ContentCut, "Ctrl+X")
+                                    "copy" -> Pair(Icons.Default.ContentCopy, "Ctrl+C")
+                                    "paste" -> Pair(Icons.Default.ContentPaste, "Ctrl+V")
+                                    "select all" -> Pair(Icons.Default.SelectAll, "Ctrl+A")
+                                    else -> Pair(Icons.Default.Edit, null)
+                                }
 
                             MqtlinContextMenuItem(
                                 text = label,
@@ -110,7 +118,7 @@ object MqtlinContextMenuRepresentation : ContextMenuRepresentation {
                                 onClick = {
                                     state.status = ContextMenuState.Status.Closed
                                     item.onClick()
-                                }
+                                },
                             )
                         }
                     }
@@ -123,7 +131,7 @@ object MqtlinContextMenuRepresentation : ContextMenuRepresentation {
 @Composable
 actual fun ProvidePlatformContextMenu(content: @Composable () -> Unit) {
     CompositionLocalProvider(
-        LocalContextMenuRepresentation provides MqtlinContextMenuRepresentation
+        LocalContextMenuRepresentation provides MqtlinContextMenuRepresentation,
     ) {
         content()
     }

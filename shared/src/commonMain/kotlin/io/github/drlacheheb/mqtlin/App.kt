@@ -23,29 +23,31 @@ import io.github.drlacheheb.mqtlin.ui.workspace.WorkspaceScreen
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App(
-    rootComponent: RootComponent
+    rootComponent: RootComponent,
+    modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
 
     MqtlinTheme {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(DarkBackground)
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent(PointerEventPass.Initial)
-                            if (event.type == PointerEventType.Press && event.button == PointerButton.Primary) {
-                                focusManager.clearFocus()
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .background(DarkBackground)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                if (event.type == PointerEventType.Press && event.button == PointerButton.Primary) {
+                                    focusManager.clearFocus()
+                                }
                             }
                         }
-                    }
-                }
+                    },
         ) {
             Children(
                 stack = rootComponent.childStack,
-                animation = stackAnimation(fade())
+                animation = stackAnimation(fade()),
             ) { child ->
                 when (val instance = child.instance) {
                     is RootComponent.RootChild.Connection -> {

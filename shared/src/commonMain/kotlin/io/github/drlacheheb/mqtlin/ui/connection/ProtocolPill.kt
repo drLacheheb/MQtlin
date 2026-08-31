@@ -24,23 +24,24 @@ fun ProtocolPill(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxHeight()
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(onClick = onClick),
+        modifier =
+            modifier
+                .fillMaxHeight()
+                .pointerHoverIcon(PointerIcon.Hand)
+                .clickable(onClick = onClick),
         shape = RoundedCornerShape(2.dp),
         color = if (isSelected) MqtlinPrimary.copy(alpha = 0.15f) else Color.Transparent,
-        border = if (isSelected) BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.30f)) else null
+        border = if (isSelected) BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.30f)) else null,
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 text = label,
                 fontSize = 11.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) MqtlinPrimary else DarkOnSurfaceVariant
+                color = if (isSelected) MqtlinPrimary else DarkOnSurfaceVariant,
             )
         }
     }

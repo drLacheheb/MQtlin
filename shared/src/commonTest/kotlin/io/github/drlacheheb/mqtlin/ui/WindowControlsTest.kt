@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class WindowControlsTest {
-
     @Test
     fun `window actions defaults execute safely without exceptions`() {
         val actions = WindowActions()
@@ -23,12 +22,13 @@ class WindowControlsTest {
         var maximizeCalled = false
         var closeCalled = false
 
-        val actions = WindowActions(
-            onMinimize = { minimizeCalled = true },
-            onMaximizeRestore = { maximizeCalled = true },
-            onClose = { closeCalled = true },
-            isMaximized = true
-        )
+        val actions =
+            WindowActions(
+                onMinimize = { minimizeCalled = true },
+                onMaximizeRestore = { maximizeCalled = true },
+                onClose = { closeCalled = true },
+                isMaximized = true,
+            )
 
         actions.onMinimize()
         minimizeCalled shouldBe true
@@ -42,4 +42,3 @@ class WindowControlsTest {
         actions.isMaximized shouldBe true
     }
 }
-

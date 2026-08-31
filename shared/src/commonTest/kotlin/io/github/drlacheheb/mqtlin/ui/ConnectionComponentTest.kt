@@ -30,721 +30,810 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConnectionComponentTest {
-
     private val fakeRepository = FakeMqttRepository()
     private val validateUseCase = ValidateConnectionConfigUseCase()
 
     private fun createComponent(
         testScope: TestScope,
         profileRepository: io.github.drlacheheb.mqtlin.domain.repository.ProfileRepository? = null,
-        onConnected: (ConnectionConfig) -> Unit = {}
+        onConnected: (ConnectionConfig) -> Unit = {},
     ): Pair<DefaultConnectionComponent, LifecycleRegistry> {
         val lifecycle = LifecycleRegistry()
         lifecycle.resume()
         val context = DefaultComponentContext(lifecycle = lifecycle)
-        val component = DefaultConnectionComponent(
-            componentContext = context,
-            mqttRepository = fakeRepository,
-            profileRepository = profileRepository,
-            validateConfigUseCase = validateUseCase,
-            onConnected = onConnected,
-            mainContext = StandardTestDispatcher(testScope.testScheduler)
-        )
+        val component =
+            DefaultConnectionComponent(
+                componentContext = context,
+                mqttRepository = fakeRepository,
+                profileRepository = profileRepository,
+                validateConfigUseCase = validateUseCase,
+                onConnected = onConnected,
+                mainContext = StandardTestDispatcher(testScope.testScheduler),
+            )
         return Pair(component, lifecycle)
     }
 
     @Test
-    fun `initial state has default local mosquitto parameters`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `initial state has default local mosquitto parameters`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        val state = component.state.value
-        state.name shouldBe "Local Mosquitto"
-        state.host shouldBe "127.0.0.1"
-        state.portText shouldBe "1883"
-        state.clientId shouldBe "mqtlin_client_8f9a2b"
-        state.protocolVersion shouldBe MqttProtocolVersion.MQTT_5_0
-        state.transport shouldBe TransportProtocol.TCP
-        state.username shouldBe ""
-        state.password shouldBe ""
-        state.connectionState shouldBe ConnectionState.Disconnected
-        state.validationErrors.shouldBeEmpty()
+            val state = component.state.value
+            state.name shouldBe "Local Mosquitto"
+            state.host shouldBe "127.0.0.1"
+            state.portText shouldBe "1883"
+            state.clientId shouldBe "mqtlin_client_8f9a2b"
+            state.protocolVersion shouldBe MqttProtocolVersion.MQTT_5_0
+            state.transport shouldBe TransportProtocol.TCP
+            state.username shouldBe ""
+            state.password shouldBe ""
+            state.connectionState shouldBe ConnectionState.Disconnected
+            state.validationErrors.shouldBeEmpty()
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `changing profile name updates state`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-
-        component.onNameChanged("Production Cluster")
-
-        component.state.value.name shouldBe "Production Cluster"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `changing profile name with string exceeding max length clamps to MAX_PROFILE_NAME_LENGTH`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `changing profile name updates state`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        val longName = "A".repeat(100)
-        component.onNameChanged(longName)
+            component.onNameChanged("Production Cluster")
 
-        component.state.value.name.length shouldBe 32
-        component.state.value.name shouldBe "A".repeat(32)
+            component.state.value.name shouldBe "Production Cluster"
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `changing host updates state and clears field validation error`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-
-        component.onHostChanged("broker.hivemq.com")
-
-        component.state.value.host shouldBe "broker.hivemq.com"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `changing port updates state and clears port validation error`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `changing profile name with string exceeding max length clamps to MAX_PROFILE_NAME_LENGTH`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.onPortChanged("8883")
+            val longName = "A".repeat(100)
+            component.onNameChanged(longName)
 
-        component.state.value.portText shouldBe "8883"
+            component.state.value.name.length shouldBe 32
+            component.state.value.name shouldBe "A".repeat(32)
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `changing client ID updates state and clears client ID error`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-
-        component.onClientIdChanged("custom_client_42")
-
-        component.state.value.clientId shouldBe "custom_client_42"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `generating random client ID updates clientId with mqtlin_client prefix`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `changing host updates state and clears field validation error`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.onGenerateRandomClientId()
+            component.onHostChanged("broker.hivemq.com")
 
-        component.state.value.clientId shouldStartWith "mqtlin_client_"
+            component.state.value.host shouldBe "broker.hivemq.com"
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `changing protocol version updates state`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-
-        component.onProtocolVersionChanged(MqttProtocolVersion.MQTT_3_1_1)
-
-        component.state.value.protocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `changing transport updates transport and default port`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `changing port updates state and clears port validation error`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.onTransportChanged(TransportProtocol.TLS)
+            component.onPortChanged("8883")
 
-        component.state.value.transport shouldBe TransportProtocol.TLS
-        component.state.value.portText shouldBe "8883"
+            component.state.value.portText shouldBe "8883"
 
-        component.onTransportChanged(TransportProtocol.WSS)
-
-        component.state.value.transport shouldBe TransportProtocol.WSS
-        component.state.value.portText shouldBe "8084"
-
-        component.onTransportChanged(TransportProtocol.WS)
-
-        component.state.value.transport shouldBe TransportProtocol.WS
-        component.state.value.portText shouldBe "8083"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `changing username and password updates state`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `changing client ID updates state and clears client ID error`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.onUsernameChanged("admin")
-        component.onPasswordChanged("secret123")
+            component.onClientIdChanged("custom_client_42")
 
-        component.state.value.username shouldBe "admin"
-        component.state.value.password shouldBe "secret123"
+            component.state.value.clientId shouldBe "custom_client_42"
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `clicking connect with invalid port sets PORT validation error without connecting`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-        component.onPortChanged("invalid_port")
-
-        component.onConnectClicked()
-        advanceUntilIdle()
-
-        component.state.value.validationErrors shouldContainKey ValidationResult.Field.PORT
-        component.state.value.connectionState shouldBe ConnectionState.Disconnected
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `clicking connect with blank host sets validation error without calling repository`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-        component.onHostChanged("")
+    fun `generating random client ID updates clientId with mqtlin_client prefix`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.onConnectClicked()
-        advanceUntilIdle()
+            component.onGenerateRandomClientId()
 
-        component.state.value.validationErrors shouldContainKey ValidationResult.Field.HOST
-        component.state.value.connectionState shouldBe ConnectionState.Disconnected
+            component.state.value.clientId shouldStartWith "mqtlin_client_"
 
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `successful connection transitions through Connected state and triggers callback`() = runTest {
-        var onConnectedCalled = false
-        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
-        component.onHostChanged("broker.emqx.io")
-        component.onPortChanged("1883")
+    fun `changing protocol version updates state`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.onConnectClicked()
-        advanceUntilIdle()
+            component.onProtocolVersionChanged(MqttProtocolVersion.MQTT_3_1_1)
 
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
-        val connectedState = component.state.value.connectionState as ConnectionState.Connected
-        connectedState.host shouldBe "broker.emqx.io"
-        connectedState.port shouldBe 1883
-        onConnectedCalled shouldBe true
+            component.state.value.protocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
 
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `failed connection transitions to Error state with message`() = runTest {
-        fakeRepository.shouldFailConnection = true
-        fakeRepository.failureErrorMessage = "Host unreachable"
+    fun `changing transport updates transport and default port`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        val (component, lifecycle) = createComponent(this)
-        component.onHostChanged("invalid.host")
+            component.onTransportChanged(TransportProtocol.TLS)
 
-        component.onConnectClicked()
-        advanceUntilIdle()
+            component.state.value.transport shouldBe TransportProtocol.TLS
+            component.state.value.portText shouldBe "8883"
 
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
-        val errorState = component.state.value.connectionState as ConnectionState.Error
-        errorState.message shouldBe "Host unreachable"
+            component.onTransportChanged(TransportProtocol.WSS)
 
-        lifecycle.destroy()
-    }
+            component.state.value.transport shouldBe TransportProtocol.WSS
+            component.state.value.portText shouldBe "8084"
 
-    @Test
-    fun `dismissing error state resets connectionState to Disconnected`() = runTest {
-        fakeRepository.shouldFailConnection = true
-        fakeRepository.failureErrorMessage = "TLS Handshake Failed"
+            component.onTransportChanged(TransportProtocol.WS)
 
-        val (component, lifecycle) = createComponent(this)
-        component.onConnectClicked()
-        advanceUntilIdle()
+            component.state.value.transport shouldBe TransportProtocol.WS
+            component.state.value.portText shouldBe "8083"
 
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
-
-        component.onDismissError()
-
-        component.state.value.connectionState shouldBe ConnectionState.Disconnected
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `clicking disconnect resets state to Disconnected`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-        component.onConnectClicked()
-        advanceUntilIdle()
+    fun `changing username and password updates state`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
 
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
+            component.onUsernameChanged("admin")
+            component.onPasswordChanged("secret123")
 
-        component.onDisconnectClicked()
-        advanceUntilIdle()
+            component.state.value.username shouldBe "admin"
+            component.state.value.password shouldBe "secret123"
 
-        component.state.value.connectionState shouldBe ConnectionState.Disconnected
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `testing connection successfully sets success message without calling onConnected callback`() = runTest {
-        var onConnectedCalled = false
-        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+    fun `clicking connect with invalid port sets PORT validation error without connecting`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+            component.onPortChanged("invalid_port")
 
-        component.onTestConnectionClicked()
-        advanceUntilIdle()
+            component.onConnectClicked()
+            advanceUntilIdle()
 
-        onConnectedCalled shouldBe false
-        component.state.value.testSuccessMessage shouldBe "Successfully connected to 127.0.0.1:1883!"
-        component.state.value.isTesting shouldBe false
+            component.state.value.validationErrors shouldContainKey ValidationResult.Field.PORT
+            component.state.value.connectionState shouldBe ConnectionState.Disconnected
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `testing connection with broker failure sets error state without calling onConnected callback`() = runTest {
-        var onConnectedCalled = false
-        fakeRepository.shouldFailConnection = true
-        fakeRepository.failureErrorMessage = "Connection Refused"
-
-        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
-
-        component.onTestConnectionClicked()
-        advanceUntilIdle()
-
-        onConnectedCalled shouldBe false
-        component.state.value.testSuccessMessage shouldBe null
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Error>()
-        val error = component.state.value.connectionState as ConnectionState.Error
-        error.message shouldContain "Connection refused"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `clicking new profile resets state to defaults with new random client ID`() = runTest {
-        val (component, lifecycle) = createComponent(this)
+    fun `clicking connect with blank host sets validation error without calling repository`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+            component.onHostChanged("")
 
-        component.onNameChanged("Custom Profile")
-        component.onHostChanged("192.168.1.50")
-        component.onPortChanged("8883")
+            component.onConnectClicked()
+            advanceUntilIdle()
 
-        component.onNewProfileClicked()
+            component.state.value.validationErrors shouldContainKey ValidationResult.Field.HOST
+            component.state.value.connectionState shouldBe ConnectionState.Disconnected
 
-        val state = component.state.value
-        state.name shouldBe "New Connection"
-        state.host shouldBe "127.0.0.1"
-        state.portText shouldBe "1883"
-        state.clientId shouldStartWith "mqtlin_client_"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `selecting a saved profile populates all form fields from profile`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-        val testProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Staging Cluster",
-            host = "staging.emqx.io",
-            port = 8883,
-            clientId = "staging_client_1",
-            protocolVersion = MqttProtocolVersion.MQTT_3_1_1,
-            transport = TransportProtocol.TLS,
-            username = "stage_user",
-            password = "stage_password"
-        )
+    fun `successful connection transitions through Connected state and triggers callback`() =
+        runTest {
+            var onConnectedCalled = false
+            val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+            component.onHostChanged("broker.emqx.io")
+            component.onPortChanged("1883")
 
-        component.onProfileSelected(testProfile)
+            component.onConnectClicked()
+            advanceUntilIdle()
 
-        val state = component.state.value
-        state.name shouldBe "Staging Cluster"
-        state.host shouldBe "staging.emqx.io"
-        state.portText shouldBe "8883"
-        state.clientId shouldBe "staging_client_1"
-        state.protocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
-        state.transport shouldBe TransportProtocol.TLS
-        state.username shouldBe "stage_user"
-        state.password shouldBe "stage_password"
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Connected>()
+            val connectedState = component.state.value.connectionState as ConnectionState.Connected
+            connectedState.host shouldBe "broker.emqx.io"
+            connectedState.port shouldBe 1883
+            onConnectedCalled shouldBe true
 
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `connecting saves the profile into savedProfiles list`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-        component.onNameChanged("Production Server")
-        component.onHostChanged("mqtt.example.com")
-        component.onPortChanged("1883")
+    fun `failed connection transitions to Error state with message`() =
+        runTest {
+            fakeRepository.shouldFailConnection = true
+            fakeRepository.failureErrorMessage = "Host unreachable"
 
-        component.onConnectClicked()
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this)
+            component.onHostChanged("invalid.host")
 
-        component.state.value.savedProfiles.size shouldBe 1
-        val saved = component.state.value.savedProfiles[0]
-        saved.name shouldBe "Production Server"
-        saved.host shouldBe "mqtt.example.com"
+            component.onConnectClicked()
+            advanceUntilIdle()
 
-        lifecycle.destroy()
-    }
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Error>()
+            val errorState = component.state.value.connectionState as ConnectionState.Error
+            errorState.message shouldBe "Host unreachable"
 
-    @Test
-    fun `deleting a saved profile removes it from savedProfiles list`() = runTest {
-        val (component, lifecycle) = createComponent(this)
-        val profile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Temp Profile",
-            host = "10.0.0.1",
-            port = 1883
-        )
-
-        component.onNameChanged(profile.name)
-        component.onHostChanged(profile.host)
-        component.onConnectClicked()
-        advanceUntilIdle()
-
-        component.state.value.savedProfiles.size shouldBe 1
-
-        component.onDeleteProfileClicked(profile)
-
-        component.state.value.savedProfiles.shouldBeEmpty()
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `opening connection component when repository is already connected does not auto trigger onConnected`() = runTest {
-        var onConnectedCalled = false
-        // Simulate repository already connected from a previous workspace session
-        fakeRepository.setConnected(
-            io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-                name = "Active Mosquitto",
-                host = "127.0.0.1",
-                port = 1883,
-                clientId = "active_client",
-                protocolVersion = MqttProtocolVersion.MQTT_5_0
+    fun `dismissing error state resets connectionState to Disconnected`() =
+        runTest {
+            fakeRepository.shouldFailConnection = true
+            fakeRepository.failureErrorMessage = "TLS Handshake Failed"
+
+            val (component, lifecycle) = createComponent(this)
+            component.onConnectClicked()
+            advanceUntilIdle()
+
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Error>()
+
+            component.onDismissError()
+
+            component.state.value.connectionState shouldBe ConnectionState.Disconnected
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `clicking disconnect resets state to Disconnected`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+            component.onConnectClicked()
+            advanceUntilIdle()
+
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Connected>()
+
+            component.onDisconnectClicked()
+            advanceUntilIdle()
+
+            component.state.value.connectionState shouldBe ConnectionState.Disconnected
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `testing connection successfully sets success message without calling onConnected callback`() =
+        runTest {
+            var onConnectedCalled = false
+            val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+
+            component.onTestConnectionClicked()
+            advanceUntilIdle()
+
+            onConnectedCalled shouldBe false
+            component.state.value.testSuccessMessage shouldBe "Successfully connected to 127.0.0.1:1883!"
+            component.state.value.isTesting shouldBe false
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `testing connection with broker failure sets error state without calling onConnected callback`() =
+        runTest {
+            var onConnectedCalled = false
+            fakeRepository.shouldFailConnection = true
+            fakeRepository.failureErrorMessage = "Connection Refused"
+
+            val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+
+            component.onTestConnectionClicked()
+            advanceUntilIdle()
+
+            onConnectedCalled shouldBe false
+            component.state.value.testSuccessMessage shouldBe null
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Error>()
+            val error = component.state.value.connectionState as ConnectionState.Error
+            error.message shouldContain "Connection refused"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `clicking new profile resets state to defaults with new random client ID`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+
+            component.onNameChanged("Custom Profile")
+            component.onHostChanged("192.168.1.50")
+            component.onPortChanged("8883")
+
+            component.onNewProfileClicked()
+
+            val state = component.state.value
+            state.name shouldBe "New Connection"
+            state.host shouldBe "127.0.0.1"
+            state.portText shouldBe "1883"
+            state.clientId shouldStartWith "mqtlin_client_"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `selecting a saved profile populates all form fields from profile`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+            val testProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Staging Cluster",
+                    host = "staging.emqx.io",
+                    port = 8883,
+                    clientId = "staging_client_1",
+                    protocolVersion = MqttProtocolVersion.MQTT_3_1_1,
+                    transport = TransportProtocol.TLS,
+                    username = "stage_user",
+                    password = "stage_password",
+                )
+
+            component.onProfileSelected(testProfile)
+
+            val state = component.state.value
+            state.name shouldBe "Staging Cluster"
+            state.host shouldBe "staging.emqx.io"
+            state.portText shouldBe "8883"
+            state.clientId shouldBe "staging_client_1"
+            state.protocolVersion shouldBe MqttProtocolVersion.MQTT_3_1_1
+            state.transport shouldBe TransportProtocol.TLS
+            state.username shouldBe "stage_user"
+            state.password shouldBe "stage_password"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `connecting saves the profile into savedProfiles list`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+            component.onNameChanged("Production Server")
+            component.onHostChanged("mqtt.example.com")
+            component.onPortChanged("1883")
+
+            component.onConnectClicked()
+            advanceUntilIdle()
+
+            component.state.value.savedProfiles.size shouldBe 1
+            val saved = component.state.value.savedProfiles[0]
+            saved.name shouldBe "Production Server"
+            saved.host shouldBe "mqtt.example.com"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `deleting a saved profile removes it from savedProfiles list`() =
+        runTest {
+            val (component, lifecycle) = createComponent(this)
+            val profile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Temp Profile",
+                    host = "10.0.0.1",
+                    port = 1883,
+                )
+
+            component.onNameChanged(profile.name)
+            component.onHostChanged(profile.host)
+            component.onConnectClicked()
+            advanceUntilIdle()
+
+            component.state.value.savedProfiles.size shouldBe 1
+
+            component.onDeleteProfileClicked(profile)
+
+            component.state.value.savedProfiles
+                .shouldBeEmpty()
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `opening connection component when repository is already connected does not auto trigger onConnected`() =
+        runTest {
+            var onConnectedCalled = false
+            // Simulate repository already connected from a previous workspace session
+            fakeRepository.setConnected(
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Active Mosquitto",
+                    host = "127.0.0.1",
+                    port = 1883,
+                    clientId = "active_client",
+                    protocolVersion = MqttProtocolVersion.MQTT_5_0,
+                ),
             )
-        )
 
-        val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this, onConnected = { onConnectedCalled = true })
+            advanceUntilIdle()
 
-        // onConnected must NOT be called without explicit user action
-        onConnectedCalled shouldBe false
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
+            // onConnected must NOT be called without explicit user action
+            onConnectedCalled shouldBe false
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Connected>()
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `initial state loads saved profiles from ProfileRepository and populates active profile`() = runTest {
-        val initialProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Saved AWS",
-            host = "aws.iot.com",
-            port = 8883
-        )
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(initialProfiles = listOf(initialProfile))
-
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
-
-        val state = component.state.value
-        state.savedProfiles.size shouldBe 1
-        state.savedProfiles[0].name shouldBe "Saved AWS"
-        state.name shouldBe "Saved AWS"
-        state.host shouldBe "aws.iot.com"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `switching between connected profile and other profile toggles between Connected and Disconnected state`() = runTest {
-        val activeProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Local Active",
-            host = "127.0.0.1",
-            port = 1883,
-            clientId = "active_client"
-        )
-        val otherProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Remote Inactive",
-            host = "remote.broker.com",
-            port = 1883,
-            clientId = "remote_client"
-        )
-        fakeRepository.setConnected(activeProfile)
+    fun `initial state loads saved profiles from ProfileRepository and populates active profile`() =
+        runTest {
+            val initialProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Saved AWS",
+                    host = "aws.iot.com",
+                    port = 8883,
+                )
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes
+                    .FakeProfileRepository(initialProfiles = listOf(initialProfile))
 
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(activeProfile, otherProfile)
-        )
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
 
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
+            val state = component.state.value
+            state.savedProfiles.size shouldBe 1
+            state.savedProfiles[0].name shouldBe "Saved AWS"
+            state.name shouldBe "Saved AWS"
+            state.host shouldBe "aws.iot.com"
 
-        // Active profile is initially loaded and should be Connected
-        component.state.value.name shouldBe "Local Active"
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
-
-        // Switching to other profile should set state to Disconnected
-        component.onProfileSelected(otherProfile)
-        component.state.value.name shouldBe "Remote Inactive"
-        component.state.value.connectionState shouldBe ConnectionState.Disconnected
-
-        // Switching back to active profile should restore Connected state
-        component.onProfileSelected(activeProfile)
-        component.state.value.name shouldBe "Local Active"
-        component.state.value.connectionState.shouldBeInstanceOf<ConnectionState.Connected>()
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `testing connection does not disconnect active repository session`() = runTest {
-        val activeProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Active Mosquitto",
-            host = "127.0.0.1",
-            port = 1883,
-            clientId = "active_client"
-        )
-        fakeRepository.setConnected(activeProfile)
+    fun `switching between connected profile and other profile toggles between Connected and Disconnected state`() =
+        runTest {
+            val activeProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Local Active",
+                    host = "127.0.0.1",
+                    port = 1883,
+                    clientId = "active_client",
+                )
+            val otherProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Remote Inactive",
+                    host = "remote.broker.com",
+                    port = 1883,
+                    clientId = "remote_client",
+                )
+            fakeRepository.setConnected(activeProfile)
 
-        val (component, lifecycle) = createComponent(this)
-        component.onHostChanged("192.168.1.100")
-        component.onPortChanged("1883")
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(activeProfile, otherProfile),
+                )
 
-        component.onTestConnectionClicked()
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
 
-        // Test was successful for 192.168.1.100
-        component.state.value.testSuccessMessage shouldBe "Successfully connected to 192.168.1.100:1883!"
+            // Active profile is initially loaded and should be Connected
+            component.state.value.name shouldBe "Local Active"
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Connected>()
 
-        // Main repository connection state remains Connected to the active broker!
-        fakeRepository.connectionState.value.shouldBeInstanceOf<ConnectionState.Connected>()
-        (fakeRepository.connectionState.value as ConnectionState.Connected).host shouldBe "127.0.0.1"
+            // Switching to other profile should set state to Disconnected
+            component.onProfileSelected(otherProfile)
+            component.state.value.name shouldBe "Remote Inactive"
+            component.state.value.connectionState shouldBe ConnectionState.Disconnected
 
-        lifecycle.destroy()
-    }
+            // Switching back to active profile should restore Connected state
+            component.onProfileSelected(activeProfile)
+            component.state.value.name shouldBe "Local Active"
+            component.state.value.connectionState
+                .shouldBeInstanceOf<ConnectionState.Connected>()
 
-    @Test
-    fun `editing profile name and saving updates savedProfiles list and repository`() = runTest {
-        val initialProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Local Mosquitto",
-            host = "127.0.0.1",
-            port = 1883
-        )
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(initialProfile)
-        )
-
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
-
-        component.state.value.name shouldBe "Local Mosquitto"
-
-        // User types new name
-        component.onNameChanged("My Office Mosquitto")
-        // User presses Enter or leaves focus (save name)
-        component.onSaveProfileName()
-        advanceUntilIdle()
-
-        // UI state updated
-        component.state.value.name shouldBe "My Office Mosquitto"
-        val savedNames = component.state.value.savedProfiles.map { it.name }
-        savedNames shouldContain "My Office Mosquitto"
-        savedNames shouldNotContain "Local Mosquitto"
-
-        // Repository updated
-        val repoProfiles = fakeProfileRepo.getAllProfiles().map { it.name }
-        repoProfiles shouldContain "My Office Mosquitto"
-        repoProfiles shouldNotContain "Local Mosquitto"
-        fakeProfileRepo.getLastSelectedProfileName() shouldBe "My Office Mosquitto"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `saving blank profile name falls back to original profile name`() = runTest {
-        val initialProfile = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Production Cluster",
-            host = "broker.emqx.io",
-            port = 1883
-        )
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(initialProfile)
-        )
+    fun `testing connection does not disconnect active repository session`() =
+        runTest {
+            val activeProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Active Mosquitto",
+                    host = "127.0.0.1",
+                    port = 1883,
+                    clientId = "active_client",
+                )
+            fakeRepository.setConnected(activeProfile)
 
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this)
+            component.onHostChanged("192.168.1.100")
+            component.onPortChanged("1883")
 
-        // User clears name to blank
-        component.onNameChanged("   ")
-        component.onSaveProfileName()
-        advanceUntilIdle()
+            component.onTestConnectionClicked()
+            advanceUntilIdle()
 
-        // Falls back to original name
-        component.state.value.name shouldBe "Production Cluster"
-        component.state.value.savedProfiles.map { it.name } shouldContain "Production Cluster"
+            // Test was successful for 192.168.1.100
+            component.state.value.testSuccessMessage shouldBe "Successfully connected to 192.168.1.100:1883!"
 
-        lifecycle.destroy()
-    }
+            // Main repository connection state remains Connected to the active broker!
+            fakeRepository.connectionState.value.shouldBeInstanceOf<ConnectionState.Connected>()
+            (fakeRepository.connectionState.value as ConnectionState.Connected).host shouldBe "127.0.0.1"
 
-    @Test
-    fun `editing name of newly created profile and saving commits new profile name`() = runTest {
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository()
-
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
-
-        component.onNewProfileClicked()
-        advanceUntilIdle()
-
-        component.onNameChanged("Custom IoT Lab")
-        component.onSaveProfileName()
-        advanceUntilIdle()
-
-        component.state.value.name shouldBe "Custom IoT Lab"
-        component.state.value.savedProfiles.map { it.name } shouldContain "Custom IoT Lab"
-        fakeProfileRepo.getLastSelectedProfileName() shouldBe "Custom IoT Lab"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `creating multiple new profiles assigns auto-incrementing numbered names`() = runTest {
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository()
+    fun `editing profile name and saving updates savedProfiles list and repository`() =
+        runTest {
+            val initialProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Local Mosquitto",
+                    host = "127.0.0.1",
+                    port = 1883,
+                )
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(initialProfile),
+                )
 
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
 
-        // 1st new profile -> "New Connection"
-        component.onNewProfileClicked()
-        advanceUntilIdle()
-        component.state.value.name shouldBe "New Connection"
+            component.state.value.name shouldBe "Local Mosquitto"
 
-        // 2nd new profile -> "New Connection 2"
-        component.onNewProfileClicked()
-        advanceUntilIdle()
-        component.state.value.name shouldBe "New Connection 2"
+            // User types new name
+            component.onNameChanged("My Office Mosquitto")
+            // User presses Enter or leaves focus (save name)
+            component.onSaveProfileName()
+            advanceUntilIdle()
 
-        // 3rd new profile -> "New Connection 3"
-        component.onNewProfileClicked()
-        advanceUntilIdle()
-        component.state.value.name shouldBe "New Connection 3"
+            // UI state updated
+            component.state.value.name shouldBe "My Office Mosquitto"
+            val savedNames =
+                component.state.value.savedProfiles
+                    .map { it.name }
+            savedNames shouldContain "My Office Mosquitto"
+            savedNames shouldNotContain "Local Mosquitto"
 
-        val names = component.state.value.savedProfiles.map { it.name }
-        names shouldContain "New Connection"
-        names shouldContain "New Connection 2"
-        names shouldContain "New Connection 3"
+            // Repository updated
+            val repoProfiles = fakeProfileRepo.getAllProfiles().map { it.name }
+            repoProfiles shouldContain "My Office Mosquitto"
+            repoProfiles shouldNotContain "Local Mosquitto"
+            fakeProfileRepo.getLastSelectedProfileName() shouldBe "My Office Mosquitto"
 
-        lifecycle.destroy()
-    }
-
-    @Test
-    fun `renaming a profile to an existing profile name is rejected and reverts to original name`() = runTest {
-        val profileA = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Profile Alpha", host = "127.0.0.1", port = 1883)
-        val profileB = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Profile Beta", host = "127.0.0.1", port = 1884)
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(profileA, profileB)
-        )
-
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
-
-        // Select Profile Alpha
-        component.onProfileSelected(profileA)
-        advanceUntilIdle()
-        component.state.value.name shouldBe "Profile Alpha"
-
-        // Try to rename Profile Alpha to "Profile Beta" (which already exists)
-        component.onNameChanged("Profile Beta")
-        component.onSaveProfileName()
-        advanceUntilIdle()
-
-        // Duplicate name rejected, reverts to original name "Profile Alpha"
-        component.state.value.name shouldBe "Profile Alpha"
-        component.state.value.savedProfiles.map { it.name } shouldContain "Profile Alpha"
-        component.state.value.savedProfiles.map { it.name } shouldContain "Profile Beta"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `duplicating a profile creates a unique copy and selects it`() = runTest {
-        val original = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
-            name = "Smart Home Hub",
-            host = "192.168.1.50",
-            port = 1883,
-            clientId = "smart_client"
-        )
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(original)
-        )
+    fun `saving blank profile name falls back to original profile name`() =
+        runTest {
+            val initialProfile =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Production Cluster",
+                    host = "broker.emqx.io",
+                    port = 1883,
+                )
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(initialProfile),
+                )
 
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
 
-        component.onDuplicateProfileClicked(original)
-        advanceUntilIdle()
+            // User clears name to blank
+            component.onNameChanged("   ")
+            component.onSaveProfileName()
+            advanceUntilIdle()
 
-        component.state.value.name shouldBe "Smart Home Hub (Copy)"
-        component.state.value.host shouldBe "192.168.1.50"
-        val names = component.state.value.savedProfiles.map { it.name }
-        names shouldContain "Smart Home Hub"
-        names shouldContain "Smart Home Hub (Copy)"
+            // Falls back to original name
+            component.state.value.name shouldBe "Production Cluster"
+            component.state.value.savedProfiles
+                .map { it.name } shouldContain "Production Cluster"
 
-        fakeProfileRepo.getLastSelectedProfileName() shouldBe "Smart Home Hub (Copy)"
-
-        // Duplicate again to verify auto-increment copy suffix
-        component.onDuplicateProfileClicked(original)
-        advanceUntilIdle()
-
-        component.state.value.name shouldBe "Smart Home Hub (Copy 2)"
-        component.state.value.savedProfiles.map { it.name } shouldContain "Smart Home Hub (Copy 2)"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `deleting the active profile selects the next available profile`() = runTest {
-        val profileA = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Broker One", host = "127.0.0.1")
-        val profileB = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Broker Two", host = "192.168.1.200")
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(profileA, profileB)
-        )
+    fun `editing name of newly created profile and saving commits new profile name`() =
+        runTest {
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes
+                    .FakeProfileRepository()
 
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
 
-        // Broker One is selected
-        component.state.value.name shouldBe "Broker One"
+            component.onNewProfileClicked()
+            advanceUntilIdle()
 
-        // Delete Broker One
-        component.onDeleteProfileClicked(profileA)
-        advanceUntilIdle()
+            component.onNameChanged("Custom IoT Lab")
+            component.onSaveProfileName()
+            advanceUntilIdle()
 
-        // State moves to Broker Two
-        component.state.value.name shouldBe "Broker Two"
-        component.state.value.host shouldBe "192.168.1.200"
-        component.state.value.savedProfiles.map { it.name } shouldContain "Broker Two"
-        component.state.value.savedProfiles.map { it.name } shouldNotContain "Broker One"
+            component.state.value.name shouldBe "Custom IoT Lab"
+            component.state.value.savedProfiles
+                .map { it.name } shouldContain "Custom IoT Lab"
+            fakeProfileRepo.getLastSelectedProfileName() shouldBe "Custom IoT Lab"
 
-        fakeProfileRepo.getAllProfiles().map { it.name } shouldNotContain "Broker One"
-
-        lifecycle.destroy()
-    }
+            lifecycle.destroy()
+        }
 
     @Test
-    fun `deleting the only remaining profile resets form to clean default state`() = runTest {
-        val profileOnly = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Only Broker", host = "127.0.0.1")
-        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
-            initialProfiles = listOf(profileOnly)
-        )
+    fun `creating multiple new profiles assigns auto-incrementing numbered names`() =
+        runTest {
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes
+                    .FakeProfileRepository()
 
-        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
-        advanceUntilIdle()
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
 
-        component.onDeleteProfileClicked(profileOnly)
-        advanceUntilIdle()
+            // 1st new profile -> "New Connection"
+            component.onNewProfileClicked()
+            advanceUntilIdle()
+            component.state.value.name shouldBe "New Connection"
 
-        component.state.value.savedProfiles.shouldBeEmpty()
-        component.state.value.name shouldBe "New Connection"
+            // 2nd new profile -> "New Connection 2"
+            component.onNewProfileClicked()
+            advanceUntilIdle()
+            component.state.value.name shouldBe "New Connection 2"
 
-        lifecycle.destroy()
-    }
+            // 3rd new profile -> "New Connection 3"
+            component.onNewProfileClicked()
+            advanceUntilIdle()
+            component.state.value.name shouldBe "New Connection 3"
+
+            val names =
+                component.state.value.savedProfiles
+                    .map { it.name }
+            names shouldContain "New Connection"
+            names shouldContain "New Connection 2"
+            names shouldContain "New Connection 3"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `renaming a profile to an existing profile name is rejected and reverts to original name`() =
+        runTest {
+            val profileA =
+                io.github.drlacheheb.mqtlin.domain.model
+                    .ConnectionConfig(name = "Profile Alpha", host = "127.0.0.1", port = 1883)
+            val profileB =
+                io.github.drlacheheb.mqtlin.domain.model
+                    .ConnectionConfig(name = "Profile Beta", host = "127.0.0.1", port = 1884)
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(profileA, profileB),
+                )
+
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
+
+            // Select Profile Alpha
+            component.onProfileSelected(profileA)
+            advanceUntilIdle()
+            component.state.value.name shouldBe "Profile Alpha"
+
+            // Try to rename Profile Alpha to "Profile Beta" (which already exists)
+            component.onNameChanged("Profile Beta")
+            component.onSaveProfileName()
+            advanceUntilIdle()
+
+            // Duplicate name rejected, reverts to original name "Profile Alpha"
+            component.state.value.name shouldBe "Profile Alpha"
+            component.state.value.savedProfiles
+                .map { it.name } shouldContain "Profile Alpha"
+            component.state.value.savedProfiles
+                .map { it.name } shouldContain "Profile Beta"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `duplicating a profile creates a unique copy and selects it`() =
+        runTest {
+            val original =
+                io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+                    name = "Smart Home Hub",
+                    host = "192.168.1.50",
+                    port = 1883,
+                    clientId = "smart_client",
+                )
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(original),
+                )
+
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
+
+            component.onDuplicateProfileClicked(original)
+            advanceUntilIdle()
+
+            component.state.value.name shouldBe "Smart Home Hub (Copy)"
+            component.state.value.host shouldBe "192.168.1.50"
+            val names =
+                component.state.value.savedProfiles
+                    .map { it.name }
+            names shouldContain "Smart Home Hub"
+            names shouldContain "Smart Home Hub (Copy)"
+
+            fakeProfileRepo.getLastSelectedProfileName() shouldBe "Smart Home Hub (Copy)"
+
+            // Duplicate again to verify auto-increment copy suffix
+            component.onDuplicateProfileClicked(original)
+            advanceUntilIdle()
+
+            component.state.value.name shouldBe "Smart Home Hub (Copy 2)"
+            component.state.value.savedProfiles
+                .map { it.name } shouldContain "Smart Home Hub (Copy 2)"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `deleting the active profile selects the next available profile`() =
+        runTest {
+            val profileA =
+                io.github.drlacheheb.mqtlin.domain.model
+                    .ConnectionConfig(name = "Broker One", host = "127.0.0.1")
+            val profileB =
+                io.github.drlacheheb.mqtlin.domain.model
+                    .ConnectionConfig(name = "Broker Two", host = "192.168.1.200")
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(profileA, profileB),
+                )
+
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
+
+            // Broker One is selected
+            component.state.value.name shouldBe "Broker One"
+
+            // Delete Broker One
+            component.onDeleteProfileClicked(profileA)
+            advanceUntilIdle()
+
+            // State moves to Broker Two
+            component.state.value.name shouldBe "Broker Two"
+            component.state.value.host shouldBe "192.168.1.200"
+            component.state.value.savedProfiles
+                .map { it.name } shouldContain "Broker Two"
+            component.state.value.savedProfiles
+                .map { it.name } shouldNotContain "Broker One"
+
+            fakeProfileRepo.getAllProfiles().map { it.name } shouldNotContain "Broker One"
+
+            lifecycle.destroy()
+        }
+
+    @Test
+    fun `deleting the only remaining profile resets form to clean default state`() =
+        runTest {
+            val profileOnly =
+                io.github.drlacheheb.mqtlin.domain.model
+                    .ConnectionConfig(name = "Only Broker", host = "127.0.0.1")
+            val fakeProfileRepo =
+                io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+                    initialProfiles = listOf(profileOnly),
+                )
+
+            val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+            advanceUntilIdle()
+
+            component.onDeleteProfileClicked(profileOnly)
+            advanceUntilIdle()
+
+            component.state.value.savedProfiles
+                .shouldBeEmpty()
+            component.state.value.name shouldBe "New Connection"
+
+            lifecycle.destroy()
+        }
 }

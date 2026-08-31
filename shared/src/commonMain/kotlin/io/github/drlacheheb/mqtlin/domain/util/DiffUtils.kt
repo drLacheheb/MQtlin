@@ -3,31 +3,34 @@ package io.github.drlacheheb.mqtlin.domain.util
 enum class DiffType {
     UNCHANGED,
     ADDED,
-    DELETED
+    DELETED,
 }
 
 data class DiffLine(
     val type: DiffType,
     val text: String,
     val oldLineNumber: Int? = null,
-    val newLineNumber: Int? = null
+    val newLineNumber: Int? = null,
 )
 
 data class DiffResult(
     val lines: List<DiffLine>,
     val additions: Int,
     val deletions: Int,
-    val hasChanges: Boolean
+    val hasChanges: Boolean,
 )
 
 object DiffUtils {
-
     /**
      * Computes a line-by-line diff between [oldText] and [newText].
      * If [prettifyJson] is true and payloads are valid JSON, payloads are formatted first
      * for clean key-by-key visual structural comparison.
      */
-    fun computeDiff(oldText: String, newText: String, prettifyJson: Boolean = true): DiffResult {
+    fun computeDiff(
+        oldText: String,
+        newText: String,
+        prettifyJson: Boolean = true,
+    ): DiffResult {
         val effectiveOld = if (prettifyJson && JsonUtils.isValidJson(oldText)) JsonUtils.formatOrRaw(oldText) else oldText
         val effectiveNew = if (prettifyJson && JsonUtils.isValidJson(newText)) JsonUtils.formatOrRaw(newText) else newText
 
@@ -51,8 +54,8 @@ object DiffUtils {
                         type = DiffType.UNCHANGED,
                         text = oldLines[i - 1],
                         oldLineNumber = i,
-                        newLineNumber = j
-                    )
+                        newLineNumber = j,
+                    ),
                 )
                 i--
                 j--
@@ -61,8 +64,8 @@ object DiffUtils {
                     DiffLine(
                         type = DiffType.ADDED,
                         text = newLines[j - 1],
-                        newLineNumber = j
-                    )
+                        newLineNumber = j,
+                    ),
                 )
                 additions++
                 j--
@@ -71,8 +74,8 @@ object DiffUtils {
                     DiffLine(
                         type = DiffType.DELETED,
                         text = oldLines[i - 1],
-                        oldLineNumber = i
-                    )
+                        oldLineNumber = i,
+                    ),
                 )
                 deletions++
                 i--
@@ -85,11 +88,14 @@ object DiffUtils {
             lines = diffLines,
             additions = additions,
             deletions = deletions,
-            hasChanges = additions > 0 || deletions > 0
+            hasChanges = additions > 0 || deletions > 0,
         )
     }
 
-    private fun computeLcsMatrix(a: List<String>, b: List<String>): Array<IntArray> {
+    private fun computeLcsMatrix(
+        a: List<String>,
+        b: List<String>,
+    ): Array<IntArray> {
         val n = a.size
         val m = b.size
         val dp = Array(n + 1) { IntArray(m + 1) }

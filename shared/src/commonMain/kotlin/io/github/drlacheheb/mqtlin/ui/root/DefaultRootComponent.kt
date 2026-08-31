@@ -24,9 +24,9 @@ class DefaultRootComponent(
     componentContext: ComponentContext,
     private val mqttRepository: MqttRepository,
     private val profileRepository: ProfileRepository? = null,
-    private val mainContext: CoroutineContext? = null
-) : RootComponent, ComponentContext by componentContext {
-
+    private val mainContext: CoroutineContext? = null,
+) : RootComponent,
+    ComponentContext by componentContext {
     private val navigation = StackNavigation<Config>()
     private val dialogNav = SlotNavigation<DialogNavConfig>()
 
@@ -36,7 +36,7 @@ class DefaultRootComponent(
             serializer = Config.serializer(),
             initialConfiguration = Config.Connection,
             handleBackButton = true,
-            childFactory = ::createChild
+            childFactory = ::createChild,
         )
 
     override val dialogSlot: Value<ChildSlot<*, RootComponent.DialogChild>> =
@@ -44,7 +44,7 @@ class DefaultRootComponent(
             source = dialogNav,
             serializer = DialogNavConfig.serializer(),
             handleBackButton = true,
-            childFactory = ::createDialogChild
+            childFactory = ::createDialogChild,
         )
 
     override fun onOpenSettings() {
@@ -59,88 +59,98 @@ class DefaultRootComponent(
         dialogNav.dismiss()
     }
 
-    private fun createChild(config: Config, context: ComponentContext): RootComponent.RootChild =
+    private fun createChild(
+        config: Config,
+        context: ComponentContext,
+    ): RootComponent.RootChild =
         when (config) {
             is Config.Connection -> {
-                val connectionComponent = if (mainContext != null) {
-                    DefaultConnectionComponent(
-                        componentContext = context,
-                        mqttRepository = mqttRepository,
-                        profileRepository = profileRepository,
-                        onConnected = { connConfig ->
-                            navigation.replaceAll(Config.Workspace(connConfig))
-                        },
-                        mainContext = mainContext
-                    )
-                } else {
-                    DefaultConnectionComponent(
-                        componentContext = context,
-                        mqttRepository = mqttRepository,
-                        profileRepository = profileRepository,
-                        onConnected = { connConfig ->
-                            navigation.replaceAll(Config.Workspace(connConfig))
-                        }
-                    )
-                }
+                val connectionComponent =
+                    if (mainContext != null) {
+                        DefaultConnectionComponent(
+                            componentContext = context,
+                            mqttRepository = mqttRepository,
+                            profileRepository = profileRepository,
+                            onConnected = { connConfig ->
+                                navigation.replaceAll(Config.Workspace(connConfig))
+                            },
+                            mainContext = mainContext,
+                        )
+                    } else {
+                        DefaultConnectionComponent(
+                            componentContext = context,
+                            mqttRepository = mqttRepository,
+                            profileRepository = profileRepository,
+                            onConnected = { connConfig ->
+                                navigation.replaceAll(Config.Workspace(connConfig))
+                            },
+                        )
+                    }
                 RootComponent.RootChild.Connection(connectionComponent)
             }
             is Config.Workspace -> {
-                val workspaceComponent = if (mainContext != null) {
-                    DefaultWorkspaceComponent(
-                        componentContext = context,
-                        config = config.config,
-                        mqttRepository = mqttRepository,
-                        onDisconnect = { navigation.replaceAll(Config.Connection) },
-                        onOpenConnectionManager = ::onOpenConnectionManager,
-                        onOpenSettings = ::onOpenSettings,
-                        mainContext = mainContext
-                    )
-                } else {
-                    DefaultWorkspaceComponent(
-                        componentContext = context,
-                        config = config.config,
-                        mqttRepository = mqttRepository,
-                        onDisconnect = { navigation.replaceAll(Config.Connection) },
-                        onOpenConnectionManager = ::onOpenConnectionManager,
-                        onOpenSettings = ::onOpenSettings
-                    )
-                }
+                val workspaceComponent =
+                    if (mainContext != null) {
+                        DefaultWorkspaceComponent(
+                            componentContext = context,
+                            config = config.config,
+                            mqttRepository = mqttRepository,
+                            onDisconnect = { navigation.replaceAll(Config.Connection) },
+                            onOpenConnectionManager = ::onOpenConnectionManager,
+                            onOpenSettings = ::onOpenSettings,
+                            mainContext = mainContext,
+                        )
+                    } else {
+                        DefaultWorkspaceComponent(
+                            componentContext = context,
+                            config = config.config,
+                            mqttRepository = mqttRepository,
+                            onDisconnect = { navigation.replaceAll(Config.Connection) },
+                            onOpenConnectionManager = ::onOpenConnectionManager,
+                            onOpenSettings = ::onOpenSettings,
+                        )
+                    }
                 RootComponent.RootChild.Workspace(workspaceComponent)
             }
         }
 
-    private fun createDialogChild(config: DialogNavConfig, context: ComponentContext): RootComponent.DialogChild =
+    private fun createDialogChild(
+        config: DialogNavConfig,
+        context: ComponentContext,
+    ): RootComponent.DialogChild =
         when (config) {
             is DialogNavConfig.Settings -> {
-                val settingsComponent = DefaultSettingsComponent(
-                    componentContext = context,
-                    onDismiss = { dialogNav.dismiss() }
-                )
+                val settingsComponent =
+                    DefaultSettingsComponent(
+                        componentContext = context,
+                        onDismiss = { dialogNav.dismiss() },
+                    )
                 RootComponent.DialogChild.Settings(settingsComponent)
             }
             is DialogNavConfig.ConnectionManager -> {
-                val connectionComponent = if (mainContext != null) {
-                    DefaultConnectionComponent(
-                        componentContext = context,
-                        mqttRepository = mqttRepository,
-                        profileRepository = profileRepository,
-                        onConnected = { connConfig ->
-                            dialogNav.dismiss()
-                            navigation.replaceAll(Config.Workspace(connConfig))
-                        },
-                        mainContext = mainContext
-                    )
-                } else {
-                    DefaultConnectionComponent(
-                        componentContext = context,
-                        mqttRepository = mqttRepository,
-                        profileRepository = profileRepository,
-                        onConnected = { connConfig ->
-                            dialogNav.dismiss()
-                            navigation.replaceAll(Config.Workspace(connConfig))
-                        }
-                    )
-                }
+                val connectionComponent =
+                    if (mainContext != null) {
+                        DefaultConnectionComponent(
+                            componentContext = context,
+                            mqttRepository = mqttRepository,
+                            profileRepository = profileRepository,
+                            onConnected = { connConfig ->
+                                dialogNav.dismiss()
+                                navigation.replaceAll(Config.Workspace(connConfig))
+                            },
+                            mainContext = mainContext,
+                        )
+                    } else {
+                        DefaultConnectionComponent(
+                            componentContext = context,
+                            mqttRepository = mqttRepository,
+                            profileRepository = profileRepository,
+                            onConnected = { connConfig ->
+                                dialogNav.dismiss()
+                                navigation.replaceAll(Config.Workspace(connConfig))
+                            },
+                        )
+                    }
                 RootComponent.DialogChild.ConnectionManager(connectionComponent)
             }
         }
@@ -151,7 +161,9 @@ class DefaultRootComponent(
         data object Connection : Config
 
         @Serializable
-        data class Workspace(val config: ConnectionConfig) : Config
+        data class Workspace(
+            val config: ConnectionConfig,
+        ) : Config
     }
 
     @Serializable

@@ -9,16 +9,18 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class TopicTreeHistoryTest {
-
-    private fun createMessage(topic: String, payload: String, timestamp: Long): MqttMessage {
-        return MqttMessage(
+    private fun createMessage(
+        topic: String,
+        payload: String,
+        timestamp: Long,
+    ): MqttMessage =
+        MqttMessage(
             topic = topic,
             payload = payload.encodeToByteArray(),
             qos = 0,
             isRetained = false,
-            timestamp = timestamp
+            timestamp = timestamp,
         )
-    }
 
     @Test
     fun `inserting multiple messages records history in reverse chronological order`() {

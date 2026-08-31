@@ -5,7 +5,7 @@ sealed interface ConnectionState {
 
     data class Connecting(
         val host: String,
-        val port: Int
+        val port: Int,
     ) : ConnectionState
 
     data class Connected(
@@ -13,11 +13,11 @@ sealed interface ConnectionState {
         val port: Int,
         val clientId: String,
         val protocolVersion: MqttProtocolVersion = MqttProtocolVersion.MQTT_5_0,
-        val pingLatencyMs: Long? = null
+        val pingLatencyMs: Long? = null,
     ) : ConnectionState
 
     data class Error(
         val message: String,
-        val cause: Throwable? = null
+        val cause: Throwable? = null,
     ) : ConnectionState
 }

@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,32 +31,34 @@ import io.github.drlacheheb.mqtlin.ui.workspace.components.PurgeRetainedDialog
 import io.github.drlacheheb.mqtlin.ui.workspace.inspector.header.formatInspectorTimestamp
 
 /**
- * Main Payload Inspector Panel orchestrating topic metadata, message history navigation,
+ * Main right inspector panel providing topic metadata, tree path,
  * and view representations (JSON code viewer, Hex viewer, Diff comparison, and time-series charting).
  */
 @Composable
 fun PayloadInspectorPanel(
     selectedNode: TopicNode?,
+    modifier: Modifier = Modifier,
     onDeleteRetainedTopic: ((String) -> Unit)? = null,
     onDeleteRetainedBranch: ((String) -> Unit)? = null,
-    modifier: Modifier = Modifier
 ) {
     var activeTab by remember { mutableStateOf(InspectorTab.JSON) }
-    var selectedHistoryIndex by remember(selectedNode?.fullPath) { mutableStateOf(0) }
+    var selectedHistoryIndex by remember(selectedNode?.fullPath) { mutableIntStateOf(0) }
     var autoScrollToLatest by remember { mutableStateOf(true) }
     var showPurgeBranchDialog by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .background(DarkSurfaceContainerLowest)
+        modifier =
+            modifier
+                .fillMaxHeight()
+                .background(DarkSurfaceContainerLowest),
     ) {
         if (selectedNode == null) {
             InspectorEmptyState(modifier = Modifier.fillMaxSize())
         } else {
-            val historyList = selectedNode.history.ifEmpty {
-                selectedNode.lastMessage?.let { listOf(it) } ?: emptyList()
-            }
+            val historyList =
+                selectedNode.history.ifEmpty {
+                    selectedNode.lastMessage?.let { listOf(it) } ?: emptyList()
+                }
 
             val effectiveIndex = if (autoScrollToLatest) 0 else selectedHistoryIndex.coerceIn(0, (historyList.size - 1).coerceAtLeast(0))
             val currentMessage = historyList.getOrNull(effectiveIndex) ?: selectedNode.lastMessage
@@ -63,9 +66,10 @@ fun PayloadInspectorPanel(
 
             val rawPayloadText = currentMessage?.payloadString ?: ""
             val isJson = remember(rawPayloadText) { JsonUtils.isValidJson(rawPayloadText) }
-            val formattedJsonText = remember(rawPayloadText, isJson) {
-                if (isJson) JsonUtils.format(rawPayloadText) else rawPayloadText
-            }
+            val formattedJsonText =
+                remember(rawPayloadText, isJson) {
+                    if (isJson) JsonUtils.format(rawPayloadText) else rawPayloadText
+                }
 
             // 1. Breadcrumb & Metadata Header
             InspectorHeader(
@@ -78,7 +82,7 @@ fun PayloadInspectorPanel(
                     autoScrollToLatest = true
                 },
                 onDeleteRetainedTopic = onDeleteRetainedTopic,
-                onOpenPurgeBranchDialog = { showPurgeBranchDialog = true }
+                onOpenPurgeBranchDialog = { showPurgeBranchDialog = true },
             )
 
             // 2. Folder Branch Overview (when node has no payload)
@@ -88,13 +92,13 @@ fun PayloadInspectorPanel(
                     node = selectedNode,
                     retainedDescendantPaths = retainedDescendants,
                     onPurgeClicked = { showPurgeBranchDialog = true },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             } else {
                 // 3. Tab Navigation Bar
                 InspectorTabsBar(
                     activeTab = activeTab,
-                    onTabSelected = { activeTab = it }
+                    onTabSelected = { activeTab = it },
                 )
 
                 // 4. Active View Content
@@ -103,30 +107,40 @@ fun PayloadInspectorPanel(
                         PayloadCodeViewer(
                             text = formattedJsonText,
                             isJson = isJson,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                     InspectorTab.HEX -> {
                         HexViewer(
                             payload = currentMessage?.payload ?: ByteArray(0),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                     InspectorTab.DIFF -> {
                         DiffView(
                             oldText = previousMessage?.payloadString ?: "",
                             newText = currentMessage?.payloadString ?: "",
-                            oldLabel = if (previousMessage != null) "Msg #${historyList.size - effectiveIndex - 1} (${formatInspectorTimestamp(previousMessage.timestamp)})" else "No Earlier Msg",
-                            newLabel = "Msg #${historyList.size - effectiveIndex} (${formatInspectorTimestamp(currentMessage?.timestamp ?: 0L)})",
-                            modifier = Modifier.weight(1f)
+                            oldLabel =
+                                if (previousMessage !=
+                                    null
+                                ) {
+                                    "Msg #${historyList.size - effectiveIndex - 1} (${formatInspectorTimestamp(previousMessage.timestamp)})"
+                                } else {
+                                    "No Earlier Msg"
+                                },
+                            newLabel = "Msg #${historyList.size - effectiveIndex} (${formatInspectorTimestamp(
+                                currentMessage?.timestamp ?: 0L,
+                            )})",
+                            modifier = Modifier.weight(1f),
                         )
                     }
                     InspectorTab.CHART -> {
                         TopicChartView(
                             history = historyList,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
                         )
                     }
                 }
@@ -147,7 +161,7 @@ fun PayloadInspectorPanel(
                     onToggleAutoScroll = {
                         autoScrollToLatest = !autoScrollToLatest
                         if (autoScrollToLatest) selectedHistoryIndex = 0
-                    }
+                    },
                 )
             }
 
@@ -158,7 +172,7 @@ fun PayloadInspectorPanel(
                     branchPath = selectedNode.fullPath,
                     retainedTopics = retainedDescendants,
                     onConfirm = { onDeleteRetainedBranch(selectedNode.fullPath) },
-                    onDismiss = { showPurgeBranchDialog = false }
+                    onDismiss = { showPurgeBranchDialog = false },
                 )
             }
         }
@@ -169,22 +183,22 @@ fun PayloadInspectorPanel(
 private fun InspectorEmptyState(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
                 imageVector = Icons.Default.DataObject,
                 contentDescription = null,
                 tint = DarkOutlineVariant,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(36.dp),
             )
             Text(
                 text = "Select a topic to inspect payload",
                 fontSize = 13.sp,
-                color = DarkOnSurfaceVariant.copy(alpha = 0.6f)
+                color = DarkOnSurfaceVariant.copy(alpha = 0.6f),
             )
         }
     }

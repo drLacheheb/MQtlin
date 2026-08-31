@@ -14,19 +14,19 @@ import io.github.drlacheheb.mqtlin.ui.theme.MqtlinSecondary
 import io.github.drlacheheb.mqtlin.ui.theme.MqtlinTertiary
 
 object JsonSyntaxColors {
-    val Key: Color = MqtlinPrimary                // #C0C1FF (Lavender/Blue)
-    val StringVal: Color = MqtlinSecondary        // #4EDEA3 (Emerald Green)
-    val NumberVal: Color = MqtlinTertiary        // #FFB95F (Amber/Gold)
-    val BooleanOrNull: Color = Color(0xFFFF9E64)  // #FF9E64 (Orange/Coral)
-    val Punctuation: Color = DarkOutline          // #908FA0 (Muted Outline)
+    val Key: Color = MqtlinPrimary // #C0C1FF (Lavender/Blue)
+    val StringVal: Color = MqtlinSecondary // #4EDEA3 (Emerald Green)
+    val NumberVal: Color = MqtlinTertiary // #FFB95F (Amber/Gold)
+    val BooleanOrNull: Color = Color(0xFFFF9E64) // #FF9E64 (Orange/Coral)
+    val Punctuation: Color = DarkOutline // #908FA0 (Muted Outline)
 }
 
 /**
  * Parses JSON text into a styled AnnotatedString with syntax highlighting
  * for keys, strings, numbers, booleans, null, and punctuation brackets.
  */
-fun highlightJson(text: String): AnnotatedString {
-    return buildAnnotatedString {
+fun highlightJson(text: String): AnnotatedString =
+    buildAnnotatedString {
         var cursor = 0
         val len = text.length
 
@@ -89,18 +89,15 @@ fun highlightJson(text: String): AnnotatedString {
             }
         }
     }
-}
 
 /**
  * A Compose VisualTransformation that applies real-time JSON syntax highlighting
  * to editable BasicTextFields without modifying underlying string content.
  */
 class JsonVisualTransformation : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        return TransformedText(
+    override fun filter(text: AnnotatedString): TransformedText =
+        TransformedText(
             text = highlightJson(text.text),
-            offsetMapping = OffsetMapping.Identity
+            offsetMapping = OffsetMapping.Identity,
         )
-    }
 }
-

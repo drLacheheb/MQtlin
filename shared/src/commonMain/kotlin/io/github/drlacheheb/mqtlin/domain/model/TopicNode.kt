@@ -10,15 +10,15 @@ data class TopicNode(
     val messagesPerSec: Double = 0.0,
     val lastMessage: MqttMessage? = null,
     val lastUpdated: Long = 0L,
-    val history: List<MqttMessage> = emptyList()
+    val history: List<MqttMessage> = emptyList(),
 ) {
-    fun findChild(segment: String): TopicNode? =
-        children.find { it.segment == segment }
+    fun findChild(segment: String): TopicNode? = children.find { it.segment == segment }
 
     fun withUpdatedChild(updatedChild: TopicNode): TopicNode {
-        val newChildren = children.map { child ->
-            if (child.segment == updatedChild.segment) updatedChild else child
-        }
+        val newChildren =
+            children.map { child ->
+                if (child.segment == updatedChild.segment) updatedChild else child
+            }
         return copy(children = newChildren)
     }
 
@@ -46,4 +46,3 @@ data class TopicNode(
         return count
     }
 }
-

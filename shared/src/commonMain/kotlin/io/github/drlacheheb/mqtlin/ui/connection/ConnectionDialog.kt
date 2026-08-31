@@ -18,21 +18,23 @@ import io.github.drlacheheb.mqtlin.ui.theme.ModalSurface
 @Composable
 fun ConnectionDialog(
     component: ConnectionComponent,
-    onCancel: (() -> Unit)? = null
+    modifier: Modifier = Modifier,
+    onCancel: (() -> Unit)? = null,
 ) {
     val state by component.state.subscribeAsState()
 
     // Full Window Surface (w-[800px] h-[560px] bg-[#121215])
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = ModalSurface
+        modifier = modifier.fillMaxSize(),
+        color = ModalSurface,
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             // Left Pane: Saved Profiles (w-[280px] bg-[#18181b] border-r border-[#27272a])
             SavedProfilesSidebar(
-                modifier = Modifier
-                    .width(280.dp)
-                    .fillMaxHeight(),
+                modifier =
+                    Modifier
+                        .width(280.dp)
+                        .fillMaxHeight(),
                 profiles = state.savedProfiles,
                 searchQuery = state.profileSearchQuery,
                 activeName = state.name,
@@ -40,25 +42,27 @@ fun ConnectionDialog(
                 onProfileSelected = component::onProfileSelected,
                 onDuplicateProfile = component::onDuplicateProfileClicked,
                 onDeleteProfile = component::onDeleteProfileClicked,
-                onNewProfileClicked = component::onNewProfileClicked
+                onNewProfileClicked = component::onNewProfileClicked,
             )
 
             // Vertical Divider border-[#27272a]
             Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-                    .background(DarkBorder)
+                modifier =
+                    Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(DarkBorder),
             )
 
             // Right Pane: Profile Configuration Form (flex-1 bg-[#121215])
             ProfileConfigForm(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                 state = state,
                 component = component,
-                onCancel = onCancel
+                onCancel = onCancel,
             )
         }
     }

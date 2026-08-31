@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class AppSettings(
     val maxHistoryPerTopic: Int = 100,
     val autoReconnect: Boolean = true,
-    val defaultProtocolVersion: MqttProtocolVersion = MqttProtocolVersion.MQTT_5_0
+    val defaultProtocolVersion: MqttProtocolVersion = MqttProtocolVersion.MQTT_5_0,
 )
 
 /**
@@ -15,5 +15,6 @@ data class AppSettings(
  */
 interface SettingsRepository {
     suspend fun getSettings(): AppSettings
+
     suspend fun updateSettings(settings: AppSettings)
 }

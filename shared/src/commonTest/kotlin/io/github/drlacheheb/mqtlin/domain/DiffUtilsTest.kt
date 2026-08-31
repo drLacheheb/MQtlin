@@ -6,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class DiffUtilsTest {
-
     @Test
     fun `identical strings produce diff with no additions or deletions`() {
         val text = """{"status": "online", "value": 42}"""
@@ -20,20 +19,22 @@ class DiffUtilsTest {
 
     @Test
     fun `diff identifies added and deleted lines in JSON structures`() {
-        val oldJson = """
+        val oldJson =
+            """
             {
               "status": "idle",
               "battery": 100
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val newJson = """
+        val newJson =
+            """
             {
               "status": "active",
               "battery": 100,
               "temperature": 25.4
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val result = DiffUtils.computeDiff(oldText = oldJson, newText = newJson)
 

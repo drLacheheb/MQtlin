@@ -1,25 +1,31 @@
 package io.github.drlacheheb.mqtlin.domain.util
 
 object MqttErrorMapper {
-
-    fun mapConnectionError(error: Throwable?, host: String, port: Int): String {
+    fun mapConnectionError(
+        error: Throwable?,
+        host: String,
+        port: Int,
+    ): String {
         if (error == null) return "Failed to connect to broker at $host:$port."
 
-        val fullText = buildString {
-            append(error.message ?: "")
-            append(" ")
-            append(error.cause?.message ?: "")
-            var current = error.cause
-            while (current != null) {
+        val fullText =
+            buildString {
+                append(error.message ?: "")
                 append(" ")
-                append(current.message ?: "")
-                current = current.cause
-            }
-        }.lowercase()
+                append(error.cause?.message ?: "")
+                var current = error.cause
+                while (current != null) {
+                    append(" ")
+                    append(current.message ?: "")
+                    current = current.cause
+                }
+            }.lowercase()
 
         return when {
             // DNS / Unknown Host
-            fullText.contains("unknownhostexception") || fullText.contains("name or service not known") || fullText.contains("nodename nor servname") -> {
+            fullText.contains("unknownhostexception") ||
+                fullText.contains("name or service not known") ||
+                fullText.contains("nodename nor servname") -> {
                 "Unable to resolve host '$host'. Check your internet connection or verify the hostname."
             }
 
@@ -34,17 +40,25 @@ object MqttErrorMapper {
             }
 
             // TLS / SSL Handshake
-            fullText.contains("sslhandshakeexception") || fullText.contains("pkix path building failed") || fullText.contains("sslexception") || fullText.contains("certificate") -> {
+            fullText.contains("sslhandshakeexception") ||
+                fullText.contains("pkix path building failed") ||
+                fullText.contains("sslexception") ||
+                fullText.contains("certificate") -> {
                 "TLS/SSL handshake failed with $host:$port. Check if the broker supports TLS, or switch transport to standard TCP."
             }
 
             // Authentication / Authorization
-            fullText.contains("not_authorized") || fullText.contains("bad_user_name_or_password") || fullText.contains("not authorized") || fullText.contains("bad username") -> {
+            fullText.contains("not_authorized") ||
+                fullText.contains("bad_user_name_or_password") ||
+                fullText.contains("not authorized") ||
+                fullText.contains("bad username") -> {
                 "Authentication failed: The broker rejected your username or password."
             }
 
             // Client ID rejected
-            fullText.contains("client_identifier_not_valid") || fullText.contains("identifier_rejected") || fullText.contains("client id rejected") -> {
+            fullText.contains("client_identifier_not_valid") ||
+                fullText.contains("identifier_rejected") ||
+                fullText.contains("client id rejected") -> {
                 "The broker rejected your Client ID. Click the dice icon to generate a new unique Client ID."
             }
 
@@ -54,7 +68,9 @@ object MqttErrorMapper {
             }
 
             // Protocol Version Mismatch
-            fullText.contains("unsupported_protocol_version") || fullText.contains("protocol_error") || fullText.contains("unacceptable_protocol_version") -> {
+            fullText.contains("unsupported_protocol_version") ||
+                fullText.contains("protocol_error") ||
+                fullText.contains("unacceptable_protocol_version") -> {
                 "Protocol version error. Try switching protocol version between MQTT 5.0 and MQTT 3.1.1."
             }
 
@@ -84,14 +100,18 @@ object MqttErrorMapper {
         }
     }
 
-    fun mapPublishError(error: Throwable?, topic: String): String {
+    fun mapPublishError(
+        error: Throwable?,
+        topic: String,
+    ): String {
         if (error == null) return "Failed to publish message to topic '$topic'."
 
-        val fullText = buildString {
-            append(error.message ?: "")
-            append(" ")
-            append(error.cause?.message ?: "")
-        }.lowercase()
+        val fullText =
+            buildString {
+                append(error.message ?: "")
+                append(" ")
+                append(error.cause?.message ?: "")
+            }.lowercase()
 
         return when {
             fullText.contains("not connected") || fullText.contains("cannot publish") || fullText.contains("client is not connected") -> {
@@ -121,15 +141,16 @@ object MqttErrorMapper {
         var msg = error.message ?: error.cause?.message ?: ""
 
         // Strip Java / Netty / HiveMQ class wrappers
-        msg = msg.replace("java.util.concurrent.CompletionException:", "")
-            .replace("com.hivemq.client.mqtt.exceptions.", "")
-            .replace("io.netty.channel.AbstractChannel\$AnnotatedConnectException:", "")
-            .replace("java.net.ConnectException:", "")
-            .replace("java.net.UnknownHostException:", "")
-            .replace("javax.net.ssl.SSLHandshakeException:", "")
-            .trim()
+        msg =
+            msg
+                .replace("java.util.concurrent.CompletionException:", "")
+                .replace("com.hivemq.client.mqtt.exceptions.", "")
+                .replace("io.netty.channel.AbstractChannel\$AnnotatedConnectException:", "")
+                .replace("java.net.ConnectException:", "")
+                .replace("java.net.UnknownHostException:", "")
+                .replace("javax.net.ssl.SSLHandshakeException:", "")
+                .trim()
 
         return msg
     }
 }
-

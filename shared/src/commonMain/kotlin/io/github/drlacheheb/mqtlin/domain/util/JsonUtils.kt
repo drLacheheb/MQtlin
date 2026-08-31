@@ -6,13 +6,13 @@ import kotlinx.serialization.json.JsonElement
 
 @OptIn(ExperimentalSerializationApi::class)
 object JsonUtils {
-
-    private val prettyJson = Json {
-        prettyPrint = true
-        prettyPrintIndent = "  "
-        isLenient = true
-        ignoreUnknownKeys = true
-    }
+    private val prettyJson =
+        Json {
+            prettyPrint = true
+            prettyPrintIndent = "  "
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
 
     /**
      * Validates if the given [raw] string is valid JSON.
@@ -42,7 +42,7 @@ object JsonUtils {
         return try {
             val element = prettyJson.parseToJsonElement(trimmed)
             prettyJson.encodeToString(JsonElement.serializer(), element)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             raw
         }
     }
@@ -51,4 +51,3 @@ object JsonUtils {
 
     fun formatOrRaw(raw: String): String = format(raw)
 }
-

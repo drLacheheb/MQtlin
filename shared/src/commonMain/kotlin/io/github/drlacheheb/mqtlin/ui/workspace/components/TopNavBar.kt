@@ -41,64 +41,67 @@ import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 fun TopNavBar(
     config: ConnectionConfig?,
     onOpenConnectionManager: () -> Unit,
+    modifier: Modifier = Modifier,
     onOpenSettings: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     // Header: h-10.5 (42px) bg-surface-container border-b border-outline-variant
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(42.dp)
-            .background(DarkSurfaceContainer)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(42.dp)
+                .background(DarkSurfaceContainer),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Left: Connected Profile status: Name | server:port
             val profileName = config?.name ?: "Connected Broker"
             val profileAddress = if (config != null) "${config.host}:${config.port}" else "127.0.0.1:1883"
 
             Row(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = 14.dp),
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .padding(start = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
                     text = profileName,
-                    style = UiLabelBold.copy(fontSize = 13.sp, color = DarkOnSurface)
+                    style = UiLabelBold.copy(fontSize = 13.sp, color = DarkOnSurface),
                 )
 
                 Text(
                     text = "|",
                     fontSize = 13.sp,
-                    color = DarkOutlineVariant
+                    color = DarkOutlineVariant,
                 )
 
                 Text(
                     text = profileAddress,
                     fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = DarkOnSurfaceVariant
+                    color = DarkOnSurfaceVariant,
                 )
 
                 if (config?.transport?.name == "TLS" || config?.transport?.name == "WSS") {
                     Surface(
                         shape = RoundedCornerShape(2.dp),
                         color = MqtlinPrimary.copy(alpha = 0.15f),
-                        border = BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.3f))
+                        border = BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.3f)),
                     ) {
                         Text(
                             text = config.transport.name,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = MqtlinPrimary,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
                         )
                     }
                 }
@@ -107,50 +110,53 @@ fun TopNavBar(
             // Right: Switch Profile Icon (⇄) + Settings Icon (⚙) + Window Controls
             Row(
                 modifier = Modifier.fillMaxHeight(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
                     modifier = Modifier.padding(end = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     // Switch Connection Icon Button (⇄)
                     IconButton(
                         onClick = onOpenConnectionManager,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .pointerHoverIcon(PointerIcon.Hand)
+                        modifier =
+                            Modifier
+                                .size(28.dp)
+                                .pointerHoverIcon(PointerIcon.Hand),
                     ) {
                         Icon(
                             imageVector = Icons.Default.SwapHoriz,
                             contentDescription = "Switch Profile",
                             tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
 
                     // Settings Button (⚙)
                     IconButton(
                         onClick = onOpenSettings,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .pointerHoverIcon(PointerIcon.Hand)
+                        modifier =
+                            Modifier
+                                .size(28.dp)
+                                .pointerHoverIcon(PointerIcon.Hand),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Application Settings",
                             tint = DarkOnSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
 
                     // Vertical Divider
                     Box(
-                        modifier = Modifier
-                            .padding(start = 2.dp)
-                            .width(1.dp)
-                            .height(18.dp)
-                            .background(DarkOutlineVariant)
+                        modifier =
+                            Modifier
+                                .padding(start = 2.dp)
+                                .width(1.dp)
+                                .height(18.dp)
+                                .background(DarkOutlineVariant),
                     )
                 }
 
@@ -161,11 +167,12 @@ fun TopNavBar(
 
         // Bottom Border of Header
         Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkOutlineVariant)
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkOutlineVariant),
         )
     }
 }

@@ -9,8 +9,9 @@ import io.github.drlacheheb.mqtlin.domain.repository.SettingsRepository
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-val jvmDataModule: Module = module {
-    single<MqttRepository> { HiveMqRepository() }
-    single<ProfileRepository> { FileProfileRepository() }
-    single<SettingsRepository> { FileSettingsRepository() }
-}
+val jvmDataModule: Module =
+    module {
+        single<MqttRepository> { HiveMqRepository() }
+        single<ProfileRepository> { FileProfileRepository() }
+        single<SettingsRepository> { FileSettingsRepository() }
+    }

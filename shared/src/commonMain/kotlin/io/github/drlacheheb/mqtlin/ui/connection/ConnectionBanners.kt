@@ -29,30 +29,30 @@ import io.github.drlacheheb.mqtlin.ui.theme.MqtlinSecondary
 @Composable
 fun ConnectionSuccessBanner(
     message: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         color = MqtlinSecondary.copy(alpha = 0.15f),
-        border = BorderStroke(1.dp, MqtlinSecondary.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, MqtlinSecondary.copy(alpha = 0.35f)),
     ) {
         Row(
             modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Success",
                 tint = MqtlinSecondary,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(18.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = message,
                 fontSize = 12.sp,
                 color = MqtlinSecondary,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -61,30 +61,30 @@ fun ConnectionSuccessBanner(
 @Composable
 fun ConnectionErrorBanner(
     message: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         color = MqtlinErrorContainer.copy(alpha = 0.20f),
-        border = BorderStroke(1.dp, MqtlinErrorContainer)
+        border = BorderStroke(1.dp, MqtlinErrorContainer),
     ) {
         Row(
             modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.ErrorOutline,
                 contentDescription = "Error",
                 tint = MqtlinError,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(18.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = message,
                 fontSize = 12.sp,
                 color = MqtlinError,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }

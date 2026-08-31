@@ -10,14 +10,14 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class TopicTreeTest {
-
     @Test
     fun `insert single level topic creates leaf root node`() {
         val tree = TopicTree()
-        val message = MqttMessage(
-            topic = "sensor",
-            payload = "24.5".encodeToByteArray()
-        )
+        val message =
+            MqttMessage(
+                topic = "sensor",
+                payload = "24.5".encodeToByteArray(),
+            )
 
         val updated = tree.insert(message)
 
@@ -35,10 +35,11 @@ class TopicTreeTest {
     @Test
     fun `insert multi-level topic creates directory hierarchy and leaf node`() {
         val tree = TopicTree()
-        val message = MqttMessage(
-            topic = "home/living-room/temperature",
-            payload = "21.0".encodeToByteArray()
-        )
+        val message =
+            MqttMessage(
+                topic = "home/living-room/temperature",
+                payload = "21.0".encodeToByteArray(),
+            )
 
         val updated = tree.insert(message)
 

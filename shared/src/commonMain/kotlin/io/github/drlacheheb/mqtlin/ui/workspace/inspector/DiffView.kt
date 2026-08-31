@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
@@ -35,7 +34,6 @@ import io.github.drlacheheb.mqtlin.domain.util.DiffType
 import io.github.drlacheheb.mqtlin.domain.util.DiffUtils
 import io.github.drlacheheb.mqtlin.ui.theme.DarkBackground
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurface
-import io.github.drlacheheb.mqtlin.ui.theme.DarkOnSurfaceVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutline
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
 import io.github.drlacheheb.mqtlin.ui.theme.DarkSurfaceContainer
@@ -51,35 +49,37 @@ private val DiffDeletedText = Color(0xFFFF7A7A)
 fun DiffView(
     oldText: String,
     newText: String,
+    modifier: Modifier = Modifier,
     oldLabel: String = "Previous Payload",
     newLabel: String = "Current Payload",
-    modifier: Modifier = Modifier
 ) {
     val diffResult: DiffResult = DiffUtils.computeDiff(oldText = oldText, newText = newText)
     val verticalScrollState = rememberScrollState()
     val horizontalScrollState = rememberScrollState()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkSurfaceDim)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(DarkSurfaceDim),
     ) {
         // Summary Header Bar
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(DarkSurfaceContainer)
-                .border(1.dp, DarkOutlineVariant)
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(DarkSurfaceContainer)
+                    .border(1.dp, DarkOutlineVariant)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.CompareArrows,
                     contentDescription = null,
                     tint = MqtlinPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -87,7 +87,7 @@ fun DiffView(
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Medium,
-                    color = DarkOnSurface
+                    color = DarkOnSurface,
                 )
             }
 
@@ -97,24 +97,25 @@ fun DiffView(
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
-                    color = if (diffResult.additions > 0) DiffAddedText else DarkOutlineVariant
+                    color = if (diffResult.additions > 0) DiffAddedText else DarkOutlineVariant,
                 )
                 Text(
                     text = "-${diffResult.deletions}",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
-                    color = if (diffResult.deletions > 0) DiffDeletedText else DarkOutlineVariant
+                    color = if (diffResult.deletions > 0) DiffDeletedText else DarkOutlineVariant,
                 )
             }
         }
 
         // Diff Lines Container
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(verticalScrollState)
-                .horizontalScroll(horizontalScrollState)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(verticalScrollState)
+                    .horizontalScroll(horizontalScrollState),
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 diffResult.lines.forEach { line ->
@@ -127,26 +128,29 @@ fun DiffView(
 
 @Composable
 private fun DiffLineRow(line: DiffLine) {
-    val (bg, textColor, symbol) = when (line.type) {
-        DiffType.ADDED -> Triple(DiffAddedBg, DiffAddedText, "+")
-        DiffType.DELETED -> Triple(DiffDeletedBg, DiffDeletedText, "-")
-        DiffType.UNCHANGED -> Triple(Color.Transparent, DarkOnSurface, " ")
-    }
+    val (bg, textColor, symbol) =
+        when (line.type) {
+            DiffType.ADDED -> Triple(DiffAddedBg, DiffAddedText, "+")
+            DiffType.DELETED -> Triple(DiffDeletedBg, DiffDeletedText, "-")
+            DiffType.UNCHANGED -> Triple(Color.Transparent, DarkOnSurface, " ")
+        }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(bg)
-            .padding(vertical = 1.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(bg)
+                .padding(vertical = 1.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Gutter: Line Numbers
         Row(
-            modifier = Modifier
-                .width(72.dp)
-                .background(DarkBackground.copy(alpha = 0.5f))
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier =
+                Modifier
+                    .width(72.dp)
+                    .background(DarkBackground.copy(alpha = 0.5f))
+                    .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 text = line.oldLineNumber?.toString() ?: "",
@@ -154,7 +158,7 @@ private fun DiffLineRow(line: DiffLine) {
                 fontFamily = FontFamily.Monospace,
                 color = DarkOutline,
                 textAlign = TextAlign.End,
-                modifier = Modifier.width(28.dp)
+                modifier = Modifier.width(28.dp),
             )
             Text(
                 text = line.newLineNumber?.toString() ?: "",
@@ -162,7 +166,7 @@ private fun DiffLineRow(line: DiffLine) {
                 fontFamily = FontFamily.Monospace,
                 color = DarkOutline,
                 textAlign = TextAlign.End,
-                modifier = Modifier.width(28.dp)
+                modifier = Modifier.width(28.dp),
             )
         }
 
@@ -174,7 +178,7 @@ private fun DiffLineRow(line: DiffLine) {
             fontWeight = FontWeight.Bold,
             color = textColor,
             textAlign = TextAlign.Center,
-            modifier = Modifier.width(20.dp)
+            modifier = Modifier.width(20.dp),
         )
 
         // Line Content
@@ -184,7 +188,7 @@ private fun DiffLineRow(line: DiffLine) {
             fontFamily = FontFamily.Monospace,
             color = textColor,
             lineHeight = 18.sp,
-            modifier = Modifier.padding(end = 16.dp)
+            modifier = Modifier.padding(end = 16.dp),
         )
     }
 }

@@ -37,27 +37,29 @@ fun ConnectionFormFooter(
     onDisconnect: () -> Unit,
     onTestConnection: () -> Unit,
     onConnect: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkBorder)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkBorder),
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(FooterBackground)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(FooterBackground)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onCancel != null) {
                 MqtlinTextButton(
-                    onClick = onCancel
+                    onClick = onCancel,
                 ) {
                     Text("Cancel")
                 }
@@ -68,20 +70,20 @@ fun ConnectionFormFooter(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (state.connectionState is ConnectionState.Connected && !state.isTesting) {
                     MqtlinDangerButton(
-                        onClick = onDisconnect
+                        onClick = onDisconnect,
                     ) {
                         Text("Disconnect")
                     }
                 } else {
                     MqtlinOutlinedButton(
                         onClick = onTestConnection,
-                        enabled = !state.isTesting && state.connectionState !is ConnectionState.Connecting
+                        enabled = !state.isTesting && state.connectionState !is ConnectionState.Connecting,
                     ) {
                         if (state.isTesting) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(14.dp),
                                 strokeWidth = 2.dp,
-                                color = DarkOnSurface
+                                color = DarkOnSurface,
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Testing...")
@@ -92,13 +94,13 @@ fun ConnectionFormFooter(
 
                     MqtlinPrimaryButton(
                         onClick = onConnect,
-                        enabled = !state.isTesting && state.connectionState !is ConnectionState.Connecting
+                        enabled = !state.isTesting && state.connectionState !is ConnectionState.Connecting,
                     ) {
                         if (state.connectionState is ConnectionState.Connecting && !state.isTesting) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(14.dp),
                                 strokeWidth = 2.dp,
-                                color = MqtlinOnPrimary
+                                color = MqtlinOnPrimary,
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Connecting...")

@@ -25,29 +25,31 @@ class DefaultWorkspaceComponent(
     private val onDisconnect: () -> Unit,
     private val onOpenConnectionManager: () -> Unit,
     private val onOpenSettings: () -> Unit = {},
-    mainContext: CoroutineContext = Dispatchers.Main
-) : WorkspaceComponent, ComponentContext by componentContext {
-
+    mainContext: CoroutineContext = Dispatchers.Main,
+) : WorkspaceComponent,
+    ComponentContext by componentContext {
     private val scope = CoroutineScope(SupervisorJob() + mainContext)
 
-    private val _state = MutableValue(
-        WorkspaceUiState(
-            connectionConfig = config,
-            connectionState = ConnectionState.Connected(
-                host = config.host,
-                port = config.port,
-                clientId = config.clientId,
-                protocolVersion = config.protocolVersion
-            )
+    private val _state =
+        MutableValue(
+            WorkspaceUiState(
+                connectionConfig = config,
+                connectionState =
+                    ConnectionState.Connected(
+                        host = config.host,
+                        port = config.port,
+                        clientId = config.clientId,
+                        protocolVersion = config.protocolVersion,
+                    ),
+            ),
         )
-    )
     override val state: Value<WorkspaceUiState> = _state
 
     init {
         lifecycle.subscribe(
             onDestroy = {
                 scope.cancel()
-            }
+            },
         )
 
         mqttRepository.connectionState
@@ -56,8 +58,7 @@ class DefaultWorkspaceComponent(
                 if (connState is ConnectionState.Disconnected) {
                     onDisconnect()
                 }
-            }
-            .launchIn(scope)
+            }.launchIn(scope)
 
         mqttRepository.incomingMessages
             .onEach { message ->
@@ -69,11 +70,10 @@ class DefaultWorkspaceComponent(
                     current.copy(
                         rawTopicTree = newRawTree,
                         filteredTopicTree = newFilteredTree,
-                        selectedNode = updatedSelectedNode ?: current.selectedNode
+                        selectedNode = updatedSelectedNode ?: current.selectedNode,
                     )
                 }
-            }
-            .launchIn(scope)
+            }.launchIn(scope)
     }
 
     override fun onTopicSelected(fullPath: String) {
@@ -81,7 +81,7 @@ class DefaultWorkspaceComponent(
             val node = current.rawTopicTree.findNode(fullPath)
             current.copy(
                 selectedTopicPath = fullPath,
-                selectedNode = node
+                selectedNode = node,
             )
         }
     }
@@ -92,7 +92,7 @@ class DefaultWorkspaceComponent(
             val newFilteredTree = newRawTree.filter(current.filterQuery, current.filterMode)
             current.copy(
                 rawTopicTree = newRawTree,
-                filteredTopicTree = newFilteredTree
+                filteredTopicTree = newFilteredTree,
             )
         }
     }
@@ -102,7 +102,7 @@ class DefaultWorkspaceComponent(
             val newFiltered = current.rawTopicTree.filter(query, current.filterMode)
             current.copy(
                 filterQuery = query,
-                filteredTopicTree = newFiltered
+                filteredTopicTree = newFiltered,
             )
         }
     }
@@ -112,7 +112,7 @@ class DefaultWorkspaceComponent(
             val newFiltered = current.rawTopicTree.filter(current.filterQuery, mode)
             current.copy(
                 filterMode = mode,
-                filteredTopicTree = newFiltered
+                filteredTopicTree = newFiltered,
             )
         }
     }
@@ -122,7 +122,7 @@ class DefaultWorkspaceComponent(
         payload: String,
         qos: Int,
         isRetained: Boolean,
-        userProperties: Map<String, String>
+        userProperties: Map<String, String>,
     ) {
         val cleanTopic = topic.trim().removePrefix("/")
         if (cleanTopic.isBlank()) return
@@ -135,11 +135,13 @@ class DefaultWorkspaceComponent(
                     payload = payload.encodeToByteArray(),
                     qos = qos,
                     isRetained = isRetained,
-                    userProperties = userProperties
+                    userProperties = userProperties,
                 )
                 _state.update { it.copy(isPublishing = false, publishError = null) }
             } catch (e: Exception) {
-                val userFriendlyMessage = io.github.drlacheheb.mqtlin.domain.util.MqttErrorMapper.mapPublishError(e, cleanTopic)
+                val userFriendlyMessage =
+                    io.github.drlacheheb.mqtlin.domain.util.MqttErrorMapper
+                        .mapPublishError(e, cleanTopic)
                 _state.update { it.copy(isPublishing = false, publishError = userFriendlyMessage) }
             }
         }
@@ -155,7 +157,7 @@ class DefaultWorkspaceComponent(
                     topic = cleanTopic,
                     payload = byteArrayOf(),
                     qos = 0,
-                    isRetained = true
+                    isRetained = true,
                 )
             } catch (e: Exception) {
                 println("Failed to delete retained message on $cleanTopic: ${e.message}")
@@ -177,7 +179,7 @@ class DefaultWorkspaceComponent(
                         topic = topicPath,
                         payload = byteArrayOf(),
                         qos = 0,
-                        isRetained = true
+                        isRetained = true,
                     )
                 } catch (e: Exception) {
                     println("Failed to delete retained message on $topicPath: ${e.message}")

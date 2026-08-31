@@ -12,12 +12,13 @@ fun Modifier.clickableHand(
     enabled: Boolean = true,
     onClickLabel: String? = null,
     role: Role? = null,
-    onClick: () -> Unit
-): Modifier = this
-    .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
-    .clickable(
-        enabled = enabled,
-        onClickLabel = onClickLabel,
-        role = role,
-        onClick = onClick
-    )
+    onClick: () -> Unit,
+): Modifier =
+    this
+        .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
+        .clickable(
+            enabled = enabled,
+            onClickLabel = onClickLabel,
+            role = role,
+            onClick = onClick,
+        )

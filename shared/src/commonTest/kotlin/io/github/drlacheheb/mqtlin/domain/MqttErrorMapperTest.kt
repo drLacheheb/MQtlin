@@ -6,7 +6,6 @@ import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 
 class MqttErrorMapperTest {
-
     @Test
     fun `unknown host exception maps to DNS resolution guidance`() {
         val error = Exception("java.net.UnknownHostException: broker.invalid.local")
@@ -18,7 +17,10 @@ class MqttErrorMapperTest {
 
     @Test
     fun `connection refused maps to port and running broker guidance`() {
-        val error = Exception("io.netty.channel.AbstractChannel\$AnnotatedConnectException: Connection refused: no further information: 127.0.0.1:1883")
+        val error =
+            Exception(
+                "io.netty.channel.AbstractChannel\$AnnotatedConnectException: Connection refused: no further information: 127.0.0.1:1883",
+            )
         val message = MqttErrorMapper.mapConnectionError(error, "127.0.0.1", 1883)
 
         message shouldContain "Connection refused on 127.0.0.1:1883"
@@ -36,7 +38,10 @@ class MqttErrorMapperTest {
 
     @Test
     fun `SSL handshake exception maps to TLS transport guidance`() {
-        val error = Exception("javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException")
+        val error =
+            Exception(
+                "javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException",
+            )
         val message = MqttErrorMapper.mapConnectionError(error, "broker.hivemq.com", 8883)
 
         message shouldContain "TLS/SSL handshake failed with broker.hivemq.com:8883"
@@ -83,4 +88,3 @@ class MqttErrorMapperTest {
         message shouldBe "Cannot publish: Topic 'home/+/temperature' is invalid. Topics cannot contain wildcards (+ or #) when publishing."
     }
 }
-

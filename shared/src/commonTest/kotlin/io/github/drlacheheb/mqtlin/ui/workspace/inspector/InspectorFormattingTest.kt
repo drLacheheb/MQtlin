@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class InspectorFormattingTest {
-
     @Test
     fun `formatInspectorTimestamp formats milliseconds to HH-mm-ss-SSS`() {
         // 00:00:00.000 epoch

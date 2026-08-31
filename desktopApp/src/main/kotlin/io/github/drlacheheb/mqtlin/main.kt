@@ -58,19 +58,21 @@ fun main() {
     val repository = HiveMqRepository()
     val profileRepository = FileProfileRepository()
 
-    val rootComponent = runOnUiThread {
-        DefaultRootComponent(
-            componentContext = DefaultComponentContext(lifecycle = lifecycle),
-            mqttRepository = repository,
-            profileRepository = profileRepository
-        )
-    }
+    val rootComponent =
+        runOnUiThread {
+            DefaultRootComponent(
+                componentContext = DefaultComponentContext(lifecycle = lifecycle),
+                mqttRepository = repository,
+                profileRepository = profileRepository,
+            )
+        }
 
     application {
-        val windowState = rememberWindowState(
-            size = DpSize(800.dp, 560.dp),
-            position = WindowPosition.Aligned(Alignment.Center)
-        )
+        val windowState =
+            rememberWindowState(
+                size = DpSize(800.dp, 560.dp),
+                position = WindowPosition.Aligned(Alignment.Center),
+            )
 
         // Primary Window (Connection Manager / Workspace)
         Window(
@@ -79,7 +81,7 @@ fun main() {
             title = "MQtlin",
             icon = painterResource("icons/icon.png"),
             undecorated = true,
-            resizable = true
+            resizable = true,
         ) {
             val childStack by rootComponent.childStack.subscribeAsState()
             val isWorkspace = childStack.active.instance is RootComponent.RootChild.Workspace
@@ -97,26 +99,29 @@ fun main() {
 
             LifecycleController(lifecycle, windowState)
 
-            val windowActions = WindowActions(
-                onMinimize = { windowState.isMinimized = true },
-                onMaximizeRestore = {
-                    windowState.placement = if (windowState.placement == WindowPlacement.Maximized) {
-                        WindowPlacement.Floating
-                    } else {
-                        WindowPlacement.Maximized
-                    }
-                },
-                onClose = { exitApplication() },
-                isMaximized = windowState.placement == WindowPlacement.Maximized
-            )
+            val windowActions =
+                WindowActions(
+                    onMinimize = { windowState.isMinimized = true },
+                    onMaximizeRestore = {
+                        windowState.placement =
+                            if (windowState.placement == WindowPlacement.Maximized) {
+                                WindowPlacement.Floating
+                            } else {
+                                WindowPlacement.Maximized
+                            }
+                    },
+                    onClose = { exitApplication() },
+                    isMaximized = windowState.placement == WindowPlacement.Maximized,
+                )
 
             CompositionLocalProvider(LocalWindowActions provides windowActions) {
                 WindowDraggableArea {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(DarkBackground)
-                            .border(1.dp, DarkBorder)
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(DarkBackground)
+                                .border(1.dp, DarkBorder),
                     ) {
                         App(rootComponent = rootComponent)
                     }
@@ -129,10 +134,11 @@ fun main() {
 
         when (val dialogChild = dialogSlot.child?.instance) {
             is RootComponent.DialogChild.Settings -> {
-                val settingsWindowState = rememberWindowState(
-                    size = DpSize(520.dp, 380.dp),
-                    position = WindowPosition.Aligned(Alignment.Center)
-                )
+                val settingsWindowState =
+                    rememberWindowState(
+                        size = DpSize(520.dp, 380.dp),
+                        position = WindowPosition.Aligned(Alignment.Center),
+                    )
 
                 Window(
                     onCloseRequest = rootComponent::onDismissDialog,
@@ -140,36 +146,39 @@ fun main() {
                     title = "MQtlin Settings",
                     icon = painterResource("icons/icon.png"),
                     undecorated = true,
-                    resizable = false
+                    resizable = false,
                 ) {
                     MqtlinTheme {
                         WindowDraggableArea {
                             SettingsScreen(
                                 component = dialogChild.component,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
                             )
                         }
                     }
                 }
             }
             is RootComponent.DialogChild.ConnectionManager -> {
-                val connectionWindowState = rememberWindowState(
-                    size = DpSize(800.dp, 560.dp),
-                    position = WindowPosition.Aligned(Alignment.Center)
-                )
+                val connectionWindowState =
+                    rememberWindowState(
+                        size = DpSize(800.dp, 560.dp),
+                        position = WindowPosition.Aligned(Alignment.Center),
+                    )
 
-                val dialogWindowActions = WindowActions(
-                    onMinimize = { connectionWindowState.isMinimized = true },
-                    onMaximizeRestore = {
-                        connectionWindowState.placement = if (connectionWindowState.placement == WindowPlacement.Maximized) {
-                            WindowPlacement.Floating
-                        } else {
-                            WindowPlacement.Maximized
-                        }
-                    },
-                    onClose = { rootComponent.onDismissDialog() },
-                    isMaximized = connectionWindowState.placement == WindowPlacement.Maximized
-                )
+                val dialogWindowActions =
+                    WindowActions(
+                        onMinimize = { connectionWindowState.isMinimized = true },
+                        onMaximizeRestore = {
+                            connectionWindowState.placement =
+                                if (connectionWindowState.placement == WindowPlacement.Maximized) {
+                                    WindowPlacement.Floating
+                                } else {
+                                    WindowPlacement.Maximized
+                                }
+                        },
+                        onClose = { rootComponent.onDismissDialog() },
+                        isMaximized = connectionWindowState.placement == WindowPlacement.Maximized,
+                    )
 
                 Window(
                     onCloseRequest = rootComponent::onDismissDialog,
@@ -177,20 +186,21 @@ fun main() {
                     title = "MQtlin - Switch Connection",
                     icon = painterResource("icons/icon.png"),
                     undecorated = true,
-                    resizable = true
+                    resizable = true,
                 ) {
                     CompositionLocalProvider(LocalWindowActions provides dialogWindowActions) {
                         MqtlinTheme {
                             WindowDraggableArea {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(DarkBackground)
-                                        .border(1.dp, DarkBorder)
+                                    modifier =
+                                        Modifier
+                                            .fillMaxSize()
+                                            .background(DarkBackground)
+                                            .border(1.dp, DarkBorder),
                                 ) {
                                     ConnectionDialog(
                                         component = dialogChild.component,
-                                        onCancel = rootComponent::onDismissDialog
+                                        onCancel = rootComponent::onDismissDialog,
                                     )
                                 }
                             }

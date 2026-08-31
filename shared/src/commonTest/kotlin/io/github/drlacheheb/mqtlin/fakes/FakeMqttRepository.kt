@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FakeMqttRepository : MqttRepository {
-
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     override val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
@@ -35,12 +34,13 @@ class FakeMqttRepository : MqttRepository {
         if (shouldFailConnection) {
             _connectionState.value = ConnectionState.Error(failureErrorMessage)
         } else {
-            _connectionState.value = ConnectionState.Connected(
-                host = config.host,
-                port = config.port,
-                clientId = config.clientId,
-                protocolVersion = config.protocolVersion
-            )
+            _connectionState.value =
+                ConnectionState.Connected(
+                    host = config.host,
+                    port = config.port,
+                    clientId = config.clientId,
+                    protocolVersion = config.protocolVersion,
+                )
             subscribe("#", 0)
         }
     }
@@ -60,7 +60,10 @@ class FakeMqttRepository : MqttRepository {
         _connectionState.value = ConnectionState.Disconnected
     }
 
-    override suspend fun subscribe(topicFilter: String, qos: Int) {
+    override suspend fun subscribe(
+        topicFilter: String,
+        qos: Int,
+    ) {
         subscriptions.add(topicFilter)
     }
 
@@ -73,16 +76,17 @@ class FakeMqttRepository : MqttRepository {
         payload: ByteArray,
         qos: Int,
         isRetained: Boolean,
-        userProperties: Map<String, String>
+        userProperties: Map<String, String>,
     ) {
-        val msg = MqttMessage(
-            topic = topic,
-            payload = payload,
-            qos = qos,
-            isRetained = isRetained,
-            timestamp = System.currentTimeMillis(),
-            userProperties = userProperties
-        )
+        val msg =
+            MqttMessage(
+                topic = topic,
+                payload = payload,
+                qos = qos,
+                isRetained = isRetained,
+                timestamp = System.currentTimeMillis(),
+                userProperties = userProperties,
+            )
         publishedMessages.add(msg)
         _incomingMessages.tryEmit(msg)
     }
@@ -92,11 +96,12 @@ class FakeMqttRepository : MqttRepository {
     }
 
     fun setConnected(config: ConnectionConfig) {
-        _connectionState.value = ConnectionState.Connected(
-            host = config.host,
-            port = config.port,
-            clientId = config.clientId,
-            protocolVersion = config.protocolVersion
-        )
+        _connectionState.value =
+            ConnectionState.Connected(
+                host = config.host,
+                port = config.port,
+                clientId = config.clientId,
+                protocolVersion = config.protocolVersion,
+            )
     }
 }

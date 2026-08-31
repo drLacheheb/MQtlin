@@ -10,11 +10,15 @@ import kotlinx.serialization.json.doubleOrNull
 data class TimeSeriesPoint(
     val timestamp: Long,
     val value: Double,
-    val rawPayload: String
+    val rawPayload: String,
 )
 
 object NumericPayloadExtractor {
-    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
     private val numberRegex = Regex("""[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?""")
 
     /**
@@ -35,7 +39,7 @@ object NumericPayloadExtractor {
                 val map = mutableMapOf<String, Double>()
                 flattenJsonNumeric(element, "", map)
                 if (map.isNotEmpty()) return map
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // Fallthrough to scalar extraction
             }
         }
@@ -58,7 +62,11 @@ object NumericPayloadExtractor {
         return emptyMap()
     }
 
-    private fun flattenJsonNumeric(element: JsonElement, prefix: String, outMap: MutableMap<String, Double>) {
+    private fun flattenJsonNumeric(
+        element: JsonElement,
+        prefix: String,
+        outMap: MutableMap<String, Double>,
+    ) {
         when (element) {
             is JsonObject -> {
                 element.forEach { (key, child) ->
@@ -85,21 +93,22 @@ object NumericPayloadExtractor {
      */
     fun buildTimeSeries(
         history: List<MqttMessage>,
-        selectedMetric: String
+        selectedMetric: String,
     ): List<TimeSeriesPoint> {
         if (history.isEmpty()) return emptyList()
 
         // History is stored most-recent first; reverse to get oldest-first chronological order
         return history.reversed().mapNotNull { message ->
             val metrics = extractMetrics(message.payloadString)
-            val value = metrics[selectedMetric]
-                ?: if (selectedMetric.isEmpty() || selectedMetric == "value") metrics.values.firstOrNull() else null
+            val value =
+                metrics[selectedMetric]
+                    ?: if (selectedMetric.isEmpty() || selectedMetric == "value") metrics.values.firstOrNull() else null
 
             if (value != null) {
                 TimeSeriesPoint(
                     timestamp = message.timestamp,
                     value = value,
-                    rawPayload = message.payloadString
+                    rawPayload = message.payloadString,
                 )
             } else {
                 null

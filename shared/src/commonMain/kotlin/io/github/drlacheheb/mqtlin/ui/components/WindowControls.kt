@@ -34,7 +34,7 @@ data class WindowActions(
     val onMinimize: () -> Unit = {},
     val onMaximizeRestore: () -> Unit = {},
     val onClose: () -> Unit = {},
-    val isMaximized: Boolean = false
+    val isMaximized: Boolean = false,
 )
 
 val LocalWindowActions = compositionLocalOf { WindowActions() }
@@ -42,50 +42,50 @@ val LocalWindowActions = compositionLocalOf { WindowActions() }
 @Composable
 fun WindowControls(
     modifier: Modifier = Modifier,
-    height: Int = 36
+    height: Int = 36,
 ) {
     val actions = LocalWindowActions.current
 
     Row(
         modifier = modifier.height(height.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Minimize Button (-)
         WindowControlButton(
             onClick = actions.onMinimize,
-            hoverBackground = DarkSurfaceVariant
+            hoverBackground = DarkSurfaceVariant,
         ) { isHovered ->
             Icon(
                 imageVector = Icons.Default.Minimize,
                 contentDescription = "Minimize",
                 tint = if (isHovered) DarkOnSurface else DarkOnSurfaceVariant,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(14.dp),
             )
         }
 
         // Maximize / Restore Button ([])
         WindowControlButton(
             onClick = actions.onMaximizeRestore,
-            hoverBackground = DarkSurfaceVariant
+            hoverBackground = DarkSurfaceVariant,
         ) { isHovered ->
             Icon(
                 imageVector = if (actions.isMaximized) Icons.Default.FilterNone else Icons.Default.CropSquare,
                 contentDescription = if (actions.isMaximized) "Restore" else "Maximize",
                 tint = if (isHovered) DarkOnSurface else DarkOnSurfaceVariant,
-                modifier = Modifier.size(13.dp)
+                modifier = Modifier.size(13.dp),
             )
         }
 
         // Close Button (x) - Hover Red #E81123
         WindowControlButton(
             onClick = actions.onClose,
-            hoverBackground = Color(0xFFE81123)
+            hoverBackground = Color(0xFFE81123),
         ) { isHovered ->
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Close",
                 tint = if (isHovered) Color.White else DarkOnSurfaceVariant,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(14.dp),
             )
         }
     }
@@ -95,23 +95,24 @@ fun WindowControls(
 private fun WindowControlButton(
     onClick: () -> Unit,
     hoverBackground: Color,
-    content: @Composable (isHovered: Boolean) -> Unit
+    content: @Composable (isHovered: Boolean) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
     Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(42.dp)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .background(if (isHovered) hoverBackground else Color.Transparent)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .width(42.dp)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .background(if (isHovered) hoverBackground else Color.Transparent)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick,
+                ),
+        contentAlignment = Alignment.Center,
     ) {
         content(isHovered)
     }

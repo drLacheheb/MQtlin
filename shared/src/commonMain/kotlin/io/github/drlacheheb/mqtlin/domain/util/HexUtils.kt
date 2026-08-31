@@ -5,24 +5,23 @@ enum class HexByteType {
     WHITESPACE,
     PRINTABLE_ASCII,
     CONTROL,
-    NON_ASCII
+    NON_ASCII,
 }
 
 data class HexByte(
     val byte: Byte,
     val hexString: String,
     val displayChar: Char,
-    val type: HexByteType
+    val type: HexByteType,
 )
 
 data class HexRow(
     val offset: Int,
     val offsetHex: String,
-    val bytes: List<HexByte>
+    val bytes: List<HexByte>,
 )
 
 object HexUtils {
-
     fun classifyByte(b: Byte): HexByteType {
         val v = b.toInt() and 0xFF
         return when {
@@ -39,27 +38,31 @@ object HexUtils {
         return if (v in 0x20..0x7E) v.toChar() else '·'
     }
 
-    fun parseHexRows(bytes: ByteArray, chunkSize: Int = 16): List<HexRow> {
+    fun parseHexRows(
+        bytes: ByteArray,
+        chunkSize: Int = 16,
+    ): List<HexRow> {
         if (bytes.isEmpty()) return emptyList()
         val rows = mutableListOf<HexRow>()
         for (i in bytes.indices step chunkSize) {
             val end = minOf(i + chunkSize, bytes.size)
             val chunk = bytes.sliceArray(i until end)
-            val hexBytes = chunk.map { b ->
-                val hex = (b.toInt() and 0xFF).toString(16).padStart(2, '0').uppercase()
-                HexByte(
-                    byte = b,
-                    hexString = hex,
-                    displayChar = toDisplayChar(b),
-                    type = classifyByte(b)
-                )
-            }
+            val hexBytes =
+                chunk.map { b ->
+                    val hex = (b.toInt() and 0xFF).toString(16).padStart(2, '0').uppercase()
+                    HexByte(
+                        byte = b,
+                        hexString = hex,
+                        displayChar = toDisplayChar(b),
+                        type = classifyByte(b),
+                    )
+                }
             rows.add(
                 HexRow(
                     offset = i,
                     offsetHex = i.toString(16).padStart(8, '0').uppercase(),
-                    bytes = hexBytes
-                )
+                    bytes = hexBytes,
+                ),
             )
         }
         return rows
@@ -75,13 +78,18 @@ object HexUtils {
             val hexPart2 = row.bytes.drop(8).joinToString(" ") { it.hexString }
             val hexCombined = if (hexPart2.isNotEmpty()) "$hexPart1  $hexPart2" else hexPart1
             val paddedHex = hexCombined.padEnd(49, ' ')
-            val ascii = row.bytes.map {
-                val v = it.byte.toInt() and 0xFF
-                if (v in 32..126) v.toChar() else '.'
-            }.joinToString("")
-            sb.append(paddedHex).append("  |").append(ascii).append("|\n")
+            val ascii =
+                row.bytes
+                    .map {
+                        val v = it.byte.toInt() and 0xFF
+                        if (v in 32..126) v.toChar() else '.'
+                    }.joinToString("")
+            sb
+                .append(paddedHex)
+                .append("  |")
+                .append(ascii)
+                .append("|\n")
         }
         return sb.toString().trimEnd()
     }
 }
-

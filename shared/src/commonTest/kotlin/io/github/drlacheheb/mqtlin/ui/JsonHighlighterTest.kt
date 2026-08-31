@@ -1,8 +1,6 @@
 package io.github.drlacheheb.mqtlin.ui
 
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import io.github.drlacheheb.mqtlin.ui.util.JsonSyntaxColors
 import io.github.drlacheheb.mqtlin.ui.util.JsonVisualTransformation
 import io.github.drlacheheb.mqtlin.ui.util.highlightJson
@@ -10,7 +8,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class JsonHighlighterTest {
-
     @Test
     fun `highlightJson correctly distinguishes keys strings numbers and booleans`() {
         val json = """{"status": "online", "battery": 98, "active": true, "extra": null}"""

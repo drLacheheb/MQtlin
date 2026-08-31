@@ -8,7 +8,6 @@ import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 
 class JsonUtilsTest {
-
     @Test
     fun `valid JSON object passes validation`() {
         val json = """{"sensor": "temp", "value": 23.5, "active": true}"""
@@ -38,12 +37,13 @@ class JsonUtilsTest {
 
     @Test
     fun `malformed JSON with missing comma returns syntax error`() {
-        val malformed = """
+        val malformed =
+            """
             {
               "device": "D1"
               "status": "OK"
             }
-        """.trimIndent()
+            """.trimIndent()
         val error = JsonUtils.validate(malformed)
         error.shouldNotBeNull()
     }
@@ -65,4 +65,3 @@ class JsonUtilsTest {
         formatted shouldBe invalid
     }
 }
-

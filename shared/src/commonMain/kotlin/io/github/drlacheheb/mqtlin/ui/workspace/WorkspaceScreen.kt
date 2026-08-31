@@ -1,7 +1,6 @@
 package io.github.drlacheheb.mqtlin.ui.workspace
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import io.github.drlacheheb.mqtlin.ui.theme.DarkOutlineVariant
@@ -27,27 +24,29 @@ import io.github.drlacheheb.mqtlin.ui.workspace.tree.TopicTreePanel
 @Composable
 fun WorkspaceScreen(
     component: WorkspaceComponent,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by component.state.subscribeAsState()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkSurfaceDim)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(DarkSurfaceDim),
     ) {
         // 1. Top Navigation Bar (56dp)
         TopNavBar(
             config = state.connectionConfig,
             onOpenConnectionManager = component::onOpenConnectionManagerClicked,
-            onOpenSettings = component::onOpenSettingsClicked
+            onOpenSettings = component::onOpenSettingsClicked,
         )
 
         // 2. Main 3-Column Workspace (340dp / 1fr / 380dp)
         Row(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
         ) {
             // Left Column: Topic Tree (250dp compact sidebar)
             TopicTreePanel(
@@ -59,15 +58,16 @@ fun WorkspaceScreen(
                 onFilterQueryChanged = component::onFilterQueryChanged,
                 onDeleteRetainedTopic = component::onDeleteRetainedTopic,
                 onDeleteRetainedBranch = component::onDeleteRetainedBranch,
-                modifier = Modifier.width(250.dp)
+                modifier = Modifier.width(250.dp),
             )
 
             // Divider
             Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-                    .background(DarkOutlineVariant)
+                modifier =
+                    Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(DarkOutlineVariant),
             )
 
             // Center Column: Payload Inspector (1fr)
@@ -75,15 +75,16 @@ fun WorkspaceScreen(
                 selectedNode = state.selectedNode,
                 onDeleteRetainedTopic = component::onDeleteRetainedTopic,
                 onDeleteRetainedBranch = component::onDeleteRetainedBranch,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             // Divider
             Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-                    .background(DarkOutlineVariant)
+                modifier =
+                    Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(DarkOutlineVariant),
             )
 
             // Right Column: Publisher (380dp)
@@ -94,7 +95,7 @@ fun WorkspaceScreen(
                 onPublishMessage = { topic, payload, qos, isRetained ->
                     component.onPublishMessage(topic, payload, qos, isRetained)
                 },
-                modifier = Modifier.width(380.dp)
+                modifier = Modifier.width(380.dp),
             )
         }
 
@@ -102,7 +103,7 @@ fun WorkspaceScreen(
         WorkspaceFooter(
             totalTopics = state.rawTopicTree.totalTopicCount,
             totalMessages = state.rawTopicTree.totalMessageCount,
-            latencyMs = state.latencyMs
+            latencyMs = state.latencyMs,
         )
     }
 }

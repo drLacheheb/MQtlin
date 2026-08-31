@@ -11,7 +11,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class HexViewerLegendTest {
-
     @Test
     fun `getByteColor maps each HexByteType to its semantic palette color`() {
         getByteColor(HexByteType.NULL) shouldBe HexColorNull

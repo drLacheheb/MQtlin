@@ -65,51 +65,53 @@ fun PublishControlsBar(
     publishError: String?,
     canPublish: Boolean,
     onPublishClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // QoS & Retain Settings Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // QoS Segmented Pill Group
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     text = "QoS",
-                    style = UiLabelBold.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant)
+                    style = UiLabelBold.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant),
                 )
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(32.dp)
-                        .background(DarkSurfaceDim, RoundedCornerShape(4.dp))
-                        .border(1.dp, DarkOutlineVariant, RoundedCornerShape(4.dp))
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(32.dp)
+                            .background(DarkSurfaceDim, RoundedCornerShape(4.dp))
+                            .border(1.dp, DarkOutlineVariant, RoundedCornerShape(4.dp)),
                 ) {
                     for (q in 0..2) {
                         val isSelected = qos == q
                         Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .pointerHoverIcon(PointerIcon.Hand)
-                                .clickable { onQosChange(q) }
-                                .background(if (isSelected) MqtlinPrimaryContainer else Color.Transparent),
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .pointerHoverIcon(PointerIcon.Hand)
+                                    .clickable { onQosChange(q) }
+                                    .background(if (isSelected) MqtlinPrimaryContainer else Color.Transparent),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = q.toString(),
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) MqtlinOnPrimaryContainer else DarkOnSurfaceVariant
+                                color = if (isSelected) MqtlinOnPrimaryContainer else DarkOnSurfaceVariant,
                             )
                         }
                     }
@@ -119,34 +121,36 @@ fun PublishControlsBar(
             // Retain Switch
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     text = "Retain",
-                    style = UiLabelBold.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant)
+                    style = UiLabelBold.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant),
                 )
                 Row(
-                    modifier = Modifier
-                        .height(32.dp)
-                        .pointerHoverIcon(PointerIcon.Hand)
-                        .clickable { onRetainedChange(!isRetained) },
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .height(32.dp)
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            .clickable { onRetainedChange(!isRetained) },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier
-                            .width(36.dp)
-                            .height(18.dp)
-                            .background(
-                                if (isRetained) MqtlinPrimary else DarkOutlineVariant,
-                                CircleShape
-                            )
-                            .padding(2.dp)
+                        modifier =
+                            Modifier
+                                .width(36.dp)
+                                .height(18.dp)
+                                .background(
+                                    if (isRetained) MqtlinPrimary else DarkOutlineVariant,
+                                    CircleShape,
+                                ).padding(2.dp),
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .align(if (isRetained) Alignment.CenterEnd else Alignment.CenterStart)
-                                .background(if (isRetained) DarkBackground else DarkOnSurface, CircleShape)
+                            modifier =
+                                Modifier
+                                    .size(14.dp)
+                                    .align(if (isRetained) Alignment.CenterEnd else Alignment.CenterStart)
+                                    .background(if (isRetained) DarkBackground else DarkOnSurface, CircleShape),
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -155,7 +159,7 @@ fun PublishControlsBar(
                         fontSize = 12.sp,
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Medium,
-                        color = if (isRetained) DarkOnSurface else DarkOnSurfaceVariant
+                        color = if (isRetained) DarkOnSurface else DarkOnSurfaceVariant,
                     )
                 }
             }
@@ -163,32 +167,34 @@ fun PublishControlsBar(
 
         // Action Button & Feedback Area
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(DarkSurfaceContainerHigh)
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(DarkSurfaceContainerHigh)
+                    .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             if (publishError != null) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MqtlinErrorContainer.copy(alpha = 0.25f))
-                        .border(BorderStroke(1.dp, MqtlinErrorContainer.copy(alpha = 0.60f)))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .background(MqtlinErrorContainer.copy(alpha = 0.25f))
+                            .border(BorderStroke(1.dp, MqtlinErrorContainer.copy(alpha = 0.60f)))
+                            .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Error,
                         contentDescription = null,
                         tint = MqtlinError,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = publishError,
                         fontSize = 11.sp,
-                        color = MqtlinError
+                        color = MqtlinError,
                     )
                 }
             }
@@ -196,27 +202,30 @@ fun PublishControlsBar(
             Button(
                 onClick = onPublishClick,
                 enabled = !isPublishing && canPublish,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(36.dp)
-                    .pointerHoverIcon(if (!isPublishing && canPublish) PointerIcon.Hand else PointerIcon.Default),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                        .pointerHoverIcon(if (!isPublishing && canPublish) PointerIcon.Hand else PointerIcon.Default),
                 shape = RoundedCornerShape(4.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (showSuccessIndicator) MqtlinSecondary else MqtlinInversePrimary,
-                    contentColor = if (showSuccessIndicator) Color(0xFF003824) else Color.White,
-                    disabledContainerColor = MqtlinInversePrimary.copy(alpha = 0.5f),
-                    disabledContentColor = Color.White.copy(alpha = 0.5f)
-                ),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 0.dp
-                )
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = if (showSuccessIndicator) MqtlinSecondary else MqtlinInversePrimary,
+                        contentColor = if (showSuccessIndicator) Color(0xFF003824) else Color.White,
+                        disabledContainerColor = MqtlinInversePrimary.copy(alpha = 0.5f),
+                        disabledContentColor = Color.White.copy(alpha = 0.5f),
+                    ),
+                elevation =
+                    ButtonDefaults.buttonElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 0.dp,
+                    ),
             ) {
                 if (isPublishing) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp,
-                        color = Color.White
+                        color = Color.White,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Publishing...", style = UiLabelBold.copy(fontSize = 14.sp, color = Color.White))
@@ -225,24 +234,24 @@ fun PublishControlsBar(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
                         tint = Color(0xFF003824),
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Published!",
-                        style = UiLabelBold.copy(fontSize = 14.sp, color = Color(0xFF003824))
+                        style = UiLabelBold.copy(fontSize = 14.sp, color = Color(0xFF003824)),
                     )
                 } else {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Publish Message",
-                        style = UiLabelBold.copy(fontSize = 14.sp, color = Color.White)
+                        style = UiLabelBold.copy(fontSize = 14.sp, color = Color.White),
                     )
                 }
             }

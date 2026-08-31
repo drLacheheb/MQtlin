@@ -65,48 +65,51 @@ fun ProfileListItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     onDuplicate: () -> Unit = {},
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
 ) {
     var showContextMenu by remember { mutableStateOf(false) }
     val infiniteTransition = rememberInfiniteTransition()
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 0.80f,
         targetValue = 1.20f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        )
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse,
+            ),
     )
 
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .pointerHoverIcon(PointerIcon.Hand)
-            .onClick(matcher = PointerMatcher.mouse(PointerButton.Primary)) {
-                onClick()
-            }
-            .onClick(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
-                onClick()
-                showContextMenu = true
-            },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .pointerHoverIcon(PointerIcon.Hand)
+                .onClick(matcher = PointerMatcher.mouse(PointerButton.Primary)) {
+                    onClick()
+                }.onClick(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
+                    onClick()
+                    showContextMenu = true
+                },
         shape = RoundedCornerShape(2.dp),
         color = if (isActive) MqtlinPrimary.copy(alpha = 0.10f) else Color.Transparent,
-        border = if (isActive) BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.20f)) else null
+        border = if (isActive) BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.20f)) else null,
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Pulse Status Indicator (8px dot)
             Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .scale(if (isActive) pulseScale else 1f)
-                    .background(
-                        color = if (isActive) MqtlinSecondary else DarkOutlineVariant,
-                        shape = CircleShape
-                    )
+                modifier =
+                    Modifier
+                        .size(8.dp)
+                        .scale(if (isActive) pulseScale else 1f)
+                        .background(
+                            color = if (isActive) MqtlinSecondary else DarkOutlineVariant,
+                            shape = CircleShape,
+                        ),
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -115,7 +118,7 @@ fun ProfileListItem(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = profile.name,
@@ -123,24 +126,25 @@ fun ProfileListItem(
                         color = DarkOnSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false).padding(end = 4.dp)
+                        modifier = Modifier.weight(1f, fill = false).padding(end = 4.dp),
                     )
 
                     if (badge != null) {
                         Surface(
                             shape = RoundedCornerShape(2.dp),
                             color = if (badge == "TLS") MqtlinPrimary.copy(alpha = 0.2f) else MqtlinTertiary.copy(alpha = 0.2f),
-                            border = BorderStroke(
-                                1.dp,
-                                if (badge == "TLS") MqtlinPrimary.copy(alpha = 0.3f) else MqtlinTertiary.copy(alpha = 0.3f)
-                            )
+                            border =
+                                BorderStroke(
+                                    1.dp,
+                                    if (badge == "TLS") MqtlinPrimary.copy(alpha = 0.3f) else MqtlinTertiary.copy(alpha = 0.3f),
+                                ),
                         ) {
                             Text(
                                 text = badge,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (badge == "TLS") MqtlinPrimary else MqtlinTertiary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             )
                         }
                     }
@@ -150,7 +154,7 @@ fun ProfileListItem(
                     text = "${profile.host}:${profile.port}",
                     style = MonoTopic.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant.copy(alpha = 0.80f)),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -158,7 +162,7 @@ fun ProfileListItem(
             MqtlinContextMenu(
                 expanded = showContextMenu,
                 onDismissRequest = { showContextMenu = false },
-                width = 160.dp
+                width = 160.dp,
             ) {
                 MqtlinContextMenuItem(
                     text = "Duplicate",
@@ -167,7 +171,7 @@ fun ProfileListItem(
                     onClick = {
                         onDuplicate()
                         showContextMenu = false
-                    }
+                    },
                 )
 
                 MqtlinContextMenuDivider()
@@ -180,7 +184,7 @@ fun ProfileListItem(
                     onClick = {
                         onDelete()
                         showContextMenu = false
-                    }
+                    },
                 )
             }
         }

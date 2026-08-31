@@ -38,62 +38,67 @@ fun WorkspaceFooter(
     totalTopics: Int,
     totalMessages: Long,
     latencyMs: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val infiniteTransition = rememberInfiniteTransition()
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 0.80f,
         targetValue = 1.25f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        )
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse,
+            ),
     )
 
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(28.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(28.dp),
         color = DarkSurfaceContainerLowest,
-        border = BorderStroke(1.dp, DarkOutlineVariant)
+        border = BorderStroke(1.dp, DarkOutlineVariant),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Left: Version & Connected Status with pulse
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
                     text = "Mqtlin v2.4.0",
-                    style = LabelXs.copy(fontSize = 11.sp, color = DarkOnSurfaceVariant)
+                    style = LabelXs.copy(fontSize = 11.sp, color = DarkOnSurfaceVariant),
                 )
 
                 Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(12.dp)
-                        .background(DarkOutlineVariant)
+                    modifier =
+                        Modifier
+                            .width(1.dp)
+                            .height(12.dp)
+                            .background(DarkOutlineVariant),
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .scale(pulseScale)
-                            .background(MqtlinSecondary, CircleShape)
+                        modifier =
+                            Modifier
+                                .size(6.dp)
+                                .scale(pulseScale)
+                                .background(MqtlinSecondary, CircleShape),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Connected",
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
-                        color = DarkOnSurfaceVariant
+                        color = DarkOnSurfaceVariant,
                     )
                 }
             }
@@ -101,52 +106,55 @@ fun WorkspaceFooter(
             // Right: Live Metrics
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
                     text = "Connected: ${latencyMs}ms",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = DarkOnSurfaceVariant
+                    color = DarkOnSurfaceVariant,
                 )
 
                 Box(
-                    modifier = Modifier
-                        .size(3.dp)
-                        .background(DarkOutlineVariant, CircleShape)
+                    modifier =
+                        Modifier
+                            .size(3.dp)
+                            .background(DarkOutlineVariant, CircleShape),
                 )
 
                 Text(
                     text = "Messages: $totalMessages",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = DarkOnSurfaceVariant
+                    color = DarkOnSurfaceVariant,
                 )
 
                 Box(
-                    modifier = Modifier
-                        .size(3.dp)
-                        .background(DarkOutlineVariant, CircleShape)
+                    modifier =
+                        Modifier
+                            .size(3.dp)
+                            .background(DarkOutlineVariant, CircleShape),
                 )
 
                 Text(
                     text = "Topics: $totalTopics",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = MqtlinSecondary
+                    color = MqtlinSecondary,
                 )
 
                 Box(
-                    modifier = Modifier
-                        .size(3.dp)
-                        .background(DarkOutlineVariant, CircleShape)
+                    modifier =
+                        Modifier
+                            .size(3.dp)
+                            .background(DarkOutlineVariant, CircleShape),
                 )
 
                 Text(
                     text = "Mem: 86 MB",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = MqtlinSecondary
+                    color = MqtlinSecondary,
                 )
             }
         }

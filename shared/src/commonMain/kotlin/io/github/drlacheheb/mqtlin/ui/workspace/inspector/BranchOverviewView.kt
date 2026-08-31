@@ -53,32 +53,33 @@ fun BranchOverviewView(
     node: TopicNode,
     retainedDescendantPaths: List<String>,
     onPurgeClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkSurfaceContainerLowest)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(DarkSurfaceContainerLowest)
+                .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Branch Header
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
                 color = MqtlinPrimary.copy(alpha = 0.15f),
                 border = BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.30f)),
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(44.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = MqtlinSymbols.FolderOpen,
                         contentDescription = null,
                         tint = MqtlinPrimary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
@@ -86,12 +87,12 @@ fun BranchOverviewView(
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = "/${node.fullPath}/#",
-                    style = UiLabelBold.copy(fontSize = 16.sp, color = DarkOnSurface)
+                    style = UiLabelBold.copy(fontSize = 16.sp, color = DarkOnSurface),
                 )
                 Text(
                     text = "${node.children.size} direct subtopics • ${retainedDescendantPaths.size} retained messages",
                     fontSize = 12.sp,
-                    color = DarkOnSurfaceVariant
+                    color = DarkOnSurfaceVariant,
                 )
             }
         }
@@ -102,38 +103,38 @@ fun BranchOverviewView(
                 shape = RoundedCornerShape(6.dp),
                 color = Color(0xFFF7768E).copy(alpha = 0.10f),
                 border = BorderStroke(1.dp, Color(0xFFF7768E).copy(alpha = 0.35f)),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
                                 contentDescription = null,
                                 tint = Color(0xFFF7768E),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                             Text(
                                 text = "Retained Messages Stored on Broker",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFF7768E)
+                                color = Color(0xFFF7768E),
                             )
                         }
                         Text(
                             text = "There are ${retainedDescendantPaths.size} retained topic(s) under this branch.",
                             fontSize = 12.sp,
-                            color = DarkOnSurfaceVariant
+                            color = DarkOnSurfaceVariant,
                         )
                     }
 
@@ -143,26 +144,27 @@ fun BranchOverviewView(
                         shape = RoundedCornerShape(4.dp),
                         color = Color(0xFFF7768E).copy(alpha = 0.25f),
                         border = BorderStroke(1.dp, Color(0xFFF7768E)),
-                        modifier = Modifier
-                            .pointerHoverIcon(PointerIcon.Hand)
-                            .clickable { onPurgeClicked() }
+                        modifier =
+                            Modifier
+                                .pointerHoverIcon(PointerIcon.Hand)
+                                .clickable { onPurgeClicked() },
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
                                 contentDescription = null,
                                 tint = Color(0xFFF7768E),
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(14.dp),
                             )
                             Text(
                                 text = "Purge All ${retainedDescendantPaths.size} Retained",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFF7768E)
+                                color = Color(0xFFF7768E),
                             )
                         }
                     }
@@ -176,7 +178,7 @@ fun BranchOverviewView(
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
-            color = DarkOnSurfaceVariant
+            color = DarkOnSurfaceVariant,
         )
 
         // Subtopics List
@@ -184,38 +186,41 @@ fun BranchOverviewView(
             shape = RoundedCornerShape(4.dp),
             color = DarkSurfaceDim,
             border = BorderStroke(1.dp, DarkOutlineVariant),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
         ) {
             Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                modifier =
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 node.children.forEach { child ->
                     val childRetained = child.collectAllRetainedLeafPaths().size
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Icon(
                                 imageVector = if (child.isLeaf) Icons.Default.DataObject else MqtlinSymbols.Folder,
                                 contentDescription = null,
                                 tint = if (child.isLeaf) MqtlinTertiary else MqtlinPrimary,
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(14.dp),
                             )
                             Text(
                                 text = child.segment,
-                                style = MonoCode.copy(fontSize = 12.sp, color = DarkOnSurface)
+                                style = MonoCode.copy(fontSize = 12.sp, color = DarkOnSurface),
                             )
                         }
 
@@ -223,14 +228,14 @@ fun BranchOverviewView(
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
                                 color = MqtlinTertiaryContainer.copy(alpha = 0.15f),
-                                border = BorderStroke(1.dp, MqtlinTertiary.copy(alpha = 0.30f))
+                                border = BorderStroke(1.dp, MqtlinTertiary.copy(alpha = 0.30f)),
                             ) {
                                 Text(
                                     text = "$childRetained retained",
                                     fontSize = 10.sp,
                                     fontFamily = FontFamily.Monospace,
                                     color = MqtlinTertiary,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 )
                             }
                         }

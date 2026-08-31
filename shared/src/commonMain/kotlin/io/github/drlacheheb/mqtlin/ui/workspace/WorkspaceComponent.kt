@@ -18,26 +18,35 @@ data class WorkspaceUiState(
     val filterMode: FilterMode = FilterMode.TEXT,
     val latencyMs: Long = 12L,
     val isPublishing: Boolean = false,
-    val publishError: String? = null
+    val publishError: String? = null,
 )
 
 interface WorkspaceComponent {
     val state: Value<WorkspaceUiState>
 
     fun onTopicSelected(fullPath: String)
+
     fun onToggleExpand(fullPath: String)
+
     fun onFilterQueryChanged(query: String)
+
     fun onFilterModeChanged(mode: FilterMode)
+
     fun onPublishMessage(
         topic: String,
         payload: String,
         qos: Int,
         isRetained: Boolean,
-        userProperties: Map<String, String> = emptyMap()
+        userProperties: Map<String, String> = emptyMap(),
     )
+
     fun onDeleteRetainedTopic(topic: String)
+
     fun onDeleteRetainedBranch(branchPath: String)
+
     fun onDisconnectClicked()
+
     fun onOpenConnectionManagerClicked()
+
     fun onOpenSettingsClicked()
 }

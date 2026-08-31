@@ -8,7 +8,6 @@ import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 
 class HexUtilsTest {
-
     @Test
     fun `classifyByte correctly categorizes byte values`() {
         // Null

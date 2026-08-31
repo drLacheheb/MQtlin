@@ -27,36 +27,40 @@ fun InspectorHeader(
     historyCount: Int,
     effectiveHistoryIndex: Int,
     onJumpLive: () -> Unit,
-    onDeleteRetainedTopic: ((String) -> Unit)? = null,
     onOpenPurgeBranchDialog: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDeleteRetainedTopic: ((String) -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(DarkSurfaceContainerLow)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // 1. Topic Path Pill with Copy Action
-        TopicPathPill(fullTopicPath = selectedNode.fullPath)
+    Column(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(DarkSurfaceContainerLow)
+                    .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            // 1. Topic Path Pill with Copy Action
+            TopicPathPill(fullTopicPath = selectedNode.fullPath)
 
-        // 2. Metadata Chips Row
-        TopicMetadataChips(
-            selectedNode = selectedNode,
-            currentMessage = currentMessage,
-            historyCount = historyCount,
-            effectiveHistoryIndex = effectiveHistoryIndex,
-            onJumpLive = onJumpLive,
-            onDeleteRetainedTopic = onDeleteRetainedTopic,
-            onOpenPurgeBranchDialog = onOpenPurgeBranchDialog
+            // 2. Metadata Chips Row
+            TopicMetadataChips(
+                selectedNode = selectedNode,
+                currentMessage = currentMessage,
+                historyCount = historyCount,
+                effectiveHistoryIndex = effectiveHistoryIndex,
+                onJumpLive = onJumpLive,
+                onDeleteRetainedTopic = onDeleteRetainedTopic,
+                onOpenPurgeBranchDialog = onOpenPurgeBranchDialog,
+            )
+        }
+
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkOutlineVariant),
         )
     }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(DarkOutlineVariant)
-    )
 }

@@ -4,12 +4,15 @@ import io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig
 
 sealed interface ValidationResult {
     data object Valid : ValidationResult
-    data class Invalid(val errors: Map<Field, String>) : ValidationResult
+
+    data class Invalid(
+        val errors: Map<Field, String>,
+    ) : ValidationResult
 
     enum class Field {
         HOST,
         PORT,
-        CLIENT_ID
+        CLIENT_ID,
     }
 }
 

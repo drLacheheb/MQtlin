@@ -31,7 +31,7 @@ import io.github.drlacheheb.mqtlin.ui.util.highlightJson
 fun PayloadCodeViewer(
     text: String,
     isJson: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val verticalScrollState = rememberScrollState()
     val horizontalScrollState = rememberScrollState()
@@ -39,54 +39,58 @@ fun PayloadCodeViewer(
     val lineCount = if (lines.isEmpty()) 1 else lines.size
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(DarkSurfaceContainerLowest)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(DarkSurfaceContainerLowest),
     ) {
         // Line Numbers Gutter
         Column(
-            modifier = Modifier
-                .width(44.dp)
-                .fillMaxHeight()
-                .background(DarkSurfaceDim)
-                .verticalScroll(verticalScrollState)
-                .padding(vertical = 16.dp, horizontal = 4.dp),
-            horizontalAlignment = Alignment.End
+            modifier =
+                Modifier
+                    .width(44.dp)
+                    .fillMaxHeight()
+                    .background(DarkSurfaceDim)
+                    .verticalScroll(verticalScrollState)
+                    .padding(vertical = 16.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.End,
         ) {
             for (i in 1..lineCount) {
                 Text(
                     text = "$i",
-                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOutlineVariant)
+                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOutlineVariant),
                 )
             }
         }
 
         // Gutter Divider
         Box(
-            modifier = Modifier
-                .width(1.dp)
-                .fillMaxHeight()
-                .background(DarkOutlineVariant)
+            modifier =
+                Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(DarkOutlineVariant),
         )
 
         // Code Content Area
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .verticalScroll(verticalScrollState)
-                .horizontalScroll(horizontalScrollState)
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(verticalScrollState)
+                    .horizontalScroll(horizontalScrollState)
+                    .padding(16.dp),
         ) {
             if (isJson) {
                 Text(
                     text = highlightJson(text),
-                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp)
+                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp),
                 )
             } else {
                 Text(
                     text = text,
-                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOnSurface)
+                    style = MonoCode.copy(fontSize = 13.sp, lineHeight = 20.sp, color = DarkOnSurface),
                 )
             }
         }

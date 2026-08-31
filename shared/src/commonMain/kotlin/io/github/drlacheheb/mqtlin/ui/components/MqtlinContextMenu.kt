@@ -55,26 +55,28 @@ fun MqtlinContextMenu(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     width: Dp = 200.dp,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     if (expanded) {
         Popup(
             onDismissRequest = onDismissRequest,
-            properties = PopupProperties(focusable = true)
+            properties = PopupProperties(focusable = true),
         ) {
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = DarkSurfaceContainerLow,
                 border = BorderStroke(1.dp, ContextMenuBorderColor),
                 shadowElevation = 8.dp,
-                modifier = modifier
-                    .width(width)
-                    .clip(RoundedCornerShape(6.dp))
+                modifier =
+                    modifier
+                        .width(width)
+                        .clip(RoundedCornerShape(6.dp)),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp)),
                 ) {
                     content()
                 }
@@ -90,50 +92,54 @@ fun MqtlinContextMenu(
 fun MqtlinContextMenuItem(
     text: String,
     leadingIcon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     shortcut: String? = null,
     isDestructive: Boolean = false,
-    onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    val textColor = when {
-        isDestructive -> ContextMenuDestructiveColor
-        isHovered -> Color.White
-        else -> DarkOnSurface
-    }
+    val textColor =
+        when {
+            isDestructive -> ContextMenuDestructiveColor
+            isHovered -> Color.White
+            else -> DarkOnSurface
+        }
 
-    val iconColor = when {
-        isDestructive -> ContextMenuDestructiveColor
-        isHovered -> Color.White
-        else -> DarkOutline
-    }
+    val iconColor =
+        when {
+            isDestructive -> ContextMenuDestructiveColor
+            isHovered -> Color.White
+            else -> DarkOutline
+        }
 
-    val backgroundColor = when {
-        isHovered && isDestructive -> ContextMenuDestructiveColor.copy(alpha = 0.15f)
-        isHovered -> DarkSurfaceBright
-        else -> Color.Transparent
-    }
+    val backgroundColor =
+        when {
+            isHovered && isDestructive -> ContextMenuDestructiveColor.copy(alpha = 0.15f)
+            isHovered -> DarkSurfaceBright
+            else -> Color.Transparent
+        }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(26.dp)
-            .background(backgroundColor)
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(26.dp)
+                .background(backgroundColor)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick,
+                ).padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = leadingIcon,
             contentDescription = null,
             tint = iconColor,
-            modifier = Modifier.size(14.dp)
+            modifier = Modifier.size(14.dp),
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
@@ -141,24 +147,24 @@ fun MqtlinContextMenuItem(
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
             color = textColor,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         if (shortcut != null) {
             Text(
                 text = shortcut,
                 fontSize = 10.sp,
                 fontFamily = FontFamily.Monospace,
-                color = if (isHovered) DarkOnSurface.copy(alpha = 0.8f) else DarkOutlineVariant
+                color = if (isHovered) DarkOnSurface.copy(alpha = 0.8f) else DarkOutlineVariant,
             )
         }
     }
 }
 
 @Composable
-fun MqtlinContextMenuDivider() {
+fun MqtlinContextMenuDivider(modifier: Modifier = Modifier) {
     HorizontalDivider(
         color = ContextMenuBorderColor,
         thickness = 1.dp,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+        modifier = modifier.padding(horizontal = 4.dp, vertical = 2.dp),
     )
 }

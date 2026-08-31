@@ -39,15 +39,16 @@ fun TimeSeriesStatsRibbon(
     avgValue: Double,
     sampleCount: Int,
     hoveredPoint: TimeSeriesPoint?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(DarkSurfaceDim)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(DarkSurfaceDim)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         StatCard(label = "CURRENT", value = formatDouble(currentValue), color = MqtlinPrimary)
         StatCard(label = "MIN", value = formatDouble(minValue), color = MqtlinSecondary)
@@ -61,25 +62,25 @@ fun TimeSeriesStatsRibbon(
             Surface(
                 shape = RoundedCornerShape(4.dp),
                 color = DarkSurfaceContainer,
-                border = BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.5f))
+                border = BorderStroke(1.dp, MqtlinPrimary.copy(alpha = 0.5f)),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
                         text = formatChartTimestamp(hoveredPoint.timestamp),
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
-                        color = DarkOnSurfaceVariant
+                        color = DarkOnSurfaceVariant,
                     )
                     Text(
                         text = formatDouble(hoveredPoint.value),
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
-                        color = MqtlinPrimary
+                        color = MqtlinPrimary,
                     )
                 }
             }
@@ -91,7 +92,7 @@ fun TimeSeriesStatsRibbon(
 private fun StatCard(
     label: String,
     value: String,
-    color: Color
+    color: Color,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
@@ -99,14 +100,14 @@ private fun StatCard(
             fontSize = 9.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
-            color = DarkOnSurfaceVariant.copy(alpha = 0.7f)
+            color = DarkOnSurfaceVariant.copy(alpha = 0.7f),
         )
         Text(
             text = value,
             fontSize = 13.sp,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
-            color = color
+            color = color,
         )
     }
 }

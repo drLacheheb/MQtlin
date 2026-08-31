@@ -11,26 +11,27 @@ import kotlinx.serialization.json.Json
  * In-memory test double for ProfileRepository.
  */
 class FakeProfileRepository(
-    initialProfiles: List<ConnectionConfig> = listOf(
-        ConnectionConfig(
-            name = "Local Mosquitto",
-            host = "127.0.0.1",
-            port = 1883,
-            clientId = "mqtlin_test_local",
-            protocolVersion = MqttProtocolVersion.MQTT_5_0,
-            transport = TransportProtocol.TCP
-        )
-    )
+    initialProfiles: List<ConnectionConfig> =
+        listOf(
+            ConnectionConfig(
+                name = "Local Mosquitto",
+                host = "127.0.0.1",
+                port = 1883,
+                clientId = "mqtlin_test_local",
+                protocolVersion = MqttProtocolVersion.MQTT_5_0,
+                transport = TransportProtocol.TCP,
+            ),
+        ),
 ) : ProfileRepository {
-
     private val profiles = initialProfiles.toMutableList()
     private var lastSelected: String? = initialProfiles.firstOrNull()?.name
 
-    private val json = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
+    private val json =
+        Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
 
     override suspend fun getAllProfiles(): List<ConnectionConfig> = profiles.toList()
 

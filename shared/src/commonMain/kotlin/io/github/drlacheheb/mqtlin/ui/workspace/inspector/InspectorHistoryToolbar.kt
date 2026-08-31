@@ -48,51 +48,53 @@ fun InspectorHistoryToolbar(
     onNavigatePrevious: () -> Unit,
     onNavigateNext: () -> Unit,
     onToggleAutoScroll: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkOutlineVariant)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkOutlineVariant),
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp)
-                .background(DarkSurfaceContainer)
-                .padding(horizontal = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(44.dp)
+                    .background(DarkSurfaceContainer)
+                    .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = "History: $historySize messages",
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = DarkOnSurfaceVariant
+                    color = DarkOnSurfaceVariant,
                 )
 
                 if (historySize > 1) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         IconButton(
                             onClick = onNavigatePrevious,
                             enabled = selectedHistoryIndex < historySize - 1,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.NavigateBefore,
                                 contentDescription = "Previous message",
                                 tint = if (selectedHistoryIndex < historySize - 1) DarkOnSurface else DarkOutlineVariant,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                         }
 
@@ -100,19 +102,19 @@ fun InspectorHistoryToolbar(
                             text = "${selectedHistoryIndex + 1}/$historySize",
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace,
-                            color = if (selectedHistoryIndex == 0) MqtlinPrimary else Color(0xFFFF9E64)
+                            color = if (selectedHistoryIndex == 0) MqtlinPrimary else Color(0xFFFF9E64),
                         )
 
                         IconButton(
                             onClick = onNavigateNext,
                             enabled = selectedHistoryIndex > 0,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.NavigateNext,
                                 contentDescription = "Next message",
                                 tint = if (selectedHistoryIndex > 0) DarkOnSurface else DarkOutlineVariant,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }
@@ -123,27 +125,28 @@ fun InspectorHistoryToolbar(
                 shape = RoundedCornerShape(4.dp),
                 color = if (autoScrollToLatest) MqtlinPrimary.copy(alpha = 0.15f) else DarkSurfaceContainerHigh,
                 border = BorderStroke(1.dp, if (autoScrollToLatest) MqtlinPrimary.copy(alpha = 0.40f) else DarkOutlineVariant),
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon.Hand)
-                    .clickable(onClick = onToggleAutoScroll)
+                modifier =
+                    Modifier
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .clickable(onClick = onToggleAutoScroll),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = "Auto Scroll",
                         tint = if (autoScrollToLatest) MqtlinPrimary else DarkOnSurfaceVariant,
-                        modifier = Modifier.size(13.dp)
+                        modifier = Modifier.size(13.dp),
                     )
                     Text(
                         text = if (autoScrollToLatest) "Live Auto-Scroll" else "Paused",
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Medium,
-                        color = if (autoScrollToLatest) MqtlinPrimary else DarkOnSurfaceVariant
+                        color = if (autoScrollToLatest) MqtlinPrimary else DarkOnSurfaceVariant,
                     )
                 }
             }

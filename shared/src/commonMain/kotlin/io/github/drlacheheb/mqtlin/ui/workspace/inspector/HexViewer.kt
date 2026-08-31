@@ -26,33 +26,35 @@ import io.github.drlacheheb.mqtlin.ui.workspace.inspector.hex.HexViewerLegend
 @Composable
 fun HexViewer(
     payload: ByteArray,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val hexRows = remember(payload) { HexUtils.parseHexRows(payload) }
     val verticalScrollState = rememberScrollState()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkSurfaceContainerLowest)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(DarkSurfaceContainerLowest),
     ) {
         if (payload.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "Payload is empty (0 Bytes)",
-                    style = HexMonoStyle.copy(fontSize = 13.sp, color = DarkOutline)
+                    style = HexMonoStyle.copy(fontSize = 13.sp, color = DarkOutline),
                 )
             }
         } else {
             // Full-Width Scrollable Table Viewport
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(verticalScrollState)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(verticalScrollState),
             ) {
                 HexRowTable(hexRows = hexRows)
             }

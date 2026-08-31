@@ -2,7 +2,6 @@ package io.github.drlacheheb.mqtlin.ui.connection
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,8 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -45,25 +42,26 @@ import io.github.drlacheheb.mqtlin.ui.theme.MqtlinError
 fun ProfileConfigForm(
     state: ConnectionUiState,
     component: ConnectionComponent,
+    modifier: Modifier = Modifier,
     onCancel: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.background(ModalSurface)
+        modifier = modifier.background(ModalSurface),
     ) {
         // 1. Breadcrumb Title Header & Window Controls
         ConnectionFormHeader(
             profileName = state.name,
             onNameChange = component::onNameChanged,
-            onNameSave = component::onSaveProfileName
+            onNameSave = component::onSaveProfileName,
         )
 
         // 2. Main Form Fields (Scrollable area)
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             // Status Feedback Banners
             if (state.testSuccessMessage != null) {
@@ -75,7 +73,7 @@ fun ProfileConfigForm(
             // Host & Port Grid
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(modifier = Modifier.weight(2f)) {
                     Text(text = "Host / IP", style = LabelXs)
@@ -86,14 +84,14 @@ fun ProfileConfigForm(
                         isError = state.validationErrors.containsKey(ValidationResult.Field.HOST),
                         placeholder = "127.0.0.1",
                         height = 36.dp,
-                        isMonospace = true
+                        isMonospace = true,
                     )
                     if (state.validationErrors.containsKey(ValidationResult.Field.HOST)) {
                         Text(
                             text = state.validationErrors[ValidationResult.Field.HOST] ?: "",
                             fontSize = 11.sp,
                             color = MqtlinError,
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 2.dp),
                         )
                     }
                 }
@@ -108,14 +106,14 @@ fun ProfileConfigForm(
                         placeholder = "1883",
                         height = 36.dp,
                         isMonospace = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     if (state.validationErrors.containsKey(ValidationResult.Field.PORT)) {
                         Text(
                             text = state.validationErrors[ValidationResult.Field.PORT] ?: "",
                             fontSize = 11.sp,
                             color = MqtlinError,
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 2.dp),
                         )
                     }
                 }
@@ -134,23 +132,23 @@ fun ProfileConfigForm(
                     trailingIcon = {
                         IconButton(
                             onClick = component::onGenerateRandomClientId,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Casino,
                                 contentDescription = "Generate Random ID",
                                 tint = DarkOutlineMuted,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                         }
-                    }
+                    },
                 )
                 if (state.validationErrors.containsKey(ValidationResult.Field.CLIENT_ID)) {
                     Text(
                         text = state.validationErrors[ValidationResult.Field.CLIENT_ID] ?: "",
                         fontSize = 11.sp,
                         color = MqtlinError,
-                        modifier = Modifier.padding(top = 2.dp)
+                        modifier = Modifier.padding(top = 2.dp),
                     )
                 }
             }
@@ -158,31 +156,32 @@ fun ProfileConfigForm(
             // Protocol Version & Transport Selector
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 // Protocol Version
                 Column(modifier = Modifier.weight(0.5f)) {
                     Text(text = "Protocol Version", style = LabelXs)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(36.dp)
-                            .background(InputBackground, RoundedCornerShape(4.dp))
-                            .border(1.dp, DarkBorder, RoundedCornerShape(4.dp))
-                            .padding(2.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .background(InputBackground, RoundedCornerShape(4.dp))
+                                .border(1.dp, DarkBorder, RoundedCornerShape(4.dp))
+                                .padding(2.dp),
                     ) {
                         ProtocolPill(
                             label = "MQTT 5.0",
                             isSelected = state.protocolVersion == MqttProtocolVersion.MQTT_5_0,
                             onClick = { component.onProtocolVersionChanged(MqttProtocolVersion.MQTT_5_0) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         ProtocolPill(
                             label = "MQTT 3.1.1",
                             isSelected = state.protocolVersion == MqttProtocolVersion.MQTT_3_1_1,
                             onClick = { component.onProtocolVersionChanged(MqttProtocolVersion.MQTT_3_1_1) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
@@ -192,36 +191,37 @@ fun ProfileConfigForm(
                     Text(text = "Transport", style = LabelXs)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(36.dp)
-                            .background(InputBackground, RoundedCornerShape(4.dp))
-                            .border(1.dp, DarkBorder, RoundedCornerShape(4.dp))
-                            .padding(2.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .background(InputBackground, RoundedCornerShape(4.dp))
+                                .border(1.dp, DarkBorder, RoundedCornerShape(4.dp))
+                                .padding(2.dp),
                     ) {
                         ProtocolPill(
                             label = "TCP",
                             isSelected = state.transport == TransportProtocol.TCP,
                             onClick = { component.onTransportChanged(TransportProtocol.TCP) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         ProtocolPill(
                             label = "TLS",
                             isSelected = state.transport == TransportProtocol.TLS,
                             onClick = { component.onTransportChanged(TransportProtocol.TLS) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         ProtocolPill(
                             label = "WS",
                             isSelected = state.transport == TransportProtocol.WS,
                             onClick = { component.onTransportChanged(TransportProtocol.WS) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         ProtocolPill(
                             label = "WSS",
                             isSelected = state.transport == TransportProtocol.WSS,
                             onClick = { component.onTransportChanged(TransportProtocol.WSS) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
@@ -230,7 +230,7 @@ fun ProfileConfigForm(
             // Username & Password Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(modifier = Modifier.weight(0.5f)) {
                     Text(text = "Username (Optional)", style = LabelXs)
@@ -240,7 +240,7 @@ fun ProfileConfigForm(
                         onValueChange = component::onUsernameChanged,
                         placeholder = "Username",
                         height = 36.dp,
-                        isMonospace = false
+                        isMonospace = false,
                     )
                 }
 
@@ -253,7 +253,7 @@ fun ProfileConfigForm(
                         placeholder = "Password",
                         height = 36.dp,
                         isMonospace = false,
-                        visualTransformation = PasswordVisualTransformation()
+                        visualTransformation = PasswordVisualTransformation(),
                     )
                 }
             }
@@ -265,7 +265,7 @@ fun ProfileConfigForm(
             onCancel = onCancel,
             onDisconnect = component::onDisconnectClicked,
             onTestConnection = component::onTestConnectionClicked,
-            onConnect = component::onConnectClicked
+            onConnect = component::onConnectClicked,
         )
     }
 }

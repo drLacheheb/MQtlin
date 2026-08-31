@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,81 +40,87 @@ import io.github.drlacheheb.mqtlin.ui.theme.UiLabelBold
 @Composable
 fun SettingsScreen(
     component: SettingsComponent,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkBackground)
-            .border(1.dp, DarkBorder)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(DarkBackground)
+                .border(1.dp, DarkBorder),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // 1. Custom Title Bar (42dp)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(42.dp)
-                    .padding(horizontal = 14.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(42.dp)
+                        .padding(horizontal = 14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = "MQtlin Settings",
-                    style = UiLabelBold.copy(fontSize = 13.sp, color = DarkOnSurface)
+                    style = UiLabelBold.copy(fontSize = 13.sp, color = DarkOnSurface),
                 )
 
                 // Window Close button (✕)
                 IconButton(
                     onClick = component::onClose,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .pointerHoverIcon(PointerIcon.Hand)
+                    modifier =
+                        Modifier
+                            .size(28.dp)
+                            .pointerHoverIcon(PointerIcon.Hand),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close Settings",
                         tint = DarkOnSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                 }
             }
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(DarkOutlineVariant)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(DarkOutlineVariant),
             )
 
             // 2. Centered Content: Uniform Background, Icon + Single Line Text
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     // Icon Badge
                     Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(MqtlinTertiary.copy(alpha = 0.15f), CircleShape),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(56.dp)
+                                .background(MqtlinTertiary.copy(alpha = 0.15f), CircleShape),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Build,
                             contentDescription = null,
                             tint = MqtlinTertiary,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(28.dp),
                         )
                     }
 
                     Text(
                         text = "Setting Under Construction",
-                        style = HeadlineSm.copy(fontSize = 16.sp, color = DarkOnSurface)
+                        style = HeadlineSm.copy(fontSize = 16.sp, color = DarkOnSurface),
                     )
                 }
             }

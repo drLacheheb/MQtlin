@@ -39,9 +39,13 @@ jobs:
       - name: Make Gradle Wrapper Executable
         run: chmod +x ./gradlew
 
+      - name: Run Static Analysis & Linters (Ktlint & Detekt)
+        run: ./gradlew ktlintCheck detekt --no-daemon
+
       - name: Run All Shared Unit Tests
         run: ./gradlew :shared:jvmTest --no-daemon
 
       - name: Verify Desktop Compilation
         run: ./gradlew :desktopApp:classes --no-daemon
+
 

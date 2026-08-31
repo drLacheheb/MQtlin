@@ -51,44 +51,48 @@ fun MqtlinTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     leadingIcon: (@Composable () -> Unit)? = null,
-    trailingIcon: (@Composable () -> Unit)? = null
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
-    val borderColor = when {
-        isError -> MqtlinError
-        isFocused -> MqtlinPrimary
-        else -> DarkBorder
-    }
+    val borderColor =
+        when {
+            isError -> MqtlinError
+            isFocused -> MqtlinPrimary
+            else -> DarkBorder
+        }
 
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(height)
-            .pointerHoverIcon(PointerIcon.Text),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(height)
+                .pointerHoverIcon(PointerIcon.Text),
         singleLine = true,
-        textStyle = TextStyle(
-            fontFamily = if (isMonospace) FontFamily.Monospace else FontFamily.Default,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Normal,
-            color = DarkOnSurface
-        ),
+        textStyle =
+            TextStyle(
+                fontFamily = if (isMonospace) FontFamily.Monospace else FontFamily.Default,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal,
+                color = DarkOnSurface,
+            ),
         cursorBrush = SolidColor(MqtlinPrimary),
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
         interactionSource = interactionSource,
         decorationBox = { innerTextField ->
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(height)
-                    .background(backgroundColor, RoundedCornerShape(4.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(height)
+                        .background(backgroundColor, RoundedCornerShape(4.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (leadingIcon != null) {
                     leadingIcon()
@@ -97,16 +101,17 @@ fun MqtlinTextField(
 
                 Box(
                     modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterStart
+                    contentAlignment = Alignment.CenterStart,
                 ) {
                     if (value.isEmpty() && placeholder.isNotEmpty()) {
                         Text(
                             text = placeholder,
-                            style = TextStyle(
-                                fontFamily = if (isMonospace) FontFamily.Monospace else FontFamily.Default,
-                                fontSize = 13.sp,
-                                color = DarkOnSurfaceVariant.copy(alpha = 0.45f)
-                            )
+                            style =
+                                TextStyle(
+                                    fontFamily = if (isMonospace) FontFamily.Monospace else FontFamily.Default,
+                                    fontSize = 13.sp,
+                                    color = DarkOnSurfaceVariant.copy(alpha = 0.45f),
+                                ),
                         )
                     }
                     innerTextField()
@@ -117,6 +122,6 @@ fun MqtlinTextField(
                     trailingIcon()
                 }
             }
-        }
+        },
     )
 }

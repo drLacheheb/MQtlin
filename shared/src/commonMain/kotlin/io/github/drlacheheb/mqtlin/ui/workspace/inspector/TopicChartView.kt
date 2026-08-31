@@ -53,35 +53,38 @@ import io.github.drlacheheb.mqtlin.ui.workspace.inspector.chart.TimeSeriesStatsR
 @Composable
 fun TopicChartView(
     history: List<MqttMessage>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val availableMetrics = remember(history) {
-        val latestPayload = history.firstOrNull()?.payloadString ?: ""
-        NumericPayloadExtractor.extractMetrics(latestPayload).keys.toList()
-    }
+    val availableMetrics =
+        remember(history) {
+            val latestPayload = history.firstOrNull()?.payloadString ?: ""
+            NumericPayloadExtractor.extractMetrics(latestPayload).keys.toList()
+        }
 
     var selectedMetric by remember(availableMetrics) {
         mutableStateOf(availableMetrics.firstOrNull() ?: "value")
     }
 
-    val timeSeries = remember(history, selectedMetric) {
-        NumericPayloadExtractor.buildTimeSeries(history, selectedMetric)
-    }
+    val timeSeries =
+        remember(history, selectedMetric) {
+            NumericPayloadExtractor.buildTimeSeries(history, selectedMetric)
+        }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkSurfaceContainerLowest)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(DarkSurfaceContainerLowest),
     ) {
         if (availableMetrics.isEmpty() && timeSeries.isEmpty()) {
             EmptyChartState(
                 reason = "The messages received for this topic do not contain parsable numeric scalar or JSON metric values.",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         } else if (timeSeries.size < 2) {
             EmptyChartState(
                 reason = "Only 1 numeric sample has been recorded so far. More messages are needed to render a trend graph.",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         } else {
             var hoveredPoint by remember { mutableStateOf<TimeSeriesPoint?>(null) }
@@ -97,11 +100,12 @@ fun TopicChartView(
             val pulseAlpha by infiniteTransition.animateFloat(
                 initialValue = 0.2f,
                 targetValue = 0.8f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1000, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "pulseAlpha"
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(1000, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse,
+                    ),
+                label = "pulseAlpha",
             )
 
             // 1. Chart Header & Legend
@@ -114,14 +118,15 @@ fun TopicChartView(
                 maxValue = maxValue,
                 avgValue = avgValue,
                 sampleCount = timeSeries.size,
-                hoveredPoint = hoveredPoint
+                hoveredPoint = hoveredPoint,
             )
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(DarkOutlineVariant)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(DarkOutlineVariant),
             )
 
             // 3. Canvas Time-Series Line Graph
@@ -135,7 +140,7 @@ fun TopicChartView(
                     hoverOffset = offset
                     hoveredPoint = pt
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -144,37 +149,38 @@ fun TopicChartView(
 @Composable
 private fun ChartHeaderBar(
     metricKey: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(DarkSurfaceContainer)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .background(DarkSurfaceContainer)
+                    .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ShowChart,
                     contentDescription = null,
                     tint = MqtlinPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
                 Text(
                     text = if (metricKey != null) "Time-Series Plot ($metricKey)" else "Time-Series Plot",
-                    style = UiLabelBold.copy(fontSize = 13.sp, color = DarkOnSurface)
+                    style = UiLabelBold.copy(fontSize = 13.sp, color = DarkOnSurface),
                 )
             }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 LegendItem(color = MqtlinPrimary, label = "Value Trend")
                 LegendItem(color = MqtlinSecondary, label = "Latest Sample")
@@ -182,10 +188,11 @@ private fun ChartHeaderBar(
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkOutlineVariant)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkOutlineVariant),
         )
     }
 }
@@ -193,21 +200,22 @@ private fun ChartHeaderBar(
 @Composable
 private fun LegendItem(
     color: Color,
-    label: String
+    label: String,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Box(
-            modifier = Modifier
-                .size(10.dp)
-                .background(color, RoundedCornerShape(2.dp))
+            modifier =
+                Modifier
+                    .size(10.dp)
+                    .background(color, RoundedCornerShape(2.dp)),
         )
         Text(
             text = label,
             fontSize = 11.sp,
-            color = DarkOnSurfaceVariant
+            color = DarkOnSurfaceVariant,
         )
     }
 }
@@ -215,32 +223,32 @@ private fun LegendItem(
 @Composable
 private fun EmptyChartState(
     reason: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ShowChart,
                 contentDescription = null,
                 tint = DarkOutlineVariant,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(36.dp),
             )
             Text(
                 text = "No Chart Data Available",
-                style = UiLabelBold.copy(fontSize = 14.sp, color = DarkOnSurface)
+                style = UiLabelBold.copy(fontSize = 14.sp, color = DarkOnSurface),
             )
             Text(
                 text = reason,
                 fontSize = 12.sp,
                 color = DarkOnSurfaceVariant.copy(alpha = 0.8f),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.width(360.dp)
+                modifier = Modifier.width(360.dp),
             )
         }
     }

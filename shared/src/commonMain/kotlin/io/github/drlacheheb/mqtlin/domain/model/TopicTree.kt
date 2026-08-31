@@ -4,7 +4,7 @@ enum class FilterMode {
     TEXT,
     REGEX,
     WILDCARD,
-    RETAINED
+    RETAINED,
 }
 
 const val MAX_HISTORY_PER_TOPIC = 50
@@ -12,9 +12,8 @@ const val MAX_HISTORY_PER_TOPIC = 50
 data class TopicTree(
     val rootNodes: List<TopicNode> = emptyList(),
     val totalTopicCount: Int = 0,
-    val totalMessageCount: Long = 0
+    val totalMessageCount: Long = 0,
 ) {
-
     fun insert(message: MqttMessage): TopicTree {
         val rawTopic = message.topic.trim().trimStart('/')
         if (rawTopic.isBlank()) return this
@@ -28,7 +27,7 @@ data class TopicTree(
         return copy(
             rootNodes = newRoots,
             totalTopicCount = newTotalTopics,
-            totalMessageCount = newTotalMessages
+            totalMessageCount = newTotalMessages,
         )
     }
 
@@ -37,7 +36,7 @@ data class TopicTree(
         segments: List<String>,
         index: Int,
         parentPath: String,
-        message: MqttMessage
+        message: MqttMessage,
     ): List<TopicNode> {
         val segment = segments[index]
         val fullPath = if (parentPath.isEmpty()) segment else "$parentPath/$segment"
@@ -45,46 +44,50 @@ data class TopicTree(
 
         val existingNode = currentLevelNodes.find { it.segment == segment }
 
-        val updatedNode = if (existingNode != null) {
-            val updatedChildren = if (!isLeaf) {
-                insertRecursive(existingNode.children, segments, index + 1, fullPath, message)
-            } else {
-                existingNode.children
-            }
-            val newHistory = if (isLeaf) {
-                (listOf(message) + existingNode.history).take(MAX_HISTORY_PER_TOPIC)
-            } else {
-                existingNode.history
-            }
+        val updatedNode =
+            if (existingNode != null) {
+                val updatedChildren =
+                    if (!isLeaf) {
+                        insertRecursive(existingNode.children, segments, index + 1, fullPath, message)
+                    } else {
+                        existingNode.children
+                    }
+                val newHistory =
+                    if (isLeaf) {
+                        (listOf(message) + existingNode.history).take(MAX_HISTORY_PER_TOPIC)
+                    } else {
+                        existingNode.history
+                    }
 
-            existingNode.copy(
-                isLeaf = existingNode.isLeaf || isLeaf,
-                children = updatedChildren,
-                messageCount = existingNode.messageCount + 1,
-                lastMessage = if (isLeaf) message else existingNode.lastMessage,
-                lastUpdated = message.timestamp,
-                history = newHistory
-            )
-        } else {
-            val children = if (!isLeaf) {
-                insertRecursive(emptyList(), segments, index + 1, fullPath, message)
+                existingNode.copy(
+                    isLeaf = existingNode.isLeaf || isLeaf,
+                    children = updatedChildren,
+                    messageCount = existingNode.messageCount + 1,
+                    lastMessage = if (isLeaf) message else existingNode.lastMessage,
+                    lastUpdated = message.timestamp,
+                    history = newHistory,
+                )
             } else {
-                emptyList()
-            }
-            val newHistory = if (isLeaf) listOf(message) else emptyList()
+                val children =
+                    if (!isLeaf) {
+                        insertRecursive(emptyList(), segments, index + 1, fullPath, message)
+                    } else {
+                        emptyList()
+                    }
+                val newHistory = if (isLeaf) listOf(message) else emptyList()
 
-            TopicNode(
-                segment = segment,
-                fullPath = fullPath,
-                isLeaf = isLeaf,
-                isExpanded = false,
-                children = children,
-                messageCount = 1,
-                lastMessage = if (isLeaf) message else null,
-                lastUpdated = message.timestamp,
-                history = newHistory
-            )
-        }
+                TopicNode(
+                    segment = segment,
+                    fullPath = fullPath,
+                    isLeaf = isLeaf,
+                    isExpanded = false,
+                    children = children,
+                    messageCount = 1,
+                    lastMessage = if (isLeaf) message else null,
+                    lastUpdated = message.timestamp,
+                    history = newHistory,
+                )
+            }
 
         val remainingNodes = currentLevelNodes.filter { it.segment != segment }
         return (remainingNodes + updatedNode).sortedBy { it.segment }
@@ -95,13 +98,19 @@ data class TopicTree(
         return copy(rootNodes = newRoots)
     }
 
-    fun setExpanded(fullPath: String, expanded: Boolean): TopicTree {
+    fun setExpanded(
+        fullPath: String,
+        expanded: Boolean,
+    ): TopicTree {
         val newRoots = setExpandedRecursive(rootNodes, fullPath, expanded)
         return copy(rootNodes = newRoots)
     }
 
-    private fun toggleRecursive(nodes: List<TopicNode>, targetPath: String): List<TopicNode> {
-        return nodes.map { node ->
+    private fun toggleRecursive(
+        nodes: List<TopicNode>,
+        targetPath: String,
+    ): List<TopicNode> =
+        nodes.map { node ->
             if (node.fullPath == targetPath) {
                 node.copy(isExpanded = !node.isExpanded)
             } else if (targetPath.startsWith(node.fullPath + "/")) {
@@ -110,10 +119,13 @@ data class TopicTree(
                 node
             }
         }
-    }
 
-    private fun setExpandedRecursive(nodes: List<TopicNode>, targetPath: String, expanded: Boolean): List<TopicNode> {
-        return nodes.map { node ->
+    private fun setExpandedRecursive(
+        nodes: List<TopicNode>,
+        targetPath: String,
+        expanded: Boolean,
+    ): List<TopicNode> =
+        nodes.map { node ->
             if (node.fullPath == targetPath) {
                 node.copy(isExpanded = expanded)
             } else if (targetPath.startsWith(node.fullPath + "/")) {
@@ -122,7 +134,6 @@ data class TopicTree(
                 node
             }
         }
-    }
 
     fun findNode(fullPath: String): TopicNode? {
         val segments = fullPath.trim().trimStart('/').split('/')
@@ -138,18 +149,25 @@ data class TopicTree(
         return result
     }
 
-    fun filter(query: String, mode: FilterMode = FilterMode.TEXT): TopicTree {
+    fun filter(
+        query: String,
+        mode: FilterMode = FilterMode.TEXT,
+    ): TopicTree {
         if (query.isBlank() && mode != FilterMode.RETAINED) return this
 
         val filteredRoots = filterNodes(rootNodes, query.trim(), mode)
         return copy(
             rootNodes = filteredRoots,
-            totalTopicCount = countUniqueTopics(filteredRoots)
+            totalTopicCount = countUniqueTopics(filteredRoots),
         )
     }
 
-    private fun filterNodes(nodes: List<TopicNode>, query: String, mode: FilterMode): List<TopicNode> {
-        return nodes.mapNotNull { node ->
+    private fun filterNodes(
+        nodes: List<TopicNode>,
+        query: String,
+        mode: FilterMode,
+    ): List<TopicNode> =
+        nodes.mapNotNull { node ->
             val matchesSelf = matchesFilter(node, query, mode)
             val filteredChildren = filterNodes(node.children, query, mode)
 
@@ -159,10 +177,13 @@ data class TopicTree(
                 null
             }
         }
-    }
 
-    private fun matchesFilter(node: TopicNode, query: String, mode: FilterMode): Boolean {
-        return when (mode) {
+    private fun matchesFilter(
+        node: TopicNode,
+        query: String,
+        mode: FilterMode,
+    ): Boolean =
+        when (mode) {
             FilterMode.TEXT -> node.fullPath.contains(query, ignoreCase = true)
             FilterMode.REGEX -> runCatching { Regex(query, RegexOption.IGNORE_CASE).containsMatchIn(node.fullPath) }.getOrDefault(false)
             FilterMode.WILDCARD -> {
@@ -171,10 +192,10 @@ data class TopicTree(
             }
             FilterMode.RETAINED -> node.lastMessage?.isRetained == true
         }
-    }
 
     private fun countUniqueTopics(nodes: List<TopicNode>): Int {
         var count = 0
+
         fun traverse(list: List<TopicNode>) {
             for (node in list) {
                 if (node.isLeaf) count++
@@ -185,4 +206,3 @@ data class TopicTree(
         return count
     }
 }
-

@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,14 +30,14 @@ import kotlinx.coroutines.delay
 @Composable
 fun PublishPanel(
     selectedTopic: String?,
+    onPublishMessage: (topic: String, payload: String, qos: Int, isRetained: Boolean) -> Unit,
+    modifier: Modifier = Modifier,
     isPublishing: Boolean = false,
     publishError: String? = null,
-    onPublishMessage: (topic: String, payload: String, qos: Int, isRetained: Boolean) -> Unit,
-    modifier: Modifier = Modifier
 ) {
     var topic by remember { mutableStateOf(selectedTopic ?: "home/living-room/temperature") }
     var payload by remember { mutableStateOf("{\n  \"device_id\": \"LR_TEMP_01\",\n  \"command\": \"CALIBRATE\",\n  \"value\": 1.5\n}") }
-    var qos by remember { mutableStateOf(1) }
+    var qos by remember { mutableIntStateOf(1) }
     var isRetained by remember { mutableStateOf(false) }
     var showSuccessIndicator by remember { mutableStateOf(false) }
 
@@ -59,15 +60,17 @@ fun PublishPanel(
     val jsonSyntaxError = remember(payload) { JsonUtils.validate(payload) }
 
     Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .background(DarkSurfaceContainer)
+        modifier =
+            modifier
+                .fillMaxHeight()
+                .background(DarkSurfaceContainer),
     ) {
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // 1. Topic Field Input
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -77,7 +80,7 @@ fun PublishPanel(
                     onValueChange = { topic = it },
                     height = 36.dp,
                     isMonospace = true,
-                    backgroundColor = DarkSurfaceDim
+                    backgroundColor = DarkSurfaceDim,
                 )
             }
 
@@ -86,7 +89,7 @@ fun PublishPanel(
                 payload = payload,
                 onPayloadChange = { payload = it },
                 jsonSyntaxError = jsonSyntaxError,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             // 3. QoS, Retain Settings & Publish Trigger Button
@@ -103,7 +106,7 @@ fun PublishPanel(
                     val sanitizedTopic = topic.trim().removePrefix("/")
                     onPublishMessage(sanitizedTopic, payload, qos, isRetained)
                     showSuccessIndicator = true
-                }
+                },
             )
         }
     }

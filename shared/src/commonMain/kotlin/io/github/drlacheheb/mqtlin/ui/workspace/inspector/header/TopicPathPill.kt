@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TopicPathPill(
     fullTopicPath: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val clipboardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
@@ -58,37 +58,38 @@ fun TopicPathPill(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         color = DarkSurfaceDim,
-        border = BorderStroke(1.dp, DarkOutlineVariant)
+        border = BorderStroke(1.dp, DarkOutlineVariant),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.DataObject,
                 contentDescription = null,
                 tint = MqtlinPrimary,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(18.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "/$fullTopicPath",
                 style = MonoCode.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = DarkOnSurface),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon.Hand)
-                    .clickable {
-                        clipboardManager.setText(AnnotatedString(fullTopicPath))
-                        isCopied = true
-                        coroutineScope.launch {
-                            delay(1500)
-                            isCopied = false
-                        }
-                    }
+                modifier =
+                    Modifier
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .clickable {
+                            clipboardManager.setText(AnnotatedString(fullTopicPath))
+                            isCopied = true
+                            coroutineScope.launch {
+                                delay(1500)
+                                isCopied = false
+                            }
+                        },
             ) {
                 if (isCopied) {
                     Text(
@@ -96,20 +97,20 @@ fun TopicPathPill(
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
-                        color = MqtlinSecondary
+                        color = MqtlinSecondary,
                     )
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Copied",
                         tint = MqtlinSecondary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
                         contentDescription = "Copy Topic Path",
                         tint = DarkOutlineVariant,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                 }
             }

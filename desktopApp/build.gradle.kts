@@ -18,7 +18,9 @@ dependencies {
     implementation(libs.compose.uiToolingPreview)
 }
 
-val appVersion = libs.versions.app.version.get()
+val appVersion =
+    libs.versions.app.version
+        .get()
 val semver = appVersion.substringBefore("-")
 
 compose.desktop {
@@ -62,12 +64,13 @@ tasks.register<Exec>("packageInnoSetup") {
     group = "compose desktop"
     description = "Compiles custom Modern Dark Windows Setup Wizard using Inno Setup"
 
-    val isccCandidates = listOf(
-        System.getenv("LOCALAPPDATA")?.let { "$it\\Programs\\Inno Setup 6\\ISCC.exe" },
-        "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe",
-        "C:\\Program Files\\Inno Setup 6\\ISCC.exe",
-        "ISCC.exe"
-    ).filterNotNull()
+    val isccCandidates =
+        listOf(
+            System.getenv("LOCALAPPDATA")?.let { "$it\\Programs\\Inno Setup 6\\ISCC.exe" },
+            "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe",
+            "C:\\Program Files\\Inno Setup 6\\ISCC.exe",
+            "ISCC.exe",
+        ).filterNotNull()
 
     val isccPath = isccCandidates.firstOrNull { File(it).exists() } ?: "ISCC.exe"
     val setupScript = rootProject.file("installer/windows/setup.iss").absolutePath

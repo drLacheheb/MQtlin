@@ -51,82 +51,87 @@ fun PublishPayloadEditor(
     payload: String,
     onPayloadChange: (String) -> Unit,
     jsonSyntaxError: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = "Payload (JSON)",
-                style = UiLabelBold.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant)
+                style = UiLabelBold.copy(fontSize = 12.sp, color = DarkOnSurfaceVariant),
             )
             Text(
                 text = "Format",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MqtlinPrimary,
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon.Hand)
-                    .clickable {
-                        onPayloadChange(JsonUtils.format(payload))
-                    }
-                    .padding(2.dp)
+                modifier =
+                    Modifier
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .clickable {
+                            onPayloadChange(JsonUtils.format(payload))
+                        }.padding(2.dp),
             )
         }
 
         // Textarea Container (with red error border if syntax error)
         val borderColor = if (jsonSyntaxError != null) MqtlinErrorContainer else DarkOutlineVariant
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .background(DarkSurfaceDim, RoundedCornerShape(4.dp))
-                .border(1.dp, borderColor, RoundedCornerShape(4.dp))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(DarkSurfaceDim, RoundedCornerShape(4.dp))
+                    .border(1.dp, borderColor, RoundedCornerShape(4.dp)),
         ) {
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(10.dp)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(10.dp),
             ) {
                 BasicTextField(
                     value = payload,
                     onValueChange = onPayloadChange,
-                    textStyle = TextStyle(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
-                        color = DarkOnSurface,
-                        lineHeight = 18.sp
-                    ),
+                    textStyle =
+                        TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 13.sp,
+                            color = DarkOnSurface,
+                            lineHeight = 18.sp,
+                        ),
                     visualTransformation = remember { JsonVisualTransformation() },
                     cursorBrush = SolidColor(MqtlinPrimary),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerHoverIcon(PointerIcon.Text)
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .pointerHoverIcon(PointerIcon.Text),
                 )
             }
 
             // Validation Error Banner
             if (jsonSyntaxError != null) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MqtlinErrorContainer.copy(alpha = 0.20f))
-                        .border(BorderStroke(1.dp, MqtlinErrorContainer.copy(alpha = 0.50f)))
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .background(MqtlinErrorContainer.copy(alpha = 0.20f))
+                            .border(BorderStroke(1.dp, MqtlinErrorContainer.copy(alpha = 0.50f)))
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Error,
                         contentDescription = "Syntax Error",
                         tint = MqtlinError,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -134,7 +139,7 @@ fun PublishPayloadEditor(
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         color = MqtlinError,
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }

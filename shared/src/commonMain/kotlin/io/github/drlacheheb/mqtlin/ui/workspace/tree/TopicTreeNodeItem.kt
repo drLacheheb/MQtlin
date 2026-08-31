@@ -67,11 +67,12 @@ import io.github.drlacheheb.mqtlin.ui.workspace.components.PurgeRetainedDialog
 fun TopicTreeNodeItem(
     node: TopicNode,
     selectedTopicPath: String?,
-    depth: Int = 0,
     onTopicSelected: (String) -> Unit,
     onToggleExpand: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    depth: Int = 0,
     onDeleteRetainedTopic: ((String) -> Unit)? = null,
-    onDeleteRetainedBranch: ((String) -> Unit)? = null
+    onDeleteRetainedBranch: ((String) -> Unit)? = null,
 ) {
     val isSelected = selectedTopicPath == node.fullPath
     val isDirectory = !node.isLeaf || node.children.isNotEmpty()
@@ -83,31 +84,32 @@ fun TopicTreeNodeItem(
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 0.80f,
         targetValue = 1.25f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        )
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse,
+            ),
     )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         // Tree Node Row
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerHoverIcon(PointerIcon.Hand)
-                .onClick(matcher = PointerMatcher.mouse(PointerButton.Primary)) {
-                    onTopicSelected(node.fullPath)
-                }
-                .onClick(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
-                    onTopicSelected(node.fullPath)
-                    showContextMenu = true
-                },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .pointerHoverIcon(PointerIcon.Hand)
+                    .onClick(matcher = PointerMatcher.mouse(PointerButton.Primary)) {
+                        onTopicSelected(node.fullPath)
+                    }.onClick(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
+                        onTopicSelected(node.fullPath)
+                        showContextMenu = true
+                    },
             shape = RoundedCornerShape(2.dp),
-            color = if (isSelected) MqtlinTertiary.copy(alpha = 0.08f) else Color.Transparent
+            color = if (isSelected) MqtlinTertiary.copy(alpha = 0.08f) else Color.Transparent,
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Expander arrow for directories
                 if (isDirectory) {
@@ -115,11 +117,12 @@ fun TopicTreeNodeItem(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Expand/Collapse",
                         tint = if (isSelected) MqtlinTertiary else DarkOutlineVariant,
-                        modifier = Modifier
-                            .size(16.dp)
-                            .rotate(arrowRotation)
-                            .pointerHoverIcon(PointerIcon.Hand)
-                            .clickable { onToggleExpand(node.fullPath) }
+                        modifier =
+                            Modifier
+                                .size(16.dp)
+                                .rotate(arrowRotation)
+                                .pointerHoverIcon(PointerIcon.Hand)
+                                .clickable { onToggleExpand(node.fullPath) },
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                 }
@@ -127,37 +130,39 @@ fun TopicTreeNodeItem(
                 // Folder / Topic Icon
                 if (isDirectory) {
                     val folderIcon = if (node.isExpanded) MqtlinSymbols.FolderOpen else MqtlinSymbols.Folder
-                    val folderTint = if (node.isExpanded || isSelected) {
-                        MqtlinTertiary
-                    } else {
-                        MqtlinPrimary
-                    }
+                    val folderTint =
+                        if (node.isExpanded || isSelected) {
+                            MqtlinTertiary
+                        } else {
+                            MqtlinPrimary
+                        }
 
                     Icon(
                         imageVector = folderIcon,
                         contentDescription = "Directory",
                         tint = folderTint,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Tag,
                         contentDescription = "Topic",
                         tint = if (isSelected) MqtlinTertiary else DarkOutlineVariant,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
                     )
                 }
 
                 Spacer(modifier = Modifier.width(4.dp))
 
                 // Node segment name
-                val textColor = if (isSelected) {
-                    MqtlinTertiary
-                } else if (isDirectory && node.isExpanded) {
-                    DarkOnSurface
-                } else {
-                    DarkOnSurfaceVariant
-                }
+                val textColor =
+                    if (isSelected) {
+                        MqtlinTertiary
+                    } else if (isDirectory && node.isExpanded) {
+                        DarkOnSurface
+                    } else {
+                        DarkOnSurfaceVariant
+                    }
 
                 Text(
                     text = node.segment,
@@ -165,20 +170,21 @@ fun TopicTreeNodeItem(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                     color = textColor,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
 
                 // Trailing: Live green pulse dot and message counter badge
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     if (System.currentTimeMillis() - node.lastUpdated < 5000) {
                         Box(
-                            modifier = Modifier
-                                .size(5.dp)
-                                .scale(pulseScale)
-                                .background(MqtlinSecondary, CircleShape)
+                            modifier =
+                                Modifier
+                                    .size(5.dp)
+                                    .scale(pulseScale)
+                                    .background(MqtlinSecondary, CircleShape),
                         )
                     }
 
@@ -188,7 +194,7 @@ fun TopicTreeNodeItem(
                             fontSize = 10.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSelected) MqtlinTertiary.copy(alpha = 0.85f) else DarkOutline.copy(alpha = 0.8f)
+                            color = if (isSelected) MqtlinTertiary.copy(alpha = 0.85f) else DarkOutline.copy(alpha = 0.8f),
                         )
                     }
                 }
@@ -200,7 +206,7 @@ fun TopicTreeNodeItem(
                     onDismissRequest = { showContextMenu = false },
                     onTopicSelected = onTopicSelected,
                     onDeleteRetainedTopic = onDeleteRetainedTopic,
-                    onOpenPurgeDialog = { showPurgeBranchDialog = true }
+                    onOpenPurgeDialog = { showPurgeBranchDialog = true },
                 )
             }
         }
@@ -208,22 +214,25 @@ fun TopicTreeNodeItem(
         // Nested Children with vertical guide line
         if (isDirectory && node.isExpanded && node.children.isNotEmpty()) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-                    .padding(start = 10.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(start = 10.dp),
             ) {
                 Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(DarkOutlineVariant.copy(alpha = 0.25f))
+                    modifier =
+                        Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(DarkOutlineVariant.copy(alpha = 0.25f)),
                 )
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 6.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 6.dp),
                 ) {
                     node.children.forEach { child ->
                         TopicTreeNodeItem(
@@ -233,7 +242,7 @@ fun TopicTreeNodeItem(
                             onTopicSelected = onTopicSelected,
                             onToggleExpand = onToggleExpand,
                             onDeleteRetainedTopic = onDeleteRetainedTopic,
-                            onDeleteRetainedBranch = onDeleteRetainedBranch
+                            onDeleteRetainedBranch = onDeleteRetainedBranch,
                         )
                     }
                 }
@@ -247,7 +256,7 @@ fun TopicTreeNodeItem(
                 branchPath = node.fullPath,
                 retainedTopics = retainedDescendants,
                 onConfirm = { onDeleteRetainedBranch(node.fullPath) },
-                onDismiss = { showPurgeBranchDialog = false }
+                onDismiss = { showPurgeBranchDialog = false },
             )
         }
     }

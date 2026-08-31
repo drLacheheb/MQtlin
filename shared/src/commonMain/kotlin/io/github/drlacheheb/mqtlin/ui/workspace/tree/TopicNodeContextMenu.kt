@@ -26,14 +26,14 @@ fun TopicNodeContextMenu(
     onDismissRequest: () -> Unit,
     onTopicSelected: (String) -> Unit,
     onDeleteRetainedTopic: ((String) -> Unit)?,
-    onOpenPurgeDialog: () -> Unit
+    onOpenPurgeDialog: () -> Unit,
 ) {
     val clipboardManager = LocalClipboardManager.current
 
     MqtlinContextMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        width = 200.dp
+        width = 200.dp,
     ) {
         // 1. Copy Topic Path (Ctrl+C)
         MqtlinContextMenuItem(
@@ -43,7 +43,7 @@ fun TopicNodeContextMenu(
             onClick = {
                 clipboardManager.setText(AnnotatedString(node.fullPath))
                 onDismissRequest()
-            }
+            },
         )
 
         // 2. Copy Payload (Ctrl+Shift+C) - shown when payload exists
@@ -55,7 +55,7 @@ fun TopicNodeContextMenu(
                 onClick = {
                     clipboardManager.setText(AnnotatedString(node.lastMessage.payloadString))
                     onDismissRequest()
-                }
+                },
             )
         }
 
@@ -67,7 +67,7 @@ fun TopicNodeContextMenu(
             onClick = {
                 onTopicSelected(node.fullPath)
                 onDismissRequest()
-            }
+            },
         )
 
         val hasRetained = node.lastMessage?.isRetained == true && onDeleteRetainedTopic != null
@@ -89,7 +89,7 @@ fun TopicNodeContextMenu(
                 onClick = {
                     onDeleteRetainedTopic(node.fullPath)
                     onDismissRequest()
-                }
+                },
             )
         }
 
@@ -102,7 +102,7 @@ fun TopicNodeContextMenu(
                 onClick = {
                     onOpenPurgeDialog()
                     onDismissRequest()
-                }
+                },
             )
         }
     }

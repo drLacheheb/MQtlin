@@ -37,20 +37,22 @@ fun TopicTreePanel(
     onTopicSelected: (String) -> Unit,
     onToggleExpand: (String) -> Unit,
     onFilterQueryChanged: (String) -> Unit,
+    modifier: Modifier = Modifier,
     onDeleteRetainedTopic: ((String) -> Unit)? = null,
     onDeleteRetainedBranch: ((String) -> Unit)? = null,
-    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .background(DarkSurfaceDim)
+        modifier =
+            modifier
+                .fillMaxHeight()
+                .background(DarkSurfaceDim),
     ) {
         // Search Header (Clean, streamlined search bar)
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
         ) {
             MqtlinTextField(
                 value = filterQuery,
@@ -64,53 +66,56 @@ fun TopicTreePanel(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
                         tint = DarkOutlineVariant,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
-                }
+                },
             )
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(DarkOutlineVariant)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(DarkOutlineVariant),
         )
 
         // Topic Tree Scrollable Area
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
             if (topicTree.rootNodes.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Text(
                             text = if (filterQuery.isNotEmpty()) "No matching topics" else "Waiting for messages...",
                             fontSize = 13.sp,
-                            color = DarkOnSurfaceVariant.copy(alpha = 0.6f)
+                            color = DarkOnSurfaceVariant.copy(alpha = 0.6f),
                         )
                         Text(
                             text = "Subscribed to #",
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace,
-                            color = DarkOnSurfaceVariant.copy(alpha = 0.4f)
+                            color = DarkOnSurfaceVariant.copy(alpha = 0.4f),
                         )
                     }
                 }
             } else {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     topicTree.rootNodes.forEach { rootNode ->
                         TopicTreeNodeItem(
@@ -120,7 +125,7 @@ fun TopicTreePanel(
                             onTopicSelected = onTopicSelected,
                             onToggleExpand = onToggleExpand,
                             onDeleteRetainedTopic = onDeleteRetainedTopic,
-                            onDeleteRetainedBranch = onDeleteRetainedBranch
+                            onDeleteRetainedBranch = onDeleteRetainedBranch,
                         )
                     }
                 }

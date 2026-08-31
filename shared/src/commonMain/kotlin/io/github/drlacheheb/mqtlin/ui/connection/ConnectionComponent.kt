@@ -23,29 +23,47 @@ data class ConnectionUiState(
     val isTesting: Boolean = false,
     val testSuccessMessage: String? = null,
     val savedProfiles: List<ConnectionConfig> = emptyList(),
-    val profileSearchQuery: String = ""
+    val profileSearchQuery: String = "",
 )
 
 interface ConnectionComponent {
     val state: Value<ConnectionUiState>
 
     fun onNameChanged(name: String)
+
     fun onSaveProfileName()
+
     fun onHostChanged(host: String)
+
     fun onPortChanged(portText: String)
+
     fun onClientIdChanged(clientId: String)
+
     fun onProtocolVersionChanged(version: MqttProtocolVersion)
+
     fun onTransportChanged(transport: TransportProtocol)
+
     fun onUsernameChanged(username: String)
+
     fun onPasswordChanged(password: String)
+
     fun onGenerateRandomClientId()
+
     fun onNewProfileClicked()
+
     fun onProfileSelected(profile: ConnectionConfig)
+
     fun onDuplicateProfileClicked(profile: ConnectionConfig)
+
     fun onDeleteProfileClicked(profile: ConnectionConfig)
+
     fun onProfileSearchQueryChanged(query: String)
+
     fun onTestConnectionClicked()
+
     fun onConnectClicked()
+
     fun onDisconnectClicked()
+
     fun onDismissError()
 }
