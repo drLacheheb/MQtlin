@@ -291,14 +291,99 @@ class DefaultConnectionComponent(
         }
     }
 
+    override fun onDuplicateProfileClicked(profile: ConnectionConfig) {
+        val existingNames = _state.value.savedProfiles.map { it.name.trim().lowercase() }.toSet()
+        val baseName = "${profile.name} (Copy)"
+        var uniqueName = baseName
+        var counter = 2
+        while (uniqueName.lowercase() in existingNames) {
+            uniqueName = "${profile.name} (Copy $counter)"
+            counter++
+        }
+
+        val randomHex = Random.nextBytes(3).joinToString("") { "%02x".format(it) }
+        val duplicatedProfile = profile.copy(
+            name = uniqueName,
+            clientId = if (profile.clientId.isNotBlank()) "${profile.clientId}_$randomHex" else "mqtlin_client_$randomHex"
+        )
+        currentProfileOriginalName = duplicatedProfile.name
+        _state.update { state ->
+            state.copy(
+                name = duplicatedProfile.name,
+                host = duplicatedProfile.host,
+                portText = duplicatedProfile.port.toString(),
+                clientId = duplicatedProfile.clientId,
+                protocolVersion = duplicatedProfile.protocolVersion,
+                transport = duplicatedProfile.transport,
+                username = duplicatedProfile.username ?: "",
+                password = duplicatedProfile.password ?: "",
+                savedProfiles = state.savedProfiles + duplicatedProfile,
+                connectionState = ConnectionState.Disconnected,
+                validationErrors = emptyMap(),
+                testSuccessMessage = null
+            )
+        }
+        profileRepository?.let { repo ->
+            scope.launch {
+                repo.saveProfile(duplicatedProfile)
+                repo.setLastSelectedProfileName(duplicatedProfile.name)
+            }
+        }
+    }
+
     override fun onDeleteProfileClicked(profile: ConnectionConfig) {
         _state.update { state ->
-            val updated = state.savedProfiles.filter { it.name != profile.name || it.host != profile.host }
-            state.copy(savedProfiles = updated)
+            val updated = state.savedProfiles.filter { !it.name.equals(profile.name, ignoreCase = true) }
+            if (state.name.equals(profile.name, ignoreCase = true)) {
+                val nextProfile = updated.firstOrNull()
+                if (nextProfile != null) {
+                    val currentRepoState = mqttRepository.connectionState.value
+                    val isCurrentlyConnected = currentRepoState is ConnectionState.Connected &&
+                        currentRepoState.host == nextProfile.host &&
+                        currentRepoState.port == nextProfile.port
+
+                    currentProfileOriginalName = nextProfile.name
+                    state.copy(
+                        name = nextProfile.name,
+                        host = nextProfile.host,
+                        portText = nextProfile.port.toString(),
+                        clientId = nextProfile.clientId,
+                        protocolVersion = nextProfile.protocolVersion,
+                        transport = nextProfile.transport,
+                        username = nextProfile.username ?: "",
+                        password = nextProfile.password ?: "",
+                        savedProfiles = updated,
+                        connectionState = if (isCurrentlyConnected) currentRepoState else ConnectionState.Disconnected,
+                        validationErrors = emptyMap(),
+                        testSuccessMessage = null
+                    )
+                } else {
+                    currentProfileOriginalName = "New Connection"
+                    state.copy(
+                        name = "New Connection",
+                        host = "127.0.0.1",
+                        portText = "1883",
+                        clientId = "mqtlin_client",
+                        protocolVersion = MqttProtocolVersion.MQTT_5_0,
+                        transport = TransportProtocol.TCP,
+                        username = "",
+                        password = "",
+                        savedProfiles = emptyList(),
+                        connectionState = ConnectionState.Disconnected,
+                        validationErrors = emptyMap(),
+                        testSuccessMessage = null
+                    )
+                }
+            } else {
+                state.copy(savedProfiles = updated)
+            }
         }
         profileRepository?.let { repo ->
             scope.launch {
                 repo.deleteProfile(profile.name)
+                _state.value.savedProfiles.firstOrNull()?.let {
+                    repo.setLastSelectedProfileName(it.name)
+                }
             }
         }
     }

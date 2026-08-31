@@ -41,6 +41,7 @@ interface ConnectionComponent {
     fun onGenerateRandomClientId()
     fun onNewProfileClicked()
     fun onProfileSelected(profile: ConnectionConfig)
+    fun onDuplicateProfileClicked(profile: ConnectionConfig)
     fun onDeleteProfileClicked(profile: ConnectionConfig)
     fun onProfileSearchQueryChanged(query: String)
     fun onTestConnectionClicked()

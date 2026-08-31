@@ -38,6 +38,8 @@ fun ConnectionDialog(
                 activeName = state.name,
                 onSearchQueryChanged = component::onProfileSearchQueryChanged,
                 onProfileSelected = component::onProfileSelected,
+                onDuplicateProfile = component::onDuplicateProfileClicked,
+                onDeleteProfile = component::onDeleteProfileClicked,
                 onNewProfileClicked = component::onNewProfileClicked
             )
 

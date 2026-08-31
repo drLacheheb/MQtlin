@@ -663,4 +663,88 @@ class ConnectionComponentTest {
 
         lifecycle.destroy()
     }
+
+    @Test
+    fun `duplicating a profile creates a unique copy and selects it`() = runTest {
+        val original = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(
+            name = "Smart Home Hub",
+            host = "192.168.1.50",
+            port = 1883,
+            clientId = "smart_client"
+        )
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(original)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        component.onDuplicateProfileClicked(original)
+        advanceUntilIdle()
+
+        component.state.value.name shouldBe "Smart Home Hub (Copy)"
+        component.state.value.host shouldBe "192.168.1.50"
+        val names = component.state.value.savedProfiles.map { it.name }
+        names shouldContain "Smart Home Hub"
+        names shouldContain "Smart Home Hub (Copy)"
+
+        fakeProfileRepo.getLastSelectedProfileName() shouldBe "Smart Home Hub (Copy)"
+
+        // Duplicate again to verify auto-increment copy suffix
+        component.onDuplicateProfileClicked(original)
+        advanceUntilIdle()
+
+        component.state.value.name shouldBe "Smart Home Hub (Copy 2)"
+        component.state.value.savedProfiles.map { it.name } shouldContain "Smart Home Hub (Copy 2)"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `deleting the active profile selects the next available profile`() = runTest {
+        val profileA = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Broker One", host = "127.0.0.1")
+        val profileB = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Broker Two", host = "192.168.1.200")
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(profileA, profileB)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        // Broker One is selected
+        component.state.value.name shouldBe "Broker One"
+
+        // Delete Broker One
+        component.onDeleteProfileClicked(profileA)
+        advanceUntilIdle()
+
+        // State moves to Broker Two
+        component.state.value.name shouldBe "Broker Two"
+        component.state.value.host shouldBe "192.168.1.200"
+        component.state.value.savedProfiles.map { it.name } shouldContain "Broker Two"
+        component.state.value.savedProfiles.map { it.name } shouldNotContain "Broker One"
+
+        fakeProfileRepo.getAllProfiles().map { it.name } shouldNotContain "Broker One"
+
+        lifecycle.destroy()
+    }
+
+    @Test
+    fun `deleting the only remaining profile resets form to clean default state`() = runTest {
+        val profileOnly = io.github.drlacheheb.mqtlin.domain.model.ConnectionConfig(name = "Only Broker", host = "127.0.0.1")
+        val fakeProfileRepo = io.github.drlacheheb.mqtlin.fakes.FakeProfileRepository(
+            initialProfiles = listOf(profileOnly)
+        )
+
+        val (component, lifecycle) = createComponent(this, profileRepository = fakeProfileRepo)
+        advanceUntilIdle()
+
+        component.onDeleteProfileClicked(profileOnly)
+        advanceUntilIdle()
+
+        component.state.value.savedProfiles.shouldBeEmpty()
+        component.state.value.name shouldBe "New Connection"
+
+        lifecycle.destroy()
+    }
 }

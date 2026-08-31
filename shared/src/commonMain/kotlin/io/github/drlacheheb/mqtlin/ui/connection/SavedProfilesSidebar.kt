@@ -40,6 +40,8 @@ fun SavedProfilesSidebar(
     activeName: String,
     onSearchQueryChanged: (String) -> Unit = {},
     onProfileSelected: (ConnectionConfig) -> Unit = {},
+    onDuplicateProfile: (ConnectionConfig) -> Unit = {},
+    onDeleteProfile: (ConnectionConfig) -> Unit = {},
     onNewProfileClicked: () -> Unit = {}
 ) {
     val filteredProfiles = if (searchQuery.isBlank()) {
@@ -138,11 +140,12 @@ fun SavedProfilesSidebar(
                     }
 
                     ProfileListItem(
-                        title = profile.name,
-                        subtitle = "${profile.host}:${profile.port}",
+                        profile = profile,
                         isActive = isActive,
                         badge = badge,
-                        onClick = { onProfileSelected(profile) }
+                        onClick = { onProfileSelected(profile) },
+                        onDuplicate = { onDuplicateProfile(profile) },
+                        onDelete = { onDeleteProfile(profile) }
                     )
                 }
             }
