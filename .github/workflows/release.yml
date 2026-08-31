@@ -1,0 +1,206 @@
+name: Release - Multi-Platform Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-tests:
+    name: Run Test Suite Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
+      - name: Run Test Suite
+        run: ./gradlew :shared:jvmTest --no-daemon
+
+  build-windows:
+    name: Build Windows Installers
+    needs: [verify-tests]
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build MSI and Inno Setup Windows Installer
+        run: ./gradlew :desktopApp:packageMsi :desktopApp:packageInnoSetup --no-daemon
+
+      - name: Create Windows Portable ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "desktopApp/build/compose/binaries/main/app/MQtlin/*" -DestinationPath "desktopApp/build/compose/binaries/main/setup/MQtlin-windows-x64-portable.zip"
+
+      - name: Copy Built Windows Artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "dist"
+          Get-ChildItem -Path "desktopApp/build/compose/binaries/main/setup/*.exe", "desktopApp/build/compose/binaries/main/setup/*.zip", "desktopApp/build/compose/binaries/main/msi/*.msi" | Copy-Item -Destination "dist"
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: dist/*
+          if-no-files-found: error
+
+  build-macos:
+    name: Build macOS DMG
+    needs: [verify-tests]
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
+      - name: Build macOS DMG and Distributable
+        run: ./gradlew :desktopApp:packageDmg :desktopApp:createDistributable --no-daemon
+
+      - name: Create macOS Portable ZIP
+        run: |
+          mkdir -p dist
+          find desktopApp/build/compose/binaries/main/dmg -name "*.dmg" -exec cp {} dist/ \;
+          cd desktopApp/build/compose/binaries/main/app && zip -r ../../../../../dist/MQtlin-macOS-portable.zip MQtlin.app
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binaries
+          path: dist/*
+          if-no-files-found: error
+
+  build-linux:
+    name: Build Linux DEB & AppImage
+    needs: [verify-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
+      - name: Build Linux DEB and Distributable
+        run: ./gradlew :desktopApp:packageDeb :desktopApp:createDistributable --no-daemon
+
+      - name: Package Linux AppImage
+        run: |
+          mkdir -p AppDir/usr/bin AppDir/usr/lib AppDir/usr/share/icons/hicolor/256x256/apps dist
+          cp -r desktopApp/build/compose/binaries/main/app/MQtlin/* AppDir/usr/bin/
+          cp desktopApp/src/main/resources/icons/icon.png AppDir/MQtlin.png
+          cp desktopApp/src/main/resources/icons/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/MQtlin.png
+
+          cat << 'EOF' > AppDir/MQtlin.desktop
+          [Desktop Entry]
+          Type=Application
+          Name=MQtlin
+          Comment=Modern MQTT Explorer & Broker Client
+          Exec=MQtlin
+          Icon=MQtlin
+          Categories=Development;Network;
+          Terminal=false
+          EOF
+
+          cat << 'EOF' > AppDir/AppRun
+          #!/bin/sh
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/MQtlin" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          ./appimagetool --appimage-extract-and-run AppDir dist/MQtlin-x86_64.AppImage
+
+          find desktopApp/build/compose/binaries/main/deb -name "*.deb" -exec cp {} dist/ \;
+          tar -czvf dist/MQtlin-linux-x64-portable.tar.gz -C desktopApp/build/compose/binaries/main/app MQtlin
+
+      - name: Build Flatpak Bundle
+        run: |
+          sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --user flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+          flatpak-builder --user --force-clean --repo=flatpak-repo flatpak-build installer/linux/flatpak/io.github.drlacheheb.MQtlin.yml
+          flatpak build-bundle flatpak-repo dist/MQtlin-x86_64.flatpak io.github.drlacheheb.MQtlin 24.08
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binaries
+          path: dist/*
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Download All Platform Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-dist
+          merge-multiple: true
+
+      - name: Generate Checksums
+        run: |
+          cd all-dist
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: all-dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
