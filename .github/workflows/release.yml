@@ -108,7 +108,7 @@ jobs:
         run: |
           mkdir -p dist
           find desktopApp/build/compose/binaries/main/dmg -name "*.dmg" -exec cp {} dist/ \;
-          cd desktopApp/build/compose/binaries/main/app && zip -r ../../../../../dist/MQtlin-macOS-portable.zip MQtlin.app
+          cd desktopApp/build/compose/binaries/main/app && zip -r "$GITHUB_WORKSPACE/dist/MQtlin-macOS-portable.zip" MQtlin.app
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
