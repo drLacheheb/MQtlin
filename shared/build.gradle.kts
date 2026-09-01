@@ -38,21 +38,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            // Serialization, Datetime & Logging
+            // Serialization & Datetime
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.kotlinx.io.core)
-            implementation(libs.kermit)
-
-            // DataStore Preferences
-            implementation(libs.datastore.preferences)
-
-            // Ktor HTTP & WebSockets
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.cio)
-            implementation(libs.ktor.client.websockets)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
         }
 
         jvmMain.dependencies {
