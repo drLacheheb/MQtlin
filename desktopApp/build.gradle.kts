@@ -29,7 +29,6 @@ val appVersion =
     libs.versions.app.version
         .get()
 val semver = appVersion.substringBefore("-")
-val validPackageVersion = if (semver.startsWith("0.")) "1.${semver.substringAfter(".")}" else semver
 
 compose.desktop {
     application {
@@ -38,7 +37,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "MQtlin"
-            packageVersion = validPackageVersion
+            packageVersion = semver
             description = "MQtlin - Modern MQTT Explorer & Broker Client"
             copyright = "Copyright (c) 2026 MQtlin"
             vendor = "io.github.drlacheheb"
