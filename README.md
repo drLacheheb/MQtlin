@@ -10,7 +10,7 @@
   <a href="https://mqtt.org"><img src="https://img.shields.io/badge/MQTT-3.1.1%20%7C%205.0-660066?style=flat&logo=mqtt&logoColor=white" alt="MQTT Standard"></a>
   <a href="https://github.com/drlacheheb/MQtlin/releases"><img src="https://img.shields.io/badge/Target-Windows%20%7C%20macOS%20%7C%20Linux-2ea44f?style=flat" alt="Desktop Platforms"></a>
   <a href="https://ko-fi.com/drlacheheb"><img src="https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-FF5E5B?style=flat&logo=kofi&logoColor=white" alt="Ko-fi"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat" alt="License"></a>
 </p>
 
 <p align="center">
@@ -30,44 +30,7 @@ Traditional MQTT clients treat high-frequency message traffic like an unreadable
 5. **Universal Message Publishing**: Publish commands and telemetry with fine-grained QoS (0, 1, 2), retain flags, and JSON validation.
 6. **Native Cross-Platform Desktop**: Responsive UI powered by Skia hardware acceleration for Windows, macOS, and Linux from a single Kotlin codebase.
 
----
 
-## Alpha Version Roadmap
-
-Here is the progress tracker for the core features scheduled for the upcoming **Alpha release**:
-
-### Connection Management
-- [ ] Connect to broker via hostname and port
-- [ ] Username and password authentication
-- [ ] Custom Client ID configuration and random ID generator
-- [ ] MQTT protocol version selector (3.1, 3.1.1, 5.0)
-- [ ] Transport selector: TCP (`mqtt://`), TLS (`mqtts://`), WS (`ws://`), WSS (`wss://`)
-- [ ] Real-time connection status indicator with color-coded badge
-
-### Topic Tree Exploration
-- [ ] Hierarchical topic tree view with live in-place updates
-- [ ] Visual indicators and badges for retained messages
-- [ ] Real-time keyword search and topic tree filtering
-- [ ] Topic selection to view payload and message metadata
-
-### Payload Viewer and Inspection
-- [ ] Formatted, syntax-highlighted collapsible JSON tree viewer
-- [ ] Raw plain-text viewer with word-wrap toggle
-- [ ] Hexadecimal and binary viewer with address offsets
-- [ ] Auto-detection of payload format (JSON, Text, Hex)
-- [ ] Message metadata display: QoS level, retain flag, timestamp, payload size
-- [ ] Quick copy utilities for topic path, raw payload, and JSON key paths
-
-### Message Publishing
-- [ ] Publish message panel with topic autocomplete and multi-line editor
-- [ ] QoS level selection: QoS 0, QoS 1, QoS 2
-- [ ] Retain flag toggle with visual indicator
-
-### UI and Design System
-- [ ] Dark mode and light mode theme support with system auto-detection
-- [x] Project architecture and dependency configuration
-
----
 
 ## Tech Stack
 
@@ -78,8 +41,8 @@ Here is the progress tracker for the core features scheduled for the upcoming **
 | **Navigation** | **Decompose** | Component-tree navigation with isolated lifecycles and split panes |
 | **State Management** | **MVI / Kotlin StateFlow** | Unidirectional data flow and reactive coroutines |
 | **Dependency Injection** | **Koin 4.x** | Pure Kotlin lightweight multiplatform dependency injection |
-| **Persistence** | **SQLDelight and DataStore** | Compile-time safe SQLite database and typed settings storage |
-| **Networking** | **Ktor Client 3.x** | Multiplatform HTTP and WebSocket networking |
+| **Persistence** | **kotlinx.serialization** | Local human-readable JSON profile & settings storage |
+| **Networking** | **Netty & HiveMQ Engine** | High-performance TCP, TLS, and WebSocket broker transport |
 | **Serialization** | **kotlinx.serialization** | Fast, zero-reflection JSON and binary codecs |
 
 ---
@@ -139,6 +102,15 @@ cd MQtlin
 
 ---
 
+## Privacy Policy
+
+**MQtlin** values user privacy and security:
+- **Zero Telemetry:** MQtlin does not track, collect, store, or transmit any personal data, analytics, or usage metrics.
+- **Local Data Storage:** All connection profiles, broker credentials, settings, and payload logs remain 100% on your local machine (`~/.mqtlin/`).
+- **Direct Broker Transport:** All network sockets and connections are established strictly between your machine and your target MQTT broker.
+
+---
+
 ## Support the Project
 
 If you find MQtlin helpful for your IoT development, smart home management, or broker debugging, consider supporting its open-source development:
@@ -153,4 +125,4 @@ If you find MQtlin helpful for your IoT development, smart home management, or b
 
 ## License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See the [LICENSE](LICENSE) file for details.
