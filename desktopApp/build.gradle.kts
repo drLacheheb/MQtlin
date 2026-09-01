@@ -36,17 +36,6 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
-            modules(
-                "java.desktop",
-                "java.instrument",
-                "java.logging",
-                "java.management",
-                "java.naming",
-                "java.prefs",
-                "java.sql",
-                "java.xml",
-                "jdk.unsupported",
-            )
             packageName = "MQtlin"
             packageVersion = semver
             description = "MQtlin - Modern MQTT Explorer & Broker Client"

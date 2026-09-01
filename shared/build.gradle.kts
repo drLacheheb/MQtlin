@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -54,10 +53,6 @@ kotlin {
             implementation(libs.ktor.client.websockets)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
-
-            // SQLDelight Runtime
-            implementation(libs.sqldelight.coroutines)
-            implementation(libs.sqldelight.primitive.adapters)
         }
 
         jvmMain.dependencies {
@@ -66,9 +61,6 @@ kotlin {
 
             // Reactive Streams to Kotlin Flow bridge
             implementation(libs.kotlinx.coroutinesReactive)
-
-            // SQLDelight SQLite Driver for JVM/Desktop
-            implementation(libs.sqldelight.driver.sqlite)
         }
 
         commonTest.dependencies {
@@ -76,14 +68,6 @@ kotlin {
             implementation(libs.kotlinx.coroutinesTest)
             implementation(libs.turbine)
             implementation(libs.kotest.assertions)
-        }
-    }
-}
-
-sqldelight {
-    databases {
-        create("AppDatabase") {
-            packageName.set("io.github.drlacheheb.mqtlin.database")
         }
     }
 }
