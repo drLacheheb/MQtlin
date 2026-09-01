@@ -53,6 +53,12 @@ jobs:
       - name: Build MSI and Inno Setup Windows Installer
         run: ./gradlew :desktopApp:packageMsi :desktopApp:packageInnoSetup --no-daemon
 
+      - name: Print jpackage Error Logs on Failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "desktopApp/build/compose/logs" -Recurse -Filter "*.txt" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "=== $($_.FullName) ==="; Get-Content $_.FullName }
+
       - name: Create Windows Portable ZIP
         shell: pwsh
         run: |
@@ -93,6 +99,11 @@ jobs:
       - name: Build macOS DMG and Distributable
         run: ./gradlew :desktopApp:packageDmg :desktopApp:createDistributable --no-daemon
 
+      - name: Print jpackage Error Logs on Failure
+        if: failure()
+        run: |
+          find desktopApp/build/compose/logs -type f -name "*.txt" -exec echo "=== {} ===" \; -exec cat {} \;
+
       - name: Create macOS Portable ZIP
         run: |
           mkdir -p dist
@@ -127,6 +138,11 @@ jobs:
 
       - name: Build Linux DEB and Distributable
         run: ./gradlew :desktopApp:packageDeb :desktopApp:createDistributable --no-daemon
+
+      - name: Print jpackage Error Logs on Failure
+        if: failure()
+        run: |
+          find desktopApp/build/compose/logs -type f -name "*.txt" -exec echo "=== {} ===" \; -exec cat {} \;
 
       - name: Package Linux AppImage
         run: |
