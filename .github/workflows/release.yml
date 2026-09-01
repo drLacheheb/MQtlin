@@ -71,7 +71,7 @@ jobs:
           Get-ChildItem -Path "desktopApp/build/compose/binaries/main/setup/*.exe", "desktopApp/build/compose/binaries/main/setup/*.zip", "desktopApp/build/compose/binaries/main/msi/*.msi" | Copy-Item -Destination "dist"
 
       - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: windows-binaries
           path: dist/*
@@ -111,7 +111,7 @@ jobs:
           cd desktopApp/build/compose/binaries/main/app && zip -r "$GITHUB_WORKSPACE/dist/MQtlin-macOS-portable.zip" MQtlin.app
 
       - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: macos-binaries
           path: dist/*
@@ -187,7 +187,7 @@ jobs:
           flatpak build-bundle flatpak-repo dist/MQtlin-x86_64.flatpak io.github.drlacheheb.MQtlin
 
       - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: linux-binaries
           path: dist/*
@@ -201,7 +201,7 @@ jobs:
 
     steps:
       - name: Download All Platform Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: all-dist
           merge-multiple: true
