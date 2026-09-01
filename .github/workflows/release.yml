@@ -176,7 +176,7 @@ jobs:
           ./appimagetool --appimage-extract-and-run AppDir dist/MQtlin-x86_64.AppImage
 
           find desktopApp/build/compose/binaries/main/deb -name "*.deb" -exec cp {} dist/ \;
-          tar -czvf dist/MQtlin-linux-x64-portable.tar.gz -C desktopApp/build/compose/binaries/main/app MQtlin
+          tar -czvf "$GITHUB_WORKSPACE/dist/MQtlin-linux-x64-portable.tar.gz" -C desktopApp/build/compose/binaries/main/app MQtlin
 
       - name: Build Flatpak Bundle
         run: |
