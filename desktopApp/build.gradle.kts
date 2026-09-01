@@ -42,6 +42,12 @@ compose.desktop {
             copyright = "Copyright (c) 2026 MQtlin"
             vendor = "io.github.drlacheheb"
 
+            modules(
+                "java.base",
+                "java.desktop",
+                "jdk.unsupported",
+            )
+
             windows {
                 iconFile.set(project.file("src/main/resources/icons/icon.ico"))
                 menuGroup = "MQtlin"
