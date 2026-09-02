@@ -19,6 +19,8 @@
 
 ---
 
+<img src="docs/main_screenshot.png" alt="MQTlin app demonstation">
+
 ## What It Does
 
 Traditional MQTT clients treat high-frequency message traffic like an unreadable flat chat stream. **MQtlin** transforms raw broker streams into a structured, live-updating namespace hierarchy:
@@ -44,6 +46,25 @@ Traditional MQTT clients treat high-frequency message traffic like an unreadable
 | **Persistence** | **kotlinx.serialization** | Local human-readable JSON profile & settings storage |
 | **Networking** | **Netty & HiveMQ Engine** | High-performance TCP, TLS, and WebSocket broker transport |
 | **Serialization** | **kotlinx.serialization** | Fast, zero-reflection JSON and binary codecs |
+
+---
+
+## Application Showcase
+
+<div style="display:flex; align-items:center; flex-direction:column;">
+
+### Connections setup
+<img style="margin:1rem 15%;" width="70%" src="docs/add_connection_screenshot.png" alt="Connection setup">
+
+### Different data views
+<img style="margin:1rem 15%;" width="70%" src="docs/json_view_screenshot.png" alt="Connection setup">
+<img style="margin:1rem 15%;" width="70%" src="docs/diff_view_screenshot.png" alt="Connection setup">
+<img style="margin:1rem 15%;" width="70%" src="docs/hex_view_screenshot.png" alt="Connection setup">
+
+### Data change chart
+<img style="margin:1rem 15%;" width="70%" src="docs/chart_view_screenshot.png" alt="Connection setup">
+
+</div>
 
 ---
 
